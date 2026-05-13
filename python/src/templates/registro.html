@@ -1,6 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block link %}
+{{ super() }}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/registro.css') }}">
 {% endblock link %}
 
@@ -10,7 +11,7 @@
 
     <h1>Crear Una Cuenta</h1>
 
-    <form id="formulario" method="POST" action="/singin" autocomplete="off">
+    <form id="formulario" method="POST" action="/singup" autocomplete="off">
 
         <label for="username">Usuario:</label>
         <input type="text" id="usuario" name="usuario" autocomplete="off" required>

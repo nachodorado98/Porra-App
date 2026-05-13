@@ -1,0 +1,24 @@
+{% extends "inicio.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/singup.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="contenedor-bienvenida">
+    <h1>Bienvenido/a</h1>
+    <p>Gracias por registrarte en nuestra plataforma, {{ nombre.title() }}.</p>
+
+    {% if nuevo %}
+        <p>Se ha creado la nueva liga con codigo <strong>{{ codigo }}</strong>.</p>
+    {% else %}
+        <p>Te has unido a la liga con codigo <strong>{{ codigo }}</strong>.</p>
+    {% endif %}
+
+    <p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>
+    <a href="/" class="btn-login">Iniciar Sesión</a>
+</div>
+
+{% endblock principal %}

@@ -30,7 +30,7 @@ def test_pagina_generar_codigo(cliente):
 	assert codigo.isalnum() and codigo.isupper()
 
 @pytest.mark.parametrize(["codigo"],
-	[("hola",),("123456",),("HOLA",),("123HE?",),("KKGA03G5",)]
+    [("123456",),("ABCDE",),("ABCDE&",),("ABCDEFG",),("A1BC2DEF",)]
 )
 def test_pagina_verificar_codigo_no_valido(cliente, codigo):
 
@@ -47,7 +47,7 @@ def test_pagina_verificar_codigo_no_valido(cliente, codigo):
 	assert not valido
 
 @pytest.mark.parametrize(["codigo"],
-	[("hola12",),("12345A",),("HOLAAA",),("123HE6",),("KKGA03",),("PLKTEO",)]
+    [("ABCDEF",),("ABCDE1",),("ZK5Z1Q",),("3YYZKP",),("GTMRIJ",),("abcdef",)]
 )
 def test_pagina_verificar_codigo_valido(cliente, codigo):
 
@@ -62,3 +62,102 @@ def test_pagina_verificar_codigo_valido(cliente, codigo):
 	valido=diccionario_valido["valido"]
 
 	assert valido
+
+@pytest.mark.parametrize(["usuario", "nombre", "apellido", "contrasena", "correo", "codigo"],
+    [
+        (None, "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", None, "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", "nacho", None, "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", "nacho", "dorado", None, "correo@correo.es", "3YYZKP"),
+        ("carlos-456", "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", "nacho1", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", "nacho", "dorado2", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
+        ("golden98", "nachogolden", "dorado", "12345678", "correo@.es", "3YYZKP")
+    ]
+)
+def test_pagina_singup_datos_incorrectos(cliente, usuario, correo, nombre, apellido, contrasena, codigo):
+
+	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":correo, "nombre":nombre,
+											"apellido":apellido, "contrasena":contrasena,
+											"codigo_final":codigo, "accion_liga":"crear"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==302
+	assert respuesta.location=="/registro"
+	assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["usuario", "nombre", "apellido", "contrasena", "correo", "codigo"],
+    [
+        ("nacho98", "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "usuario@gmail.com", "123456"),
+        ("golden98", "nachogolden", "dorado", "Abcd1234!","correo@correo.es", "ABCDE"),
+        ("carlos_456", "nachogolden", "dorado", "22&NachoD&19", "ejemplo123@yahoo.com", None),
+        ("carlos_456", "nachogolden", "dorado", "12345678", "ejemplo123@yahoo.com", "ABCDE&"),
+        ("golden98", "nachogolden", "dorado", "Abcd1234!","correo@correo.es", "A1BC2DEF")
+    ]
+)
+def test_pagina_singup_datos_correctos_codigo_no_valido(cliente, usuario, correo, nombre, apellido, contrasena, codigo):
+
+	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":correo, "nombre":nombre,
+											"apellido":apellido, "contrasena":contrasena,
+											"codigo_final":codigo, "accion_liga":"crear"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==302
+	assert respuesta.location=="/registro"
+	assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["usuario", "nombre", "apellido", "contrasena", "correo", "codigo"],
+    [
+        ("nacho98", "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "usuario@gmail.com", "ABCDEF"),
+        ("golden98", "nachogolden", "dorado", "Abcd1234!","correo@correo.es", "ABCDE1"),
+        ("carlos_456", "nachogolden", "dorado", "22&NachoD&19", "ejemplo123@yahoo.com", "ZK5Z1Q"),
+        ("carlos_456", "nachogolden", "dorado", "12345678", "ejemplo123@yahoo.com", "3YYZKP"),
+        ("golden98", "nachogolden", "dorado", "Abcd1234!","correo@correo.es", "GTMRIJ")
+    ]
+)
+def test_pagina_singup_datos_correctos_codigo_valido(cliente, usuario, correo, nombre, apellido, contrasena, codigo):
+
+	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":correo, "nombre":nombre,
+											"apellido":apellido, "contrasena":contrasena,
+											"codigo_final":codigo, "accion_liga":"crear"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert "<h1>Bienvenido/a</h1>" in contenido
+	assert f"<p>Gracias por registrarte en nuestra plataforma, {nombre.title()}.</p>" in contenido
+	assert f"<p>Se ha creado la nueva liga con codigo <strong>{ codigo }</strong>.</p>" in contenido
+	assert f"<p>Te has unido a la liga con codigo <strong>{ codigo }</strong>.</p>" not in contenido
+	assert "<p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>" in contenido
+
+def test_pagina_singup_crear_liga(cliente):
+
+	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert "<h1>Bienvenido/a</h1>" in contenido
+	assert "<p>Gracias por registrarte en nuestra plataforma, Nacho.</p>" in contenido
+	assert "<p>Se ha creado la nueva liga con codigo <strong>3YYZKP</strong>.</p>" in contenido
+	assert "<p>Te has unido a la liga con codigo <strong>3YYZKP</strong>.</p>" not in contenido
+	assert "<p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>" in contenido
+
+def test_pagina_singup_unirse_liga(cliente):
+
+	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert "<h1>Bienvenido/a</h1>" in contenido
+	assert "<p>Gracias por registrarte en nuestra plataforma, Nacho.</p>" in contenido
+	assert "<p>Se ha creado la nueva liga con codigo <strong>3YYZKP</strong>.</p>" not in contenido
+	assert "<p>Te has unido a la liga con codigo <strong>3YYZKP</strong>.</p>" in contenido
+	assert "<p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>" in contenido
