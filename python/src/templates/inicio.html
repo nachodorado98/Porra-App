@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% block link %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/inicio.css') }}">
+    {% endblock link %}
+
+    <link rel="icon" href="{{ url_for('static', filename='iconos/mundial.png') }}" type="image/x-icon">
+
+    <title>Porra Mundial 2026</title>
+</head>
+<body>
+
+    {% block principal %}
+
+    <div class="container">
+        <h1>Iniciar Sesión</h1>
+        <form id="formulario" method="POST" action="/login">
+            <label for="username">Usuario:</label>
+            <input type="text" id="usuario" name="usuario" autocomplete="off" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" autocomplete="off" required>
+
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
+    </div>
+
+    {% endblock principal %}
+
+    <footer>
+        <p>&copy; 2026 Porra Mundial App. Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>
