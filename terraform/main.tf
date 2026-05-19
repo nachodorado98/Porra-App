@@ -37,12 +37,62 @@ resource "azurerm_container_app" "app" {
         secret_name = "entorno"
       }
 
+      env {
+        name        = "POSTGRES_USER"
+        secret_name = "user"
+      }
+
+      env {
+        name        = "POSTGRES_PASSWORD"
+        secret_name = "password"
+      }
+
+      env {
+        name        = "POSTGRES_DB"
+        secret_name = "db"
+      }
+
+      env {
+        name        = "POSTGRES_HOST"
+        secret_name = "host"
+      }
+
+      env {
+        name        = "POSTGRES_PORT"
+        secret_name = "port"
+      }
+
     }
   }
 
   secret {
     name  = "entorno"
     value = var.entorno
+  }
+
+  secret {
+    name  = "user"
+    value = var.user
+  }
+
+  secret {
+    name  = "password"
+    value = var.password
+  }
+
+  secret {
+    name  = "db"
+    value = var.db
+  }
+
+  secret {
+    name  = "host"
+    value = var.host
+  }
+
+  secret {
+    name  = "port"
+    value = var.port
   }
 
   ingress {

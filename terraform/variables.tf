@@ -29,3 +29,23 @@ variable "nombre_imagen_contenedor" {
 variable "entorno" {
   description = "Entorno de la aplicacion"
 }
+
+variable "user" {
+  description = "Usuario de la BBDD"
+}
+
+variable "password" {
+  description = "Password de la BBDD"
+}
+
+variable "db" {
+  description = "Nombre de la BBDD"
+}
+
+variable "host" {
+  description = "Host de la BBDD"
+}
+
+variable "port" {
+  description = "Port de la BBDD"
+}
