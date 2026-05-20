@@ -2,7 +2,7 @@ import pytest
 import json
 from unittest.mock import patch
 
-def test_pagina_registro(cliente):
+def test_pagina_registro(cliente, conexion):
 
 	respuesta=cliente.get("/registro")
 
@@ -14,7 +14,7 @@ def test_pagina_registro(cliente):
 	assert '<div id="contenedor-codigo-generado" style="display:none;">' in contenido
 	assert '<div id="contenedor-codigo" style="display:none;">' in contenido
 
-def test_pagina_generar_codigo_no_valido_existente(cliente):
+def test_pagina_generar_codigo_no_valido_existente(cliente, conexion):
 
 	with patch("src.blueprints.registro.random.choices") as mock_random:
 		with patch("src.blueprints.registro.Conexion") as MockConexion:
@@ -32,7 +32,7 @@ def test_pagina_generar_codigo_no_valido_existente(cliente):
 			assert "error" in contenido
 			assert "Codigo No Valido" in contenido
 
-def test_pagina_generar_codigo(cliente):
+def test_pagina_generar_codigo(cliente, conexion):
 
 	respuesta=cliente.get("/registro/generar_codigo")
 
@@ -51,7 +51,7 @@ def test_pagina_generar_codigo(cliente):
 @pytest.mark.parametrize(["codigo"],
 	[("123456",),("ABCDE",),("ABCDE&",),("ABCDEFG",),("A1BC2DEF",)]
 )
-def test_pagina_verificar_codigo_no_valido(cliente, codigo):
+def test_pagina_verificar_codigo_no_valido(cliente, conexion, codigo):
 
 	respuesta=cliente.get(f"/registro/verificar_codigo/{codigo}")
 
@@ -64,7 +64,7 @@ def test_pagina_verificar_codigo_no_valido(cliente, codigo):
 @pytest.mark.parametrize(["codigo"],
 	[("ABCDEF",),("ABCDE1",),("ZK5Z1Q",),("3YYZKP",),("GTMRIJ",),("abcdef",)]
 )
-def test_pagina_verificar_codigo_valido_no_existente(cliente, codigo):
+def test_pagina_verificar_codigo_valido_no_existente(cliente, conexion, codigo):
 
 	respuesta=cliente.get(f"/registro/verificar_codigo/{codigo}")
 
@@ -160,7 +160,7 @@ def test_pagina_singup_usuario_existente(cliente, conexion, usuario):
 
 	conexion.insertarCodigoLiga("3YYZKP")
 
-	conexion.insertarUsuario(usuario, "nacho@gmail.es", "nachogolden", "dorado", "Ab!CdEfGhIJK3LMN", "3YYZKP")
+	conexion.insertarUsuario(usuario, "nacho@gmail.es", "Ab!CdEfGhIJK3LMN", "nachogolden", "dorado", "3YYZKP")
 
 	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import codigo_valido, datos_correctos
+from src.utilidades.utils import codigo_valido, datos_correctos, generarHash
 
 bp_registro=Blueprint("registro", __name__)
 
@@ -117,6 +117,8 @@ def singup():
 
             return redirect("/registro")
 
-    con.insertarUsuario(usuario, correo, nombre, apellido, contrasena, codigo_final)
+    hash_contrasena=generarHash(contrasena)
+
+    con.insertarUsuario(usuario, correo, hash_contrasena, nombre, apellido, codigo_final)
 
     return render_template("singup.html", nombre=nombre, nuevo=insertar_codigo_nuevo, codigo=codigo_final)

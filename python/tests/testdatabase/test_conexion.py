@@ -12,6 +12,7 @@ def test_conexion(conexion):
 
 	assert "usuarios" in tablas 
 	assert "codigos" in tablas
+	assert "equipos" in tablas
 	
 def test_cerrar_conexion(conexion):
 
@@ -27,7 +28,7 @@ def test_vaciar_bbdd(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
-	conexion.insertarUsuario("golden98", "nacho@gmail.es", "nachogolden", "dorado", "Ab!CdEfGhIJK3LMN", "C4N5VT") 
+	conexion.insertarUsuario("golden98", "nacho@gmail.es", "Ab!CdEfGhIJK3LMN", "nachogolden", "dorado", "C4N5VT") 
 
 	for tabla in tablas:
 

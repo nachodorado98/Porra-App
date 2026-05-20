@@ -61,3 +61,63 @@ def test_existe_usuario_existe(conexion):
 	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
 	assert conexion.existe_usuario("nacho98")
+
+def test_obtener_contrasena_usuario_no_existe(conexion):
+
+	assert conexion.obtenerContrasenaUsuario("nacho98") is None
+
+def test_obtener_contrasena_usuario_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerContrasenaUsuario("nacho98")=="1234"
+
+def test_obtener_nombre_usuario_no_existe(conexion):
+
+	assert conexion.obtenerNombre("nacho98") is None
+
+def test_obtener_nombre_usuario_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerNombre("nacho98")=="nacho"
+
+def test_obtener_admin_usuario_no_existe(conexion):
+
+	assert not conexion.obtenerAdmin("nacho98")
+
+def test_obtener_admin_usuario_no_admin(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.obtenerAdmin("nacho98")
+
+def test_obtener_admin_usuario_si_admin(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("UPDATE usuarios SET Admin=True")
+
+	conexion.confirmar()
+
+	assert conexion.obtenerAdmin("nacho98")
+
+def test_obtener_codigo_liga_usuario_no_existe(conexion):
+
+	assert conexion.obtenerCodigoLiga("nacho98") is None
+
+def test_obtener_codigo_liga_usuario_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerCodigoLiga("nacho98")=="C4N5VT"

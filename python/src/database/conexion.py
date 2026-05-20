@@ -82,3 +82,51 @@ class Conexion:
 							(usuario, correo, contrasena, nombre, apellido, codigo_liga))
 
 		self.confirmar()
+
+	# Metodo para obtener la contrasena de un usuario
+	def obtenerContrasenaUsuario(self, usuario:str)->Optional[str]:
+
+		self.c.execute("""SELECT contrasena
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		contrasena=self.c.fetchone()
+
+		return None if contrasena is None else contrasena["contrasena"]
+
+	# Metodo para obtener el nombre de usuario
+	def obtenerNombre(self, usuario:str)->Optional[str]:
+
+		self.c.execute("""SELECT nombre
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		nombre=self.c.fetchone()
+
+		return None if nombre is None else nombre["nombre"]
+
+	# Metodo para obtener si el usuario es admin
+	def obtenerAdmin(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT admin
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		admin=self.c.fetchone()
+
+		return False if admin is None else admin["admin"]
+
+	# Metodo para obtener el codigo liga
+	def obtenerCodigoLiga(self, usuario:str)->Optional[str]:
+
+		self.c.execute("""SELECT codigo_liga
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		codigo_liga=self.c.fetchone()
+
+		return None if codigo_liga is None else codigo_liga["codigo_liga"]
