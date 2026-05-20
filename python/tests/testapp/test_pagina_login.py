@@ -1,8 +1,9 @@
 import pytest
+from flask_login import current_user
 
 def test_pagina_inicio_sin_login(cliente, conexion):
 
-	respuesta=cliente.get("/inicio", follow_redirects=True)
+	respuesta=cliente.get("/porra", follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
@@ -50,4 +51,26 @@ def test_pagina_inicio_con_login(cliente, conexion):
 	contenido=respuesta.data.decode()
 
 	assert respuesta.status_code==200
-	assert "Bienvenido de nuevo, Nacho. Tu codigo de liga es: 3YYZKP" in contenido
+	assert "<h1>Proximamente....</h1>" in contenido
+	assert "<h2>¡Estamos trabajando para tener todo listo para esta gran cita!</h2>" in contenido
+
+def test_pagina_logout(cliente, conexion):
+
+	with cliente as cliente_abierto:
+
+		respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"})
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"})
+
+		assert current_user.is_authenticated
+
+		respuesta=cliente_abierto.get("/logout", follow_redirects=True)
+
+		contenido=respuesta.data.decode()
+
+		assert not current_user.is_authenticated
+
+		assert respuesta.status_code==200
+		assert "<h1>Iniciar Sesión</h1>" in contenido

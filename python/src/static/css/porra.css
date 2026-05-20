@@ -1,0 +1,139 @@
+/*------------------------------------------------------PORRA-----------------------------------------------*/
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f7fafc, #e2ebf0);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #222, #333);
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-left a {
+  color: #f0f0f0;
+  text-decoration: none;
+  margin-right: 18px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.nav-left a:hover {
+  color: #3897f0;
+}
+
+.logo img {
+  width: 32px;
+  vertical-align: middle;
+}
+
+.profile-menu {
+  position: relative;
+}
+
+.profile-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #3897f0;
+  object-fit: cover;
+}
+
+.dropdown {
+  list-style: none;
+  position: absolute;
+  right: 0;
+  top: 48px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  display: none;
+  flex-direction: column;
+  min-width: 160px;
+  animation: fadeIn 0.3s ease;
+}
+
+.dropdown li {
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown li:last-child {
+  border-bottom: none;
+}
+
+.dropdown li a {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.dropdown li a:hover {
+  background: #f0f4f8;
+  color: #3897f0;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.main-content h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+}
+
+.main-content .logo-mundial-inicio {
+  display: block;
+  width: 250px;
+  margin: 25px auto;
+}
+
+.main-content h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+}
+
+footer {
+  background: linear-gradient(90deg, #222, #333);
+  color: #f0f0f0;
+  text-align: center;
+  padding: 12px 10px;
+  font-size: 14px;
+  margin-top: auto;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .nav-left a {
+    margin-right: 12px;
+    font-size: 14px;
+  }
+}
