@@ -3,6 +3,8 @@ from flask import jsonify
 import random
 import string
 from unittest.mock import patch
+import requests
+import os
 
 from src.database.conexion import Conexion
 
@@ -120,5 +122,19 @@ def singup():
     hash_contrasena=generarHash(contrasena)
 
     con.insertarUsuario(usuario, correo, hash_contrasena, nombre, apellido, codigo_final)
+
+    try:
+
+        AZURE_FUNCTION=os.getenv("AZURE_FUNCTION", "nombre_azure_function")
+
+        URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/enviarCorreo"
+
+        payload={"correo_destino":correo, "nombre":nombre}
+
+        response=requests.post(URL_AZURE_FUNCTION, json=payload)
+
+    except Exception:
+
+        pass
 
     return render_template("singup.html", nombre=nombre, nuevo=insertar_codigo_nuevo, codigo=codigo_final)

@@ -42,10 +42,26 @@ def enviarCorreoBienvenida(destino:str, asunto:str, template_correo:str, origen:
 
 @app.route(route="enviarCorreo", auth_level=func.AuthLevel.ANONYMOUS)
 def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
+
     logging.info('Python HTTP trigger function processed a request.')
 
-    nombre=req.params.get('nombre')
-    correo_destino=req.params.get('correo')
+    try:
+
+        body=req.get_json()
+
+    except Exception:
+
+        return func.HttpResponse(
+            json.dumps({
+                "ok": False,
+                "error": "Falta el body"
+            }),
+            status_code=500,
+            mimetype="application/json"
+            )
+
+    nombre=body["nombre"]
+    correo_destino=body["correo_destino"]
 
     if not correo_destino:
 

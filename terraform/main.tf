@@ -62,6 +62,11 @@ resource "azurerm_container_app" "app" {
         secret_name = "port"
       }
 
+      env {
+        name        = "AZURE_FUNCTION"
+        secret_name = "azurefunction"
+      }
+
     }
   }
 
@@ -93,6 +98,11 @@ resource "azurerm_container_app" "app" {
   secret {
     name  = "port"
     value = var.port
+  }
+
+  secret {
+    name  = "azurefunction"
+    value = var.nombre_az_function
   }
 
   ingress {

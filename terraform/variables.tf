@@ -51,35 +51,35 @@ variable "port" {
 }
 
 variable "nombre_storage_account" {
-  description = "The name of the storage account"
+  description = "El nombre de la cuenta de almacenamiento"
 }
 
 variable "nombre_service_plan" {
-  description = "The name of the service plan"
+  description = "El nombre del service plan"
 }
 
 variable "nombre_az_function" {
-  description = "The name of the Azure Function"
+  description = "El nombre de la Azure Function"
 }
 
 variable "email_account" {
   type        = string
   sensitive   = true
-  description = "The email account"
+  description = "La cuenta de correo"
 }
 
 variable "contrasena_login" {
   type        = string
   sensitive   = true
-  description = "The password account"
+  description = "La contraseña de la cuenta de correo"
 }
 
 variable "servidor_correo" {
   type        = string
-  description = "The email server"
+  description = "El servidor de correo"
 }
 
 variable "puerto_correo" {
   type        = string
-  description = "The email port server"
+  description = "El puerto del servidor de correo"
 }
