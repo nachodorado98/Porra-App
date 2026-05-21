@@ -61,3 +61,25 @@ variable "nombre_service_plan" {
 variable "nombre_az_function" {
   description = "The name of the Azure Function"
 }
+
+variable "email_account" {
+  type        = string
+  sensitive   = true
+  description = "The email account"
+}
+
+variable "contrasena_login" {
+  type        = string
+  sensitive   = true
+  description = "The password account"
+}
+
+variable "servidor_correo" {
+  type        = string
+  description = "The email server"
+}
+
+variable "puerto_correo" {
+  type        = string
+  description = "The email port server"
+}

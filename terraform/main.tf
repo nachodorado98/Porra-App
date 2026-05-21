@@ -142,4 +142,13 @@ resource "azurerm_linux_function_app" "azure_function" {
       python_version = 3.13
     }
   }
+
+  app_settings = {
+    EMAIL_ACCOUNT    = var.email_account
+    CONTRASENA_LOGIN = var.contrasena_login
+    SERVIDOR_CORREO  = var.servidor_correo
+    PUERTO_CORREO    = var.puerto_correo
+
+    FUNCTIONS_WORKER_RUNTIME = "python"
+  }
 }
