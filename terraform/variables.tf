@@ -49,3 +49,15 @@ variable "host" {
 variable "port" {
   description = "Port de la BBDD"
 }
+
+variable "nombre_storage_account" {
+  description = "The name of the storage account"
+}
+
+variable "nombre_service_plan" {
+  description = "The name of the service plan"
+}
+
+variable "nombre_az_function" {
+  description = "The name of the Azure Function"
+}
