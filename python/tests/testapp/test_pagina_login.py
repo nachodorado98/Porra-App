@@ -26,11 +26,7 @@ def test_pagina_inicio_con_login_usuario_no_existe(cliente, conexion, usuario):
 @pytest.mark.parametrize(["contrasena"],
 	[("213214hhj&&ff",),("354354vff",),("2223321",), ("fdfgh&&55fjfkAfh",)]
 )
-def test_pagina_inicio_con_login_usuario_existe_contrasena_error(cliente, conexion, contrasena):
-
-	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
-											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"crear"})
+def test_pagina_inicio_con_login_usuario_existe_contrasena_error(cliente, conexion_usuario, contrasena):
 
 	respuesta=cliente.post("/login", data={"usuario": "nacho98", "contrasena": contrasena})
 
@@ -40,11 +36,7 @@ def test_pagina_inicio_con_login_usuario_existe_contrasena_error(cliente, conexi
 	assert respuesta.location=="/"
 	assert "<h1>Redirecting...</h1>" in contenido
 
-def test_pagina_inicio_con_login(cliente, conexion):
-
-	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
-											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"crear"})
+def test_pagina_inicio_con_login(cliente, conexion_usuario):
 
 	respuesta=cliente.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
@@ -54,13 +46,9 @@ def test_pagina_inicio_con_login(cliente, conexion):
 	assert "<h1>Proximamente....</h1>" in contenido
 	assert "<h2>¡Estamos trabajando para tener todo listo para esta gran cita!</h2>" in contenido
 
-def test_pagina_logout(cliente, conexion):
+def test_pagina_logout(cliente, conexion_usuario):
 
 	with cliente as cliente_abierto:
-
-		respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
-											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"crear"})
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"})
 

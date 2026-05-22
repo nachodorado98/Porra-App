@@ -22,24 +22,20 @@ def test_cerrar_conexion(conexion):
 
 	assert conexion.bbdd.closed
 
-def test_vaciar_bbdd(conexion):
+def test_vaciar_bbdd(conexion_usuario):
 
 	tablas=["codigos", "usuarios"]
 
-	conexion.insertarCodigoLiga("C4N5VT")
+	for tabla in tablas:
 
-	conexion.insertarUsuario("golden98", "nacho@gmail.es", "Ab!CdEfGhIJK3LMN", "nachogolden", "dorado", "C4N5VT") 
+		conexion_usuario.c.execute(f"SELECT * FROM {tabla}")
+
+		assert conexion_usuario.c.fetchall()
+
+	conexion_usuario.vaciarBBDD()
 
 	for tabla in tablas:
 
-		conexion.c.execute(f"SELECT * FROM {tabla}")
+		conexion_usuario.c.execute(f"SELECT * FROM {tabla}")
 
-		assert conexion.c.fetchall()
-
-	conexion.vaciarBBDD()
-
-	for tabla in tablas:
-
-		conexion.c.execute(f"SELECT * FROM {tabla}")
-
-		assert not conexion.c.fetchall()
+		assert not conexion_usuario.c.fetchall()

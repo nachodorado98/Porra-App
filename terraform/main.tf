@@ -67,6 +67,11 @@ resource "azurerm_container_app" "app" {
         secret_name = "azurefunction"
       }
 
+      env {
+        name        = "ENDPOINT_AZURE_FUNCTION"
+        secret_name = "endpointazurefunction"
+      }
+
     }
   }
 
@@ -104,6 +109,12 @@ resource "azurerm_container_app" "app" {
     name  = "azurefunction"
     value = var.nombre_az_function
   }
+
+  secret {
+    name  = "endpointazurefunction"
+    value = var.endpoint_az_function
+  }
+
 
   ingress {
     external_enabled = true

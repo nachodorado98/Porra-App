@@ -10,7 +10,7 @@ import os
 
 app = func.FunctionApp()
 
-def enviarCorreoBienvenida(destino:str, asunto:str, template_correo:str, origen:str, contrasena:str, servidor:str, puerto:int)->None:
+def enviarCorreo(destino:str, asunto:str, template_correo:str, origen:str, contrasena:str, servidor:str, puerto:int)->None:
 
     mensaje=MIMEMultipart()
 
@@ -40,8 +40,8 @@ def enviarCorreoBienvenida(destino:str, asunto:str, template_correo:str, origen:
 
         servidor.quit()
 
-@app.route(route="enviarCorreo", auth_level=func.AuthLevel.ANONYMOUS)
-def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
+@app.route(route="enviarCorreoBienvenida", auth_level=func.AuthLevel.ANONYMOUS)
+def enviarCorreoBienvenida(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info('Python HTTP trigger function processed a request.')
 
@@ -159,7 +159,7 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
         servidor=os.environ.get("SERVIDOR_CORREO")
         puerto=int(os.environ.get("PUERTO_CORREO"))
 
-        enviarCorreoBienvenida(correo_destino, asunto, html.format(nombre=nombre_usuario), correo_origen, contrasena, servidor, puerto)
+        enviarCorreo(correo_destino, asunto, html.format(nombre=nombre_usuario), correo_origen, contrasena, servidor, puerto)
 
         return func.HttpResponse(
                 json.dumps({"ok": True}),

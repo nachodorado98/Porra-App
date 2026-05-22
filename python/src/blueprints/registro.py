@@ -126,8 +126,10 @@ def singup():
     try:
 
         AZURE_FUNCTION=os.getenv("AZURE_FUNCTION", "nombre_azure_function")
+        
+        ENDPOINT_AZURE_FUNCTION=os.getenv("ENDPOINT_AZURE_FUNCTION", "endpoint_azure_function")
 
-        URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/enviarCorreo"
+        URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/{ENDPOINT_AZURE_FUNCTION}"
 
         payload={"correo_destino":correo, "nombre":nombre}
 

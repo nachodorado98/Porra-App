@@ -55,7 +55,7 @@ variable "nombre_storage_account" {
 }
 
 variable "nombre_service_plan" {
-  description = "El nombre del service plan"
+  description = "El nombre del Service Plan"
 }
 
 variable "nombre_az_function" {
@@ -82,4 +82,8 @@ variable "servidor_correo" {
 variable "puerto_correo" {
   type        = string
   description = "El puerto del servidor de correo"
+}
+
+variable "endpoint_az_function" {
+  description = "El endpoint de la Azure Function"
 }
