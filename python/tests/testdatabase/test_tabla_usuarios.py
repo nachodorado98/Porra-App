@@ -112,7 +112,7 @@ def test_obtener_admin_usuario_si_admin(conexion):
 
 def test_obtener_codigo_liga_usuario_no_existe(conexion):
 
-	assert conexion.obtenerCodigoLiga("nacho98") is None
+	assert conexion.obtenerCodigoLigaUsuario("nacho98") is None
 
 def test_obtener_codigo_liga_usuario_existen(conexion):
 
@@ -120,4 +120,38 @@ def test_obtener_codigo_liga_usuario_existen(conexion):
 
 	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
-	assert conexion.obtenerCodigoLiga("nacho98")=="C4N5VT"
+	assert conexion.obtenerCodigoLigaUsuario("nacho98")=="C4N5VT"
+
+def test_obtener_usuarios_codigo_liga_no_existen(conexion):
+
+	assert not conexion.obtenerUsuariosCodigoLiga("C4N5VT")
+
+def test_obtener_usuarios_codigo_liga_existen_distintos(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.obtenerUsuariosCodigoLiga("123456")
+
+def test_obtener_usuarios_codigo_liga_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	usuarios=conexion.obtenerUsuariosCodigoLiga("C4N5VT")
+
+	assert len(usuarios)==1
+
+def test_obtener_usuarios_codigo_liga_existentes(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(1, 11):
+
+		conexion.insertarUsuario(f"nacho98{numero}", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	usuarios=conexion.obtenerUsuariosCodigoLiga("C4N5VT")
+
+	assert len(usuarios)==10

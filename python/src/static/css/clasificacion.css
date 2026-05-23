@@ -1,0 +1,256 @@
+/*------------------------------------------------------CLASIFICACION--------------------------------------------*/
+
+.clasificacion-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: auto;
+    padding: 30px 20px 50px;
+}
+
+.clasificacion-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.clasificacion-header h1 {
+    font-size: 42px;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+
+.clasificacion-header p {
+    color: #6b7280;
+    font-size: 18px;
+}
+
+.podium {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    gap: 25px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+}
+
+.podium-card {
+    width: 260px;
+    border-radius: 24px;
+    padding: 25px 20px;
+    text-align: center;
+    position: relative;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease;
+}
+
+.podium-card:hover {
+    transform: translateY(-6px);
+}
+
+.gold {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    min-height: 340px;
+}
+
+.silver {
+    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+    min-height: 300px;
+}
+
+.bronze {
+    background: linear-gradient(135deg, #d97706, #92400e);
+    min-height: 270px;
+}
+
+.podium-position {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    opacity: 0.9;
+}
+
+.podium-avatar {
+    width: 90px;
+    height: 90px;
+    margin: 25px auto 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 38px;
+    font-weight: bold;
+    border: 3px solid rgba(255,255,255,0.4);
+}
+
+.podium-card h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.podium-points {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.ranking-card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: all 0.25s ease;
+}
+
+.ranking-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+}
+
+.mi-usuario {
+    transform: scale(1.03);
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    border: 2px solid #2563eb;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+    position: relative;
+}
+
+.mi-usuario::before {
+    content: "TU";
+    position: absolute;
+    top: -12px;
+    right: 18px;
+    background: #2563eb;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 999px;
+    letter-spacing: 1px;
+}
+
+.ranking-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.ranking-position {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #111827;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.ranking-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3897f0, #2563eb);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.ranking-user h3 {
+    color: #111827;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.ranking-user p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.ranking-right {
+    text-align: center;
+}
+
+.ranking-right span {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    color: #111827;
+}
+
+.ranking-right small {
+    color: #6b7280;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+
+    .clasificacion-header h1 {
+        font-size: 32px;
+    }
+
+    .podium {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .podium-card {
+        width: 100%;
+        max-width: 340px;
+        min-height: auto;
+    }
+
+    .ranking-card {
+        padding: 16px;
+    }
+
+    .ranking-left {
+        gap: 12px;
+    }
+
+    .ranking-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .ranking-user h3 {
+        font-size: 16px;
+    }
+
+    .ranking-right span {
+        font-size: 22px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .ranking-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .ranking-right {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+}

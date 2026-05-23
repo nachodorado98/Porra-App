@@ -1,0 +1,67 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clasificacion.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<main class="clasificacion-container">
+
+    <div class="clasificacion-header">
+        <h1>Clasificación Liga</h1>
+        <p>Compite con tus amigos y sube al primer puesto 🏆</p>
+    </div>
+
+    <section class="podium">
+
+        {% for usuario in usuarios_codigo %}
+
+            <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}">
+                <div class="podium-position">
+                    #{{ loop.index }}
+                </div>
+                <div class="podium-avatar">
+                    {{ usuario[0][0] }}
+                </div>
+                <h2>{{ usuario[1] }} {{ usuario[2] }}</h2>
+                <div class="podium-points">
+                    {{ usuario[3] }} pts
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+    <section class="ranking-list">
+
+        {% for usuario_codigo in usuarios_codigo %}
+
+            <div class="ranking-card {% if usuario_codigo[0]==usuario %}mi-usuario{% endif %}">
+                <div class="ranking-left">
+                    <div class="ranking-position">
+                        {{ loop.index }}
+                    </div>
+                    <div class="ranking-avatar">
+                        {{ usuario_codigo[0][0] }}
+                    </div>
+                    <div class="ranking-user">
+                        <h3>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h3>
+                    </div>
+                </div>
+
+                <div class="ranking-right">
+                    <span>{{ usuario_codigo[3] }}</span>
+                    <small>PTS</small>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+</main>
+
+{% endblock principal %}

@@ -14,9 +14,6 @@
 
 </head>
 <body>
-  
-
-  {% block principal %}
     
   <nav class="navbar">
     <div class="nav-left">
@@ -24,7 +21,7 @@
         <img src="{{ url_for('static', filename='iconos/logo_blanco.png') }}" alt="Inicio">
       </a>
       <a href="#">Resultados</a>
-      <a href="#">Clasificacion</a>
+      <a href="/clasificacion/{{ codigo_liga }}">Clasificacion</a>
     </div>
 
     <div class="nav-right">
@@ -38,6 +35,8 @@
       </div>
     </div>
   </nav>
+
+  {% block principal %}
 
   <main class="main-content">
 

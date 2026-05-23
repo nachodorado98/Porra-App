@@ -131,7 +131,7 @@ def singup():
 
         URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/{ENDPOINT_AZURE_FUNCTION}"
 
-        payload={"correo_destino":correo, "nombre":nombre}
+        payload={"correo_destino":correo, "nombre":nombre, "codigo":codigo_final}
 
         response=requests.post(URL_AZURE_FUNCTION, json=payload)
 

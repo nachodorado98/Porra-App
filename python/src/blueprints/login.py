@@ -28,7 +28,7 @@ def cargarUsuario(usuario:str)->Optional[Usuario]:
 
 	nombre=con.obtenerNombre(usuario)
 
-	codigo_liga=con.obtenerCodigoLiga(usuario)
+	codigo_liga=con.obtenerCodigoLigaUsuario(usuario)
 
 	admin=con.obtenerAdmin(usuario)
 
@@ -60,7 +60,7 @@ def login():
 
 	nombre=con.obtenerNombre(usuario)
 
-	codigo_liga=con.obtenerCodigoLiga(usuario)
+	codigo_liga=con.obtenerCodigoLigaUsuario(usuario)
 
 	admin=con.obtenerAdmin(usuario)
 
@@ -73,19 +73,6 @@ def login():
 	siguiente=request.args.get("next")
 
 	return redirect(siguiente or "/porra")
-
-@bp_login.route("/porra")
-@login_required
-def pagina_porra():
-
-	usuario=current_user.id
-
-	codigo_liga=current_user.codigo_liga
-
-	return render_template("porra.html",
-							usuario=usuario,
-							nombre=current_user.nombre,
-							codigo_liga=codigo_liga)
 
 @bp_login.route("/logout")
 @login_required

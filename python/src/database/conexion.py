@@ -119,8 +119,8 @@ class Conexion:
 
 		return False if admin is None else admin["admin"]
 
-	# Metodo para obtener el codigo liga
-	def obtenerCodigoLiga(self, usuario:str)->Optional[str]:
+	# Metodo para obtener el codigo liga de un usuario
+	def obtenerCodigoLigaUsuario(self, usuario:str)->Optional[str]:
 
 		self.c.execute("""SELECT codigo_liga
 						FROM usuarios
@@ -130,3 +130,17 @@ class Conexion:
 		codigo_liga=self.c.fetchone()
 
 		return None if codigo_liga is None else codigo_liga["codigo_liga"]
+
+	# Metodo para obtener los usuarios del codigo liga
+	def obtenerUsuariosCodigoLiga(self, codigo_liga:str)->Optional[str]:
+
+		self.c.execute("""SELECT usuario, nombre, apellido
+						FROM usuarios
+						WHERE codigo_liga=%s""",
+						(codigo_liga,))
+
+		usuarios=self.c.fetchall()
+
+		return list(map(lambda usuario: (usuario["usuario"],
+										usuario["nombre"],
+										usuario["apellido"]) , usuarios))
