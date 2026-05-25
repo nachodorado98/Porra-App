@@ -19,10 +19,14 @@ def test_pagina_porra_grupos(cliente, conexion_usuario):
 
 		assert respuesta.status_code==200
 		assert '<div class="porra-grupos-wrapper">' in contenido
+		assert '<div class="info-clasificacion">' in contenido
 		assert '<h1 class="titulo-pagina">Fase de Grupos</h1>' in contenido
 		assert '<div class="grupo-container">' in contenido
 
 		for grupo in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']:
 
-			assert f"<h2>Grupo { grupo }</h2>" in contenido
-			assert f'<div class="grupo-lista" data-grupo="{ grupo }">' in contenido
+			assert f"<h2>Grupo {grupo}</h2>" in contenido
+			assert f'<div class="grupo-lista" data-grupo="{grupo}">' in contenido
+
+		assert '<div id="modalResumen" class="modal-overlay">' in contenido
+		assert "<h2> Confirmar Clasificación Grupos </h2>" in contenido

@@ -9,42 +9,88 @@
 
 <div class="porra-grupos-wrapper">
 
-    <h1 class="titulo-pagina">Fase de Grupos</h1>
+    <div class="info-clasificacion">
 
-    <p class="descripcion-grupos">Arrastra las selecciones para elegir el orden final de cada grupo.</p>
+        <h1 class="titulo-pagina">Fase de Grupos</h1>
 
-    {% for grupo, equipos in grupos.items() %}
+        <p class="descripcion-grupos"> Arrastra las selecciones para predecir cómo terminará cada grupo.</p>
 
-        <div class="grupo-container">
+        <div class="leyenda-clasificacion">
+            <div class="leyenda-item clasificado">
+                <span class="leyenda-color"></span>
+                <span>Clasificados directamente</span>
+            </div>
 
-            <h2>Grupo {{ grupo }}</h2>
+            <div class="leyenda-item tercero">
+                <span class="leyenda-color"></span>
+                <span>Posible mejor tercero</span>
+            </div>
 
-            <div class="grupo-lista" data-grupo="{{ grupo }}">
+            <div class="leyenda-item eliminado">
+                <span class="leyenda-color"></span>
+                <span>Eliminado</span>
+            </div>
+        </div>
 
-                {% for equipo in equipos %}
+    </div>
 
-                    <div class="equipo-card" data-equipo="{{ equipo.equipo_id }}">
-                        <div class="equipo-left">
-                            <div class="posicion">
-                                {{ loop.index }}
+
+    <div class="grupos-grid">
+
+        {% for grupo, equipos in grupos.items() %}
+
+            <div class="grupo-container">
+
+                <h2>Grupo {{ grupo }}</h2>
+
+                <div class="grupo-lista" data-grupo="{{ grupo }}">
+
+                    {% for equipo in equipos %}
+
+                        <div class="equipo-card" data-equipo="{{ equipo.equipo_id }}">
+                            <div class="equipo-left">
+                                <div class="posicion">
+                                    {{ loop.index }}
+                                </div>
+                                <div class="equipo-info">
+                                    <div class="imagenes-equipo">
+                                        <img class="escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                        <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                    </div>
+                                    <span class="nombre-equipo">{{ equipo.nombre }}</span>
+                                </div>
                             </div>
-                            <div class="equipo-info">
-                                <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
-                                <span class="nombre-equipo">{{ equipo.nombre }}</span>
-                            </div>
+                            <span class="drag-icon">☰</span>
                         </div>
-                        <span class="drag-icon">☰</span>
-                    </div>
 
-                {% endfor %}
+                    {% endfor %}
 
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    <button id="btnGuardar" disabled>Continuar</button>
+
+    <div id="modalResumen" class="modal-overlay">
+
+        <div class="modal-content">
+
+            <h2> Confirmar Clasificación Grupos </h2>
+
+            <div id="resumenContenido"></div>
+
+            <div class="modal-buttons">
+                <button id="cancelarModal">Cancelar</button>
+                <button id="confirmarModal">Confirmar</button>
             </div>
 
         </div>
 
-    {% endfor %}
-
-    <button id="btnGuardar" disabled>Continuar</button>
+    </div>
 
 </div>
 
