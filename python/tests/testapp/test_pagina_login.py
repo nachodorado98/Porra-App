@@ -43,8 +43,9 @@ def test_pagina_inicio_con_login(cliente, conexion_usuario):
 	contenido=respuesta.data.decode()
 
 	assert respuesta.status_code==200
-	assert "<h1>Proximamente....</h1>" in contenido
-	assert "<h2>¡Estamos trabajando para tener todo listo para esta gran cita!</h2>" in contenido
+	assert '<main class="main-content">' in contenido
+	assert "<h1>Tu porra del Mundial</h1>" in contenido
+	assert '<a href="/porra/grupos" class="btn-empezar">Empezar porra →</a>' in contenido
 
 def test_pagina_logout(cliente, conexion_usuario):
 

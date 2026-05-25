@@ -12,7 +12,13 @@ def test_conexion(conexion):
 
 	assert "usuarios" in tablas 
 	assert "codigos" in tablas
+	assert "estado_porra" in tablas
 	assert "equipos" in tablas
+	assert "grupos" in tablas
+	assert "grupo_equipos" in tablas
+	assert "grupo_equipos_real" in tablas
+	assert "grupo_equipos_porra" in tablas
+	assert "mejores_terceros_porra" in tablas
 	
 def test_cerrar_conexion(conexion):
 
@@ -24,7 +30,7 @@ def test_cerrar_conexion(conexion):
 
 def test_vaciar_bbdd(conexion_usuario):
 
-	tablas=["codigos", "usuarios"]
+	tablas=["codigos", "usuarios", "estado_porra"]
 
 	for tabla in tablas:
 

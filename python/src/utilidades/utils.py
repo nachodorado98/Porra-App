@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from passlib.context import CryptContext
+from typing import List, Dict
 
 def codigo_valido(codigo:str)->bool:
 
@@ -63,3 +64,19 @@ def comprobarHash(contrasena:str, contrasena_hash:str)->bool:
     objeto_hash=CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     return objeto_hash.verify(contrasena, contrasena_hash)
+
+def obtenerGruposEquiposLimpios(grupos_equipos:List[tuple])->Dict:
+
+    grupos={}
+
+    for fila in grupos_equipos:
+
+        grupo=fila[0]
+
+        if grupo not in grupos:
+
+            grupos[grupo]=[]
+
+        grupos[grupo].append({"equipo_id": fila[1], "nombre": fila[2], "escudo": fila[3],  "bandera": fila[4]})
+
+    return grupos

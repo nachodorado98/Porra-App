@@ -132,7 +132,7 @@ class Conexion:
 		return None if codigo_liga is None else codigo_liga["codigo_liga"]
 
 	# Metodo para obtener los usuarios del codigo liga
-	def obtenerUsuariosCodigoLiga(self, codigo_liga:str)->Optional[str]:
+	def obtenerUsuariosCodigoLiga(self, codigo_liga:str)->Optional[List[tuple]]:
 
 		self.c.execute("""SELECT usuario, nombre, apellido
 						FROM usuarios
@@ -144,3 +144,29 @@ class Conexion:
 		return list(map(lambda usuario: (usuario["usuario"],
 										usuario["nombre"],
 										usuario["apellido"]) , usuarios))
+
+	# Metodo para insertar el estado de una porra de un usuario
+	def insertarEstadoPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""INSERT INTO estado_porra
+							VALUES (%s)""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para obtener los grupos con sus equipos
+	def obtenerGruposEquipos(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT ge.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+						FROM grupo_equipos ge
+						JOIN equipos e
+						ON ge.equipo_id=e.equipo_id
+						ORDER BY ge.grupo, e.nombre""")
+
+		grupos_equipos=self.c.fetchall()
+
+		return list(map(lambda grupo_equipo: (grupo_equipo["grupo"],
+												grupo_equipo["equipo_id"],
+												grupo_equipo["nombre"],
+												grupo_equipo["escudo"],
+												grupo_equipo["bandera"]) , grupos_equipos))

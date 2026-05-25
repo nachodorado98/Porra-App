@@ -42,6 +42,8 @@ def conexion_usuario(conexion, password_hash):
 
 	conexion.insertarUsuario("nacho98", "micorreo@correo.es", password_hash, "nacho", "dorado", "3YYZKP")
 
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
 	return conexion
 
 def pytest_sessionstart(session):

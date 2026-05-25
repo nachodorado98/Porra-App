@@ -93,27 +93,114 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 30px 20px;
+  padding: 20px 20px;
   max-width: 1200px;
   margin: auto;
 }
 
-.main-content h1 {
+.porra-home {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-bottom: 25px;
-  color: #222;
+
+  padding: 60px 40px;
+  margin-top: 40px;
+
+  border-radius: 28px;
+
+  background:
+    radial-gradient(circle at top left, rgba(56,151,240,0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0,200,140,0.12), transparent 30%),
+    #ffffff;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.08);
+
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
-.main-content .logo-mundial-inicio {
-  display: block;
-  width: 250px;
-  margin: 25px auto;
+.logo-mundial-inicio {
+  width: 180px;
+  margin-bottom: 10px;
+
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.12));
+
+  animation: floatLogo 4s ease-in-out infinite;
 }
 
-.main-content h2 {
-  text-align: center;
-  margin-bottom: 25px;
-  color: #222;
+@keyframes floatLogo {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.badge-mundial {
+  background: rgba(56,151,240,0.12);
+  color: #2176c7;
+
+  padding: 8px 16px;
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  margin-bottom: 18px;
+}
+
+.porra-home h1 {
+  font-size: clamp(36px, 5vw, 62px);
+  line-height: 1.05;
+
+  margin-bottom: 22px;
+
+  color: #111;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.descripcion-pregunta {
+  font-size: 19px;
+  line-height: 1.7;
+
+  color: #444;
+  max-width: 760px;
+
+  margin-bottom: 12px;
+}
+
+.descripcion-pregunta.secundaria {
+  color: #777;
+  font-size: 17px;
+}
+
+.btn-empezar {
+  margin-top: 30px;
+
+  background: linear-gradient(135deg, #3897f0, #2176c7);
+  color: white;
+
+  padding: 16px 34px;
+  border-radius: 16px;
+
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 700;
+
+  transition: all 0.25s ease;
+
+  box-shadow:
+    0 10px 20px rgba(56,151,240,0.25);
+}
+
+.btn-empezar:hover {
+  transform: translateY(-3px) scale(1.02);
+
+  box-shadow:
+    0 14px 28px rgba(56,151,240,0.35);
 }
 
 footer {
@@ -136,4 +223,25 @@ footer {
     margin-right: 12px;
     font-size: 14px;
   }
+}
+
+@media (max-width: 768px) {
+
+  .porra-home {
+    padding: 45px 25px;
+  }
+
+  .logo-mundial-inicio {
+    width: 140px;
+  }
+
+  .descripcion-pregunta {
+    font-size: 17px;
+  }
+
+  .btn-empezar {
+    width: 100%;
+    max-width: 320px;
+  }
+
 }

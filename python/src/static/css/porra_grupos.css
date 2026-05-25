@@ -1,0 +1,219 @@
+/*------------------------------------------------------PORRA GRUPOS--------------------------------------------*/
+
+.porra-grupos-wrapper{
+    width:100%;
+    max-width:1200px;
+    margin:auto;
+    padding:40px 20px;
+}
+
+.titulo-pagina{
+    text-align:center;
+    font-size:38px;
+    color:#222;
+    margin-bottom:15px;
+}
+
+.descripcion-grupos{
+    text-align:center;
+    color:#555;
+    font-size:18px;
+    margin-bottom:40px;
+}
+
+.grupo-container{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+    margin-bottom:35px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+.grupo-container h2{
+    margin-bottom:20px;
+    color:#222;
+    font-size:28px;
+    border-bottom:2px solid #f0f0f0;
+    padding-bottom:10px;
+}
+
+.grupo-lista{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.equipo-card{
+    background:#f7fafc;
+    border:2px solid transparent;
+    border-radius:14px;
+    padding:16px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:grab;
+    transition:all 0.25s ease;
+}
+
+.equipo-card:hover{
+    transform:translateY(-2px);
+    border-color:#3897f0;
+    background:#ffffff;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.equipo-card:active{
+    cursor:grabbing;
+}
+
+.equipo-left{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.posicion{
+    width:36px;
+    height:36px;
+    min-width:36px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:#3897f0;
+    color:white;
+
+    border-radius:50%;
+
+    font-weight:700;
+    font-size:16px;
+
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.sortable-ghost{
+    opacity:0.4;
+}
+
+.sortable-chosen{
+    transform:scale(1.02);
+}
+
+.sortable-drag{
+    transform:rotate(2deg);
+}
+
+.equipo-info{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.bandera-img{
+    width:42px;
+    height:30px;
+    object-fit:cover;
+    border-radius:4px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+}
+
+.nombre-equipo{
+    font-size:17px;
+    font-weight:600;
+    color:#222;
+}
+
+.drag-icon{
+    font-size:24px;
+    color:#777;
+}
+
+#btnGuardar{
+    width:100%;
+    margin-top:25px;
+    background:#3897f0;
+    color:white;
+    border:none;
+    border-radius:14px;
+    padding:18px;
+    font-size:18px;
+    font-weight:700;
+    cursor:not-allowed;
+    opacity:0.5;
+    transition:0.25s;
+}
+
+#btnGuardar.enabled{
+    opacity:1;
+    cursor:pointer;
+}
+
+#btnGuardar.enabled:hover{
+    background:#2176c7;
+}
+
+@media (max-width:768px){
+
+    .titulo-pagina{
+        font-size:30px;
+    }
+
+    .descripcion-grupos{
+        font-size:16px;
+    }
+
+    .grupo-container{
+        padding:18px;
+    }
+
+    .grupo-container h2{
+        font-size:24px;
+    }
+
+    .equipo-card{
+        padding:14px;
+    }
+
+    .bandera-img{
+        width:36px;
+        height:26px;
+    }
+
+    .nombre-equipo{
+        font-size:15px;
+    }
+
+}
+
+@media (max-width:480px){
+
+    .porra-grupos-wrapper{
+        padding:25px 12px;
+    }
+
+    .titulo-pagina{
+        font-size:26px;
+    }
+
+    .descripcion-grupos{
+        font-size:15px;
+    }
+
+    .grupo-container h2{
+        font-size:22px;
+    }
+
+    .equipo-card{
+        padding:12px;
+    }
+
+    .nombre-equipo{
+        font-size:14px;
+    }
+
+    .drag-icon{
+        font-size:20px;
+    }
+
+}

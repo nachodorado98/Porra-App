@@ -1,0 +1,54 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/porra_grupos.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="porra-grupos-wrapper">
+
+    <h1 class="titulo-pagina">Fase de Grupos</h1>
+
+    <p class="descripcion-grupos">Arrastra las selecciones para elegir el orden final de cada grupo.</p>
+
+    {% for grupo, equipos in grupos.items() %}
+
+        <div class="grupo-container">
+
+            <h2>Grupo {{ grupo }}</h2>
+
+            <div class="grupo-lista" data-grupo="{{ grupo }}">
+
+                {% for equipo in equipos %}
+
+                    <div class="equipo-card" data-equipo="{{ equipo.equipo_id }}">
+                        <div class="equipo-left">
+                            <div class="posicion">
+                                {{ loop.index }}
+                            </div>
+                            <div class="equipo-info">
+                                <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                <span class="nombre-equipo">{{ equipo.nombre }}</span>
+                            </div>
+                        </div>
+                        <span class="drag-icon">☰</span>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+    <button id="btnGuardar" disabled>Continuar</button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="{{ url_for('static', filename='js/porra_grupos.js') }}"></script>
+
+{% endblock principal %}

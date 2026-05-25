@@ -1,7 +1,7 @@
 import pytest
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
-from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash
+from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -149,3 +149,22 @@ def test_comprobar_hash_contrasena_correcta(contrasena):
     contrasena_hash=generarHash(contrasena)
 
     assert comprobarHash(contrasena, contrasena_hash)
+
+def test_obtener_grupos_equipos_limpios_no_hay():
+
+    assert not obtenerGruposEquiposLimpios([])
+
+def test_obtener_grupos_equipos_limpios():
+
+    grupos_equipos=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                    ('A', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                    ('A', 'republica-checa', 'República Checa', 6188, 'CZE'),
+                    ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF')]
+
+    grupos_equipos_limpios=obtenerGruposEquiposLimpios(grupos_equipos)
+
+    assert len(grupos_equipos_limpios.keys())==1
+
+    for grupo, equipos in grupos_equipos_limpios.items():
+
+        assert len(grupos_equipos_limpios[grupo])==4

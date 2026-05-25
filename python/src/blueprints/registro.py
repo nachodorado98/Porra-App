@@ -123,6 +123,8 @@ def singup():
 
     con.insertarUsuario(usuario, correo, hash_contrasena, nombre, apellido, codigo_final)
 
+    con.insertarEstadoPorraUsuario(usuario)
+
     try:
 
         AZURE_FUNCTION=os.getenv("AZURE_FUNCTION", "nombre_azure_function")
