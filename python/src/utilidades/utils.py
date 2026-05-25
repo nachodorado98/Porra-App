@@ -80,3 +80,37 @@ def obtenerGruposEquiposLimpios(grupos_equipos:List[tuple])->Dict:
         grupos[grupo].append({"equipo_id": fila[1], "nombre": fila[2], "escudo": fila[3],  "bandera": fila[4]})
 
     return grupos
+
+def validarEquiposGrupo(equipos_grupo_real:List[tuple], equipos_grupo_porra:List[tuple])->bool:
+
+    equipos_grupo_real_limpio=[equipo[1] for equipo in equipos_grupo_real]
+
+    if len(equipos_grupo_porra)!=4:
+
+        return False
+
+    for equipo_grupo_porra in equipos_grupo_porra:
+
+        if equipo_grupo_porra not in equipos_grupo_real_limpio:
+
+            return False
+
+    return True
+
+def gruposPorraCorrectos(equipos_grupos_real:List[tuple], equipos_grupos_porra:Dict)->bool:
+
+    if len(equipos_grupos_porra)!=12:
+
+        return False
+
+    for grupo, equipos_grupo_porra in equipos_grupos_porra.items():
+
+        equipos_grupo_real=list(filter(lambda equipo_grupo: equipo_grupo[0]==grupo, equipos_grupos_real))
+
+        grupo_valido=validarEquiposGrupo(equipos_grupo_real, equipos_grupo_porra)
+
+        if not grupo_valido:
+
+            return False
+
+    return True

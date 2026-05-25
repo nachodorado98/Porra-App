@@ -192,3 +192,67 @@ function generarResumen(){
     })
 
 }
+
+confirmarModal.addEventListener('click', async () => {
+
+    const grupos = {}
+
+    listas.forEach(lista => {
+
+        const grupo = lista.dataset.grupo
+
+        grupos[grupo] = []
+
+        const equipos =
+            lista.querySelectorAll('.equipo-card')
+
+        equipos.forEach(equipo => {
+
+            grupos[grupo].push(
+                equipo.dataset.equipo
+            )
+
+        })
+
+    })
+
+    try{
+
+        const response = await fetch(
+            '/porra/grupos/guardar',
+            {
+                method:'POST',
+
+                headers:{
+                    'Content-Type':'application/json'
+                },
+
+                body:JSON.stringify({
+                    grupos: grupos
+                })
+            }
+        )
+
+        const data = await response.json()
+
+        if(data.success){
+
+            window.location.href = data.redirect
+
+        }
+        else{
+
+            alert(data.error)
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error)
+
+        window.location.href = '/porra/grupos'
+
+    }
+
+})

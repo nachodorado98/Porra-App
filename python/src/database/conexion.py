@@ -170,3 +170,29 @@ class Conexion:
 												grupo_equipo["nombre"],
 												grupo_equipo["escudo"],
 												grupo_equipo["bandera"]) , grupos_equipos))
+
+	# Metodo para insertar un equipo con posicion en grupo de un usuario
+	def insertarEquipoGrupoPorraUsuario(self, usuario:str, grupo:str, equipo_id:str, posicion:int)->None:
+
+		self.c.execute("""INSERT INTO grupo_equipos_porra (Usuario, Grupo, Equipo_Id, Posicion)
+							VALUES (%s, %s, %s, %s)""",
+							(usuario, grupo, equipo_id, posicion))
+
+		self.confirmar()
+
+	# Metodo para insertar los equipos con posiciones en grupo de un usuario
+	def insertarEquipoGruposPorraUsuario(self, usuario:str, grupo:str, equipos:List[str])->None:
+
+		for posicion, equipo in enumerate(equipos, start=1):
+
+			self.insertarEquipoGrupoPorraUsuario(usuario, grupo, equipo, posicion)
+
+	# Metodo para actualizar el estado de los grupos de la porra de un usuario
+	def actualizarEstadoPorraGruposUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE estado_porra
+							SET Grupos_Completados=True
+							WHERE usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
