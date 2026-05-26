@@ -65,3 +65,55 @@ def test_actualizar_estado_porra_grupos(conexion):
 	conexion.c.execute("SELECT Grupos_Completados FROM estado_porra WHERE usuario='nacho98'")
 
 	assert conexion.c.fetchone()["grupos_completados"]
+
+def test_grupos_porra_completa_no_existe_usuario(conexion):
+
+	assert not conexion.gruposPorraCompleto("nacho98")
+
+def test_grupos_porra_completa_no_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.gruposPorraCompleto("nacho98")
+
+def test_grupos_porra_completa_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraGruposUsuario("nacho98")
+
+	assert conexion.gruposPorraCompleto("nacho98")
+
+def test_puede_editar_grupos_porra_no_existe_usuario(conexion):
+
+	assert conexion.puedeEditarGruposPorra("nacho98")
+
+def test_puede_editar_grupos_porra_no_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert conexion.puedeEditarGruposPorra("nacho98")
+
+def test_puede_editar_grupos_porra_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraGruposUsuario("nacho98")
+
+	assert not conexion.puedeEditarGruposPorra("nacho98")

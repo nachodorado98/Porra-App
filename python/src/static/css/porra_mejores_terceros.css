@@ -1,0 +1,209 @@
+/*------------------------------------------------------PORRA MEJORES TERCEROS--------------------------------------------*/
+
+.mejores-terceros-wrapper{
+    max-width:1200px;
+    margin:auto;
+    padding:40px 20px;
+}
+
+.info-terceros{
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    margin-bottom:35px;
+    text-align:center;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+.info-terceros h1{
+    margin-bottom:10px;
+}
+
+.contador-seleccionados{
+    margin-top:20px;
+    font-size:22px;
+    font-weight:700;
+}
+
+.terceros-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:20px;
+}
+
+.tercero-card{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    cursor:pointer;
+
+    border:3px solid transparent;
+
+    transition:0.25s;
+
+    position:relative;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+.tercero-card:hover{
+    transform:translateY(-4px);
+}
+
+.tercero-card.selected{
+    border-color:#3897f0;
+    background:#eef6ff;
+}
+
+.tercero-card.disabled{
+    opacity:0.4;
+    pointer-events:none;
+}
+
+.grupo-badge{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:#222;
+    color:white;
+    padding:6px 10px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.escudo-img{
+    width:60px;
+    height:60px;
+    object-fit:contain;
+    margin-bottom:12px;
+}
+
+.bandera-img{
+    width:52px;
+    border-radius:5px;
+    margin-bottom:12px;
+}
+
+.nombre-equipo{
+    text-align:center;
+    font-weight:700;
+}
+
+#btnContinuar{
+    width:100%;
+    margin-top:35px;
+    padding:18px;
+    border:none;
+    border-radius:16px;
+    font-size:18px;
+    font-weight:700;
+    background:#3897f0;
+    color:white;
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+#btnContinuar.enabled{
+    opacity:1;
+    cursor:pointer;
+}
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:5000;
+}
+
+.modal-overlay.active{
+    display:flex;
+}
+
+.modal-content{
+    background:white;
+    width:90%;
+    max-width:700px;
+    border-radius:18px;
+    padding:30px;
+    max-height:80vh;
+    overflow-y:auto;
+}
+
+.resumen-equipo-card{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:12px;
+    background:#eef6ff;
+}
+
+.resumen-posicion{
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#3897f0;
+    color:white;
+    font-weight:700;
+}
+
+.resumen-equipo-info{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.resumen-escudo{
+    width:32px;
+}
+
+.resumen-bandera{
+    width:38px;
+    border-radius:4px;
+}
+
+.modal-buttons{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+}
+
+.modal-buttons button{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+#confirmarModal{
+    background:#3897f0;
+    color:white;
+}
+
+@media (max-width:900px){
+    .terceros-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
+}
+
+@media (max-width:600px){
+    .terceros-grid{
+        grid-template-columns:1fr;
+    }
+}

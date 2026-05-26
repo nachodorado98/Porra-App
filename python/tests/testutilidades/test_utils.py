@@ -2,7 +2,7 @@ import pytest
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
-from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos
+from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -342,3 +342,26 @@ def test_grupos_porra_correctos():
     ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV'), ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA'), ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'), ('L', 'panama-seleccion', 'Panamá', 17581, 'PAN')]
     
     assert gruposPorraCorrectos(real, porra)
+
+def test_obtener_terceros_grupos_equipos_limpios_no_hay():
+
+    assert not obtenerTercerosGruposEquiposLimpios([])
+
+def test_obtener_terceros_grupos_equipos_limpios():
+
+    terceros_grupos=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                    ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                    ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO'),
+                    ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                    ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                    ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE'),
+                    ('G', 'seleccion-iran', 'Irán', 3806, 'IRN'),
+                    ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                    ('I', 'senegal', 'Senegal', 5658, 'SEN'),
+                    ('J', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                    ('K', 'rd-congo', 'RD Congo', 11591, 'COD'),
+                    ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA')]
+
+    terceros_grupos_limpios=obtenerTercerosGruposEquiposLimpios(terceros_grupos)
+
+    assert len(terceros_grupos_limpios)==12

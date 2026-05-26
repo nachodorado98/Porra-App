@@ -23,7 +23,7 @@ def test_pagina_porra_grupos(cliente, conexion_usuario):
 		assert respuesta.status_code==200
 		assert '<div class="porra-grupos-wrapper">' in contenido
 		assert '<div class="info-clasificacion">' in contenido
-		assert '<h1 class="titulo-pagina">Fase de Grupos</h1>' in contenido
+		assert '<h1 class="titulo-pagina">Fase de Grupos' in contenido
 		assert '<div class="grupo-container">' in contenido
 
 		for grupo in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']:
@@ -33,6 +33,35 @@ def test_pagina_porra_grupos(cliente, conexion_usuario):
 
 		assert '<div id="modalResumen" class="modal-overlay">' in contenido
 		assert "<h2> Confirmar Clasificación Grupos </h2>" in contenido
+
+def test_pagina_porra_grupos_porra_ya_hecha(cliente, conexion_usuario):
+
+	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'H': ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'],
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra})
+
+		respuesta=cliente_abierto.get("/porra/grupos")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
 
 def test_pagina_porra_grupos_guardar_sin_login(cliente, conexion):
 
@@ -74,16 +103,16 @@ def test_pagina_porra_grupos_data_erronea(cliente, conexion_usuario):
 def test_pagina_porra_grupos_porra_error_grupo_faltante(cliente, conexion_usuario):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
-	'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
-	'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
-	'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
-	'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
-	'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
-	'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
-	'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
-	'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
-	'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
-	'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
 
 	with cliente as cliente_abierto:
 
@@ -108,17 +137,17 @@ def test_pagina_porra_grupos_porra_error_grupo_faltante(cliente, conexion_usuari
 def test_pagina_porra_grupos_porra_error_dimension_error(cliente, conexion_usuario, porra_grupo):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
-	'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
-	'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
-	'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
-	'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
-	'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
-	'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
-	'H': porra_grupo,
-	'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
-	'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
-	'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
-	'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'H': porra_grupo,
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
 
 	with cliente as cliente_abierto:
 
@@ -144,17 +173,17 @@ def test_pagina_porra_grupos_porra_error_dimension_error(cliente, conexion_usuar
 def test_pagina_porra_grupos_porra_error_equipos_error(cliente, conexion_usuario, porra_grupo):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
-	'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
-	'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
-	'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
-	'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
-	'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
-	'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
-	'H': porra_grupo,
-	'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
-	'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
-	'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
-	'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'H': porra_grupo,
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
 
 	with cliente as cliente_abierto:
 
@@ -171,17 +200,17 @@ def test_pagina_porra_grupos_porra_error_equipos_error(cliente, conexion_usuario
 def test_pagina_porra_grupos_porra_correcto(cliente, conexion_usuario):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
-	'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
-	'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
-	'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
-	'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
-	'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
-	'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
-	'H': ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'],
-	'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
-	'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
-	'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
-	'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'H': ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'],
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
 
 	with cliente as cliente_abierto:
 
@@ -195,7 +224,7 @@ def test_pagina_porra_grupos_porra_correcto(cliente, conexion_usuario):
 		assert respuesta.location=="/porra/mejores_terceros"
 		assert "<h1>Redirecting...</h1>" in contenido
 
-		conexion_usuario.c.execute("SELECT Grupo, Equipo_Id, Posicion FROM grupo_equipos_porra ORDER BY Posicion ASC")
+		conexion_usuario.c.execute("SELECT * FROM grupo_equipos_porra ORDER BY Posicion ASC")
 
 		equipos_grupos=conexion_usuario.c.fetchall()
 
@@ -204,3 +233,38 @@ def test_pagina_porra_grupos_porra_correcto(cliente, conexion_usuario):
 		conexion_usuario.c.execute("SELECT Grupos_Completados FROM estado_porra")
 
 		assert conexion_usuario.c.fetchone()["grupos_completados"]
+
+def test_pagina_porra_grupos_porra_porra_ya_hecha(cliente, conexion_usuario):
+
+	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
+			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
+			'C': ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],
+			'D': ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'],
+			'E': ['seleccion-alemania', 'seleccion-ecuador', 'seleccion-costa-marfil', 'curazao'],
+			'F': ['seleccion-holanda', 'seleccion-japon', 'seleccion-suecia', 'seleccion-tunez'],
+			'G': ['seleccion-belgica', 'seleccion-egipto', 'seleccion-iran', 'seleccion-nueva-zelanda'],
+			'H': ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'],
+			'I': ['seleccion-francia', 'seleccion-noruega', 'senegal', 'seleccion-iraq'],
+			'J': ['seleccion-argentina', 'seleccion-austria', 'seleccion-argelia', 'jordania'],
+			'K': ['seleccion-portugal', 'seleccion-colombia', 'rd-congo', 'seleccion-uzbekistan'],
+			'L': ['seleccion-inglaterra', 'seleccion-croacia', 'seleccion-ghana', 'panama-seleccion']}
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra})
+
+		respuesta=cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra})
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+		conexion_usuario.c.execute("SELECT * FROM grupo_equipos_porra ORDER BY Posicion ASC")
+
+		equipos_grupos=conexion_usuario.c.fetchall()
+
+		assert len(equipos_grupos)==48

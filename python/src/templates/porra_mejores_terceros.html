@@ -1,0 +1,62 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/porra_mejores_terceros.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="mejores-terceros-wrapper">
+
+    <div class="info-terceros">
+
+        <h1>Mejores Terceros 🥉</h1>
+
+        <p>Selecciona las 8 selecciones que crees que avanzarán como mejores terceros.</p>
+
+        <div class="contador-seleccionados">
+            <span id="contadorSeleccionados">0</span>/ 8 seleccionados
+        </div>
+
+    </div>
+
+    <div class="terceros-grid">
+
+        {% for equipo in terceros %}
+
+        <div class="tercero-card" data-equipo="{{ equipo.equipo_id }}"  data-grupo="{{ equipo.grupo }}">
+            <div class="grupo-badge">{{ equipo.grupo }}</div>
+            <img class="escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}">
+            <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}">
+            <div class="nombre-equipo">{{ equipo.nombre }}</div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <button id="btnContinuar" disabled>Continuar</button>
+
+    <div id="modalResumen" class="modal-overlay">
+
+        <div class="modal-content">
+
+            <h2>Confirmar Mejores Terceros</h2>
+
+            <div id="resumenContenido"></div>
+
+            <div class="modal-buttons">
+                <button id="cancelarModal">Cancelar</button>
+                <button id="confirmarModal">Confirmar</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/porra_mejores_terceros.js') }}"></script>
+
+{% endblock principal %}

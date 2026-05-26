@@ -196,3 +196,40 @@ class Conexion:
 							(usuario,))
 
 		self.confirmar()
+
+	# Metodo para saber si un usuario ha completado los grupos de la porra
+	def gruposPorraCompleto(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT Grupos_Completados
+					        FROM estado_porra
+					        WHERE Usuario=%s""",
+							(usuario,))
+
+		grupos_completados=self.c.fetchone()
+
+		return False if grupos_completados is None else grupos_completados["grupos_completados"]
+
+	# Metodo para saber si un usuario puede editar los grupos de la porra
+	def puedeEditarGruposPorra(self, usuario:str)->bool:
+
+		return not self.gruposPorraCompleto(usuario)
+
+	# Metodo para obtener los equipos terceros de los grupos de un usuario
+	def obtenerTercerosGruposUsuario(self, usuario:str)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+						FROM grupo_equipos_porra gep
+						JOIN equipos e
+						ON gep.equipo_id=e.equipo_id
+						WHERE gep.usuario=%s
+						AND gep.posicion=3
+						ORDER BY gep.grupo, e.nombre""",
+						(usuario,))
+
+		terceros_grupos=self.c.fetchall()
+
+		return list(map(lambda tercero_grupo: (tercero_grupo["grupo"],
+												tercero_grupo["equipo_id"],
+												tercero_grupo["nombre"],
+												tercero_grupo["escudo"],
+												tercero_grupo["bandera"]) , terceros_grupos))

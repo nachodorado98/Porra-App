@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos
+from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -31,6 +31,14 @@ def pagina_porra_grupos():
 
 	con=Conexion()
 
+	puede_editar=con.puedeEditarGruposPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	grupos=con.obtenerGruposEquipos()
 
 	con.cerrarConexion()
@@ -47,19 +55,29 @@ def pagina_porra_grupos():
 @login_required
 def pagina_porra_grupos_guardar():
 
-	data=request.get_json()
-
-	if not data or "grupos" not in data:
-
-		return redirect("/porra/grupos")
-
-	grupos_equipos_porra=data["grupos"]
-
 	usuario=current_user.id
 
 	codigo_liga=current_user.codigo_liga
 
 	con=Conexion()
+
+	puede_editar=con.puedeEditarGruposPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	data=request.get_json()
+
+	if not data or "grupos" not in data:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/grupos")
+
+	grupos_equipos_porra=data["grupos"]
 
 	grupos_equipos_real=con.obtenerGruposEquipos()
 
@@ -86,3 +104,33 @@ def pagina_porra_grupos_guardar():
 		con.cerrarConexion()
 
 		return redirect("/porra/grupos")
+
+@bp_porra.route("/porra/mejores_terceros")
+@login_required
+def pagina_porra_mejores_terceros():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	con=Conexion()
+
+	grupos_completos=con.gruposPorraCompleto(usuario)
+
+	if not grupos_completos:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/grupos")
+
+	terceros_grupos=con.obtenerTercerosGruposUsuario(usuario)
+
+	con.cerrarConexion()
+
+	terceros_grupos_limpios=obtenerTercerosGruposEquiposLimpios(terceros_grupos)
+
+	return render_template("porra_mejores_terceros.html",
+							usuario=usuario,
+							nombre=current_user.nombre,
+							codigo_liga=codigo_liga,
+							terceros=terceros_grupos_limpios)

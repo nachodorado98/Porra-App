@@ -233,25 +233,14 @@ confirmarModal.addEventListener('click', async () => {
             }
         )
 
-        const data = await response.json()
-
-        if(data.success){
-
-            window.location.href = data.redirect
-
-        }
-        else{
-
-            alert(data.error)
-
-        }
+        window.location.href = response.url
 
     }
     catch(error){
 
         console.error(error)
 
-        window.location.href = '/porra/grupos'
+        window.location.href = '/porra'
 
     }
 

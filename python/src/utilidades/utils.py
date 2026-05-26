@@ -114,3 +114,7 @@ def gruposPorraCorrectos(equipos_grupos_real:List[tuple], equipos_grupos_porra:D
             return False
 
     return True
+
+def obtenerTercerosGruposEquiposLimpios(terceros_grupos:List[tuple])->List[Dict]:
+
+    return [{"grupo": fila[0], "equipo_id": fila[1], "nombre": fila[2], "escudo": fila[3],  "bandera": fila[4]} for fila in terceros_grupos]
