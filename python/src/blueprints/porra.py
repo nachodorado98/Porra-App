@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios
+from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -123,6 +123,14 @@ def pagina_porra_mejores_terceros():
 
 		return redirect("/porra/grupos")
 
+	puede_editar=con.puedeEditarMejoresTercerosPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	terceros_grupos=con.obtenerTercerosGruposUsuario(usuario)
 
 	con.cerrarConexion()
@@ -134,3 +142,66 @@ def pagina_porra_mejores_terceros():
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
 							terceros=terceros_grupos_limpios)
+
+@bp_porra.route("/porra/mejores_terceros/guardar", methods=["POST"])
+@login_required
+def pagina_porra_mejores_terceros_guardar():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	con=Conexion()
+
+	grupos_completos=con.gruposPorraCompleto(usuario)
+
+	if not grupos_completos:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/grupos")
+
+	puede_editar=con.puedeEditarMejoresTercerosPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	data=request.get_json()
+
+	if not data or "equipos" not in data:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mejores_terceros")
+
+	mejores_terceros_equipos_porra=data["equipos"]
+
+	terceros_grupos_reales_usuario=con.obtenerTercerosGruposUsuario(usuario)
+
+	if not mejoresTercerosPorraCorrectos(terceros_grupos_reales_usuario, mejores_terceros_equipos_porra):
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mejores_terceros")
+
+	try:
+
+		mejores_terceros_equipos_porra_insertar=[(mejor_tercer_equipo_porra["grupo"], mejor_tercer_equipo_porra["equipo_id"])
+													for mejor_tercer_equipo_porra in mejores_terceros_equipos_porra]
+
+		con.insertarEquipoMejoresTercerosPorraUsuario(usuario, mejores_terceros_equipos_porra_insertar)
+
+		con.actualizarEstadoPorraMejoresTercerosUsuario(usuario)
+
+		con.cerrarConexion()
+
+		return redirect("/porra/eliminatorias")
+
+	except Exception:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mejores_terceros")

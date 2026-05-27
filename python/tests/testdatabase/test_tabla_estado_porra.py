@@ -117,3 +117,103 @@ def test_puede_editar_grupos_porra_grupo_completado(conexion):
 	conexion.actualizarEstadoPorraGruposUsuario("nacho98")
 
 	assert not conexion.puedeEditarGruposPorra("nacho98")
+
+def test_actualizar_estado_porra_mejores_terceros_no_existe_usuario(conexion):
+
+	conexion.c.execute("SELECT * FROM estado_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchall()
+
+def test_actualizar_estado_porra_mejores_terceros_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Mejores_Terceros_Completados FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["mejores_terceros_completados"]
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho")
+
+	conexion.c.execute("SELECT Mejores_Terceros_Completados FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["mejores_terceros_completados"]
+
+def test_actualizar_estado_porra_mejores_terceros(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Mejores_Terceros_Completados FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["mejores_terceros_completados"]
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	conexion.c.execute("SELECT Mejores_Terceros_Completados FROM estado_porra WHERE usuario='nacho98'")
+
+	assert conexion.c.fetchone()["mejores_terceros_completados"]
+
+def test_mejores_terceros_porra_completa_no_existe_usuario(conexion):
+
+	assert not conexion.mejoresTercerosPorraCompleto("nacho98")
+
+def test_mejores_terceros_porra_completa_no_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.mejoresTercerosPorraCompleto("nacho98")
+
+def test_mejores_terceros_porra_completa_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	assert conexion.mejoresTercerosPorraCompleto("nacho98")
+
+def test_puede_editar_mejores_terceros_porra_no_existe_usuario(conexion):
+
+	assert conexion.puedeEditarMejoresTercerosPorra("nacho98")
+
+def test_puede_editar_mejores_terceros_porra_no_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert conexion.puedeEditarMejoresTercerosPorra("nacho98")
+
+def test_puede_editar_mejores_terceros_porra_grupo_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	assert not conexion.puedeEditarMejoresTercerosPorra("nacho98")

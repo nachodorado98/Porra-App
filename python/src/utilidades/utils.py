@@ -89,6 +89,10 @@ def validarEquiposGrupo(equipos_grupo_real:List[tuple], equipos_grupo_porra:List
 
         return False
 
+    if len(set(equipos_grupo_porra))!=4:
+
+        return False
+
     for equipo_grupo_porra in equipos_grupo_porra:
 
         if equipo_grupo_porra not in equipos_grupo_real_limpio:
@@ -118,3 +122,31 @@ def gruposPorraCorrectos(equipos_grupos_real:List[tuple], equipos_grupos_porra:D
 def obtenerTercerosGruposEquiposLimpios(terceros_grupos:List[tuple])->List[Dict]:
 
     return [{"grupo": fila[0], "equipo_id": fila[1], "nombre": fila[2], "escudo": fila[3],  "bandera": fila[4]} for fila in terceros_grupos]
+
+def mejoresTercerosPorraCorrectos(equipos_mejores_terceros_real:List[tuple], equipos_mejores_terceros_porra:List[Dict])->bool:
+
+    if len(equipos_mejores_terceros_porra)!=8:
+
+        return False
+
+    if len(set(e['equipo_id'] for e in equipos_mejores_terceros_porra))!=8:
+        
+        return False
+
+    if len(set(e['grupo'] for e in equipos_mejores_terceros_porra))!=8:
+        
+        return False
+
+    for equipo_mejor_tercero_porra in equipos_mejores_terceros_porra:
+
+        grupo_mejor_tercero=equipo_mejor_tercero_porra["grupo"]
+
+        equipo_mejor_tercero=equipo_mejor_tercero_porra["equipo_id"]
+
+        mejor_tercero_real_filtrado=list(filter(lambda equipo_mejor_tercero_real: equipo_mejor_tercero_real[0]==grupo_mejor_tercero and equipo_mejor_tercero_real[1]==equipo_mejor_tercero, equipos_mejores_terceros_real))
+
+        if not mejor_tercero_real_filtrado:
+
+            return False
+
+    return True

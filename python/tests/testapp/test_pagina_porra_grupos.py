@@ -72,7 +72,7 @@ def test_pagina_porra_grupos_guardar_sin_login(cliente, conexion):
 	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
-def test_pagina_porra_grupos_sin_data(cliente, conexion_usuario):
+def test_pagina_porra_grupos_guardar_sin_data(cliente, conexion_usuario):
 
 	with cliente as cliente_abierto:
 
@@ -86,7 +86,7 @@ def test_pagina_porra_grupos_sin_data(cliente, conexion_usuario):
 		assert respuesta.location=="/porra/grupos"
 		assert "<h1>Redirecting...</h1>" in contenido
 
-def test_pagina_porra_grupos_data_erronea(cliente, conexion_usuario):
+def test_pagina_porra_grupos_guardar_data_erronea(cliente, conexion_usuario):
 
 	with cliente as cliente_abierto:
 
@@ -100,7 +100,7 @@ def test_pagina_porra_grupos_data_erronea(cliente, conexion_usuario):
 		assert respuesta.location=="/porra/grupos"
 		assert "<h1>Redirecting...</h1>" in contenido
 
-def test_pagina_porra_grupos_porra_error_grupo_faltante(cliente, conexion_usuario):
+def test_pagina_porra_grupos_guardar_porra_error_grupo_faltante(cliente, conexion_usuario):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
 			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
@@ -134,7 +134,7 @@ def test_pagina_porra_grupos_porra_error_grupo_faltante(cliente, conexion_usuari
 		([],)
 	]
 )
-def test_pagina_porra_grupos_porra_error_dimension_error(cliente, conexion_usuario, porra_grupo):
+def test_pagina_porra_grupos_guardar_porra_error_dimension_error(cliente, conexion_usuario, porra_grupo):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
 			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
@@ -170,7 +170,7 @@ def test_pagina_porra_grupos_porra_error_dimension_error(cliente, conexion_usuar
 		(['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],)
 	]
 )
-def test_pagina_porra_grupos_porra_error_equipos_error(cliente, conexion_usuario, porra_grupo):
+def test_pagina_porra_grupos_guardar_porra_error_equipos_error(cliente, conexion_usuario, porra_grupo):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
 			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
@@ -197,7 +197,7 @@ def test_pagina_porra_grupos_porra_error_equipos_error(cliente, conexion_usuario
 		assert respuesta.location=="/porra/grupos"
 		assert "<h1>Redirecting...</h1>" in contenido
 
-def test_pagina_porra_grupos_porra_correcto(cliente, conexion_usuario):
+def test_pagina_porra_grupos_guardar_porra_correcto(cliente, conexion_usuario):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
 			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],
@@ -234,7 +234,7 @@ def test_pagina_porra_grupos_porra_correcto(cliente, conexion_usuario):
 
 		assert conexion_usuario.c.fetchone()["grupos_completados"]
 
-def test_pagina_porra_grupos_porra_porra_ya_hecha(cliente, conexion_usuario):
+def test_pagina_porra_grupos_guardar_porra_porra_ya_hecha(cliente, conexion_usuario):
 
 	porra={'A': ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'],
 			'B': ['seleccion-suiza', 'canada', 'seleccion-bosnia-herzegovina', 'seleccion-qatar'],

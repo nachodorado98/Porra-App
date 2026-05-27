@@ -233,3 +233,46 @@ class Conexion:
 												tercero_grupo["nombre"],
 												tercero_grupo["escudo"],
 												tercero_grupo["bandera"]) , terceros_grupos))
+
+	# Metodo para actualizar el estado de los mejores terceros de la porra de un usuario
+	def actualizarEstadoPorraMejoresTercerosUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE estado_porra
+							SET Mejores_Terceros_Completados=True
+							WHERE usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para saber si un usuario ha completado los mejores terceros de la porra
+	def mejoresTercerosPorraCompleto(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT Mejores_Terceros_Completados
+					        FROM estado_porra
+					        WHERE Usuario=%s""",
+							(usuario,))
+
+		mejores_terceros_completados=self.c.fetchone()
+
+		return False if mejores_terceros_completados is None else mejores_terceros_completados["mejores_terceros_completados"]
+
+	# Metodo para saber si un usuario puede editar los mejores terceros de la porra
+	def puedeEditarMejoresTercerosPorra(self, usuario:str)->bool:
+
+		return not self.mejoresTercerosPorraCompleto(usuario)
+
+	# Metodo para insertar un equipo con orden de mejor tercero de un usuario
+	def insertarEquipoMejorTerceroPorraUsuario(self, usuario:str, grupo:str, equipo_id:str, orden:int)->None:
+
+		self.c.execute("""INSERT INTO mejores_terceros_porra (Usuario, Grupo, Equipo_Id, Orden)
+							VALUES (%s, %s, %s, %s)""",
+							(usuario, grupo, equipo_id, orden))
+
+		self.confirmar()
+
+	# Metodo para insertar los equipos con orden de mejor tercero de un usuario
+	def insertarEquipoMejoresTercerosPorraUsuario(self, usuario:str, equipos:List[str])->None:
+
+		for orden, grupo_equipo in enumerate(equipos, start=1):
+
+			self.insertarEquipoMejorTerceroPorraUsuario(usuario, grupo_equipo[0], grupo_equipo[1], orden)

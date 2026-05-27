@@ -2,7 +2,7 @@ import pytest
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
-from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios
+from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -280,7 +280,9 @@ def test_grupos_porra_correctos_dimension_error(porra_grupo):
         (['seleccion-espanola', 'canada', 'seleccion-arabia-saudi', 'seleccion-suiza'],),
         (['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'equipo'],),
         (['equipo', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'seleccion-suiza'],),
-        (['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],)
+        (['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'],),
+        (['seleccion-espanola', 'seleccion-espanola', 'seleccion-espanola', 'seleccion-espanola'],),
+        (['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'seleccion-espanola'],)
     ]
 )
 def test_grupos_porra_correctos_equipos_error(porra_grupo):
@@ -365,3 +367,175 @@ def test_obtener_terceros_grupos_equipos_limpios():
     terceros_grupos_limpios=obtenerTercerosGruposEquiposLimpios(terceros_grupos)
 
     assert len(terceros_grupos_limpios)==12
+
+@pytest.mark.parametrize(["porra_mejores_terceros"],
+    [
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'}],),
+        ([],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'},
+            {'equipo_id': 'seleccion-belgica', 'grupo': 'G'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'C'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-brasil', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'C'}],)
+    ]
+)
+def test_mejores_terceros_porra_correctos_dimension_error(porra_mejores_terceros):
+
+    real_usuario=[('A', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                    ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                    ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                    ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                    ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                    ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                    ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                    ('H', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                    ('I', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                    ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                    ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                    ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG')]
+    
+    assert not mejoresTercerosPorraCorrectos(real_usuario, porra_mejores_terceros)
+
+@pytest.mark.parametrize(["porra_mejores_terceros"],
+    [
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'A'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-marruecos', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-marruecos', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'Z'}],)
+    ]
+)
+def test_mejores_terceros_porra_correctos_equipos_error(porra_mejores_terceros):
+
+    real_usuario=[('A', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                    ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                    ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                    ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                    ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                    ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                    ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                    ('H', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                    ('I', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                    ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                    ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                    ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG')]
+    
+    assert not mejoresTercerosPorraCorrectos(real_usuario, porra_mejores_terceros)
+
+@pytest.mark.parametrize(["porra_mejores_terceros"],
+    [
+        ([{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-mexico', 'grupo': 'A'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-mexico', 'grupo': 'A'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-turquia', 'grupo': 'D'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
+            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}],),
+        ([{'equipo_id': 'seleccion-mexico', 'grupo': 'A'},
+            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
+            {'equipo_id': 'seleccion-turquia', 'grupo': 'D'},
+            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
+            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
+            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
+            {'equipo_id': 'seleccion-suiza', 'grupo': 'B'},
+            {'equipo_id': 'seleccion-belgica', 'grupo': 'G'}],),
+    ]
+)
+def test_mejores_terceros_porra_correctos(porra_mejores_terceros):
+
+    real_usuario=[('A', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                    ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                    ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                    ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                    ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                    ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                    ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                    ('H', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                    ('I', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                    ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                    ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                    ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG')]
+    
+    assert mejoresTercerosPorraCorrectos(real_usuario, porra_mejores_terceros)
