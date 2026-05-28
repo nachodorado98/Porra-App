@@ -297,3 +297,31 @@ class Conexion:
 	        					valores)
 
 	    self.confirmar()
+
+ 	# Metodo para reiniciar porra grupos de un usuario
+	def reiniciarGruposPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""DELETE FROM grupo_equipos_porra
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
+ 	# Metodo para reiniciar porra mejores terceros de un usuario
+	def reiniciarMejoresTercerosPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""DELETE FROM mejores_terceros_porra
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para reiniciar estado porra de un usuario
+	def reiniciarEstadoPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE estado_porra
+							SET grupos_completados=False, mejores_terceros_completados=False
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		self.confirmar()

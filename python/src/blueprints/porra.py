@@ -215,3 +215,31 @@ def pagina_porra_mejores_terceros_guardar():
 		con.cerrarConexion()
 
 		return redirect("/porra/mejores_terceros")
+
+@bp_porra.route("/porra/reiniciar")
+@login_required
+def pagina_porra_reiniciar():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	con=Conexion()
+
+	try:
+
+		con.reiniciarGruposPorraUsuario(usuario)
+
+		con.reiniciarMejoresTercerosPorraUsuario(usuario)
+
+		con.reiniciarEstadoPorraUsuario(usuario)
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	except Exception:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")

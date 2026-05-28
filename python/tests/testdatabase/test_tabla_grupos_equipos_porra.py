@@ -108,3 +108,67 @@ def test_obtener_terceros_grupos_usuario_varios(conexion):
 	for tercero_grupo in terceros_grupos:
 
 		assert tercero_grupo[1] in ('seleccion-republica-corea', 'seleccion-escocia', 'seleccion-paraguay', 'seleccion-arabia-saudi')
+
+def test_reiniciar_grupos_porra_usuario_usuario_no_existe(conexion):
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.reiniciarGruposPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert not conexion.c.fetchall()
+
+def test_reiniciar_grupos_porra_usuario_porra_grupos_no_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.reiniciarGruposPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert not conexion.c.fetchall()
+
+def test_reiniciar_grupos_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert conexion.c.fetchall()
+
+	conexion.reiniciarGruposPorraUsuario("nacho")
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert conexion.c.fetchall()
+
+def  test_reiniciar_grupos_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert conexion.c.fetchall()
+
+	conexion.reiniciarGruposPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
+
+	assert not conexion.c.fetchall()

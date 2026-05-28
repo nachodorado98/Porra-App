@@ -52,3 +52,67 @@ def test_insertar_equipos_mejor_tercero_porra_usuario(conexion):
 	equipos_mejores_terceros=conexion.c.fetchall()
 
 	assert len(equipos_mejores_terceros)==4
+
+def test_reiniciar_mejores_terceros_porra_usuario_usuario_no_existe(conexion):
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.reiniciarMejoresTercerosPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert not conexion.c.fetchall()
+
+def test_reiniciar_mejores_terceros_porra_usuario_porra_grupos_no_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.reiniciarMejoresTercerosPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert not conexion.c.fetchall()
+
+def test_reiniciar_mejores_terceros_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoMejoresTercerosPorraUsuario("nacho98", [("A", "seleccion-espanola"), ("B", "seleccion-espanola"), ("H", "seleccion-uruguay"), ("C", "cabo-verde")])
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert conexion.c.fetchall()
+
+	conexion.reiniciarMejoresTercerosPorraUsuario("nacho")
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert conexion.c.fetchall()
+
+def  test_reiniciar_mejores_terceros_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoMejoresTercerosPorraUsuario("nacho98", [("A", "seleccion-espanola"), ("B", "seleccion-espanola"), ("H", "seleccion-uruguay"), ("C", "cabo-verde")])
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert conexion.c.fetchall()
+
+	conexion.reiniciarMejoresTercerosPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM mejores_terceros_porra")
+
+	assert not conexion.c.fetchall()

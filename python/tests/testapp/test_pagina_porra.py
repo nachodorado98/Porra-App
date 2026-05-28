@@ -17,6 +17,7 @@ def test_pagina_porra(cliente, conexion_usuario):
 	assert '<main class="main-content">' in contenido
 	assert "<h1>Tu porra del Mundial</h1>" in contenido
 	assert '<a href="/porra/grupos" class="btn-empezar" data-loading="true">Empezar porra →</a>' in contenido
+	assert not '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' in contenido
 
 def test_pagina_porra_grupos_completos(cliente, conexion_usuario):
 
@@ -30,6 +31,7 @@ def test_pagina_porra_grupos_completos(cliente, conexion_usuario):
 	assert '<main class="main-content">' in contenido
 	assert "<h1>Tu porra del Mundial</h1>" in contenido
 	assert '<a href="/porra/mejores_terceros" class="btn-empezar" data-loading="true">Continuar porra →</a>' in contenido
+	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' in contenido
 
 def test_pagina_porra_mejores_terceros_completos(cliente, conexion_usuario):
 
@@ -45,3 +47,4 @@ def test_pagina_porra_mejores_terceros_completos(cliente, conexion_usuario):
 	assert '<main class="main-content">' in contenido
 	assert "<h1>Tu porra del Mundial</h1>" in contenido
 	assert '<a href="/porra/eliminatorias" class="btn-empezar" data-loading="true">Continuar porra →</a>' in contenido
+	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' in contenido

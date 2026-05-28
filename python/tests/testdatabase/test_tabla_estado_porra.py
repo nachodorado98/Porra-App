@@ -243,3 +243,71 @@ def test_puede_editar_mejores_terceros_porra_grupo_completado(conexion):
 	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
 
 	assert not conexion.puedeEditarMejoresTercerosPorra("nacho98")
+
+def test_reiniciar_estado_porra_usuario_usuario_no_existe(conexion):
+
+	conexion.c.execute("SELECT * FROM estado_porra")
+
+	assert not conexion.c.fetchone()
+
+	conexion.reiniciarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM estado_porra")
+
+	assert not conexion.c.fetchone()
+
+def test_reiniciar_estado_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraGruposUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+
+	estado=conexion.c.fetchone()
+
+	assert estado["grupos_completados"]
+	assert estado["mejores_terceros_completados"]
+
+	conexion.reiniciarEstadoPorraUsuario("nacho")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+
+	estado=conexion.c.fetchone()
+
+	assert estado["grupos_completados"]
+	assert estado["mejores_terceros_completados"]
+
+def test_reiniciar_estado_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraGruposUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+
+	estado=conexion.c.fetchone()
+
+	assert estado["grupos_completados"]
+	assert estado["mejores_terceros_completados"]
+
+	conexion.reiniciarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+
+	estado=conexion.c.fetchone()
+
+	assert not estado["grupos_completados"]
+	assert not estado["mejores_terceros_completados"]
