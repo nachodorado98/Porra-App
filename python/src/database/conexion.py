@@ -83,6 +83,15 @@ class Conexion:
 
 		self.confirmar()
 
+	# Metodo para eliminar un usuario
+	def eliminarUsuario(self, usuario:str)->None:
+
+		self.c.execute("""DELETE FROM usuarios
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
 	# Metodo para obtener la contrasena de un usuario
 	def obtenerContrasenaUsuario(self, usuario:str)->Optional[str]:
 

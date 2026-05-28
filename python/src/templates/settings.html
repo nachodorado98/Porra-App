@@ -1,0 +1,50 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="settings-wrapper">
+
+    <div class="settings-card">
+
+        <h1 class="titulo-pagina">Configuración ⚙️</h1>
+
+        <p class="descripcion-settings"> Gestiona las opciones de tu cuenta.</p>
+
+        <div class="settings-section danger-zone">
+            <h2>Zona peligrosa</h2>
+            <p>Si eliminas tu cuenta perderás todos tus datos y predicciones. Esta acción no se puede deshacer.</p>
+            <button class="btn-eliminar" id="abrirModalEliminar">Eliminar cuenta</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="modalEliminar" class="modal-overlay">
+
+    <div class="modal-content">
+
+        <button class="cerrar-modal" id="cerrarModal">&times;</button>
+
+        <h2>¿Eliminar cuenta?</h2>
+
+        <p class="texto-modal">Esta acción es permanente y no podrás recuperar tu cuenta. </p>
+
+        <div class="modal-buttons">
+            <button id="cancelarEliminar">Cancelar</button>
+            <button id="confirmarEliminar">Sí, eliminar cuenta</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+{% endblock principal %}

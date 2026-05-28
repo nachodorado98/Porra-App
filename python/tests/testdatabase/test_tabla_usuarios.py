@@ -155,3 +155,23 @@ def test_obtener_usuarios_codigo_liga_existentes(conexion):
 	usuarios=conexion.obtenerUsuariosCodigoLiga("C4N5VT")
 
 	assert len(usuarios)==10
+
+def test_eliminar_usuario_no_existe_usuario(conexion):
+
+	assert not conexion.existe_usuario("nacho98")
+
+	conexion.eliminarUsuario("nacho98")
+
+	assert not conexion.existe_usuario("nacho98")
+
+def test_eliminar_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.existe_usuario("nacho98")
+
+	conexion.eliminarUsuario("nacho98")
+
+	assert not conexion.existe_usuario("nacho98")

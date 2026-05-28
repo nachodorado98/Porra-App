@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from passlib.context import CryptContext
 from typing import List, Dict
+import os
 
 def codigo_valido(codigo:str)->bool:
 
@@ -170,3 +171,47 @@ def obtenerPasosPorra(estado_porra:tuple):
     estado={nombre:estado for nombre, estado in zip(nombre_estados, estado_porra)}
 
     return obtenerPasoEstado(estado)
+
+
+
+
+
+
+
+
+
+def crearCarpeta(ruta:str)->None:
+
+    if not os.path.exists(ruta):
+
+        os.mkdir(ruta)
+
+        print(f"Carpeta creada: {ruta}")
+
+def borrarCarpeta(ruta:str)->None:
+
+    if os.path.exists(ruta):
+
+        os.rmdir(ruta)
+
+        print(f"Carpeta borrada: {ruta}")
+
+def vaciarCarpeta(ruta:str)->None:
+
+    if os.path.exists(ruta):
+
+        for archivo in os.listdir(ruta):
+
+            try:
+
+                if not os.path.isdir(os.path.join(ruta, archivo)):
+
+                    os.remove(os.path.join(ruta, archivo))
+
+                else:
+
+                    os.rmdir(os.path.join(ruta, archivo))
+
+            except Exception:
+                
+                pass

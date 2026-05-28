@@ -1,9 +1,11 @@
 import pytest
+import os
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra
+from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -558,3 +560,125 @@ def test_obtener_paso_estado(estado, paso):
 def test_obtener_pasos_porra(estado_porra, paso):
 
     assert obtenerPasosPorra(estado_porra)==paso
+
+
+
+
+
+
+def test_crear_carpeta_no_existe():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    assert not os.path.exists(ruta_carpeta)
+
+    crearCarpeta(ruta_carpeta)
+
+    assert os.path.exists(ruta_carpeta)
+
+def test_crear_carpeta_existe():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    assert os.path.exists(ruta_carpeta)
+
+    crearCarpeta(ruta_carpeta)
+
+    assert os.path.exists(ruta_carpeta)
+
+    os.rmdir(ruta_carpeta)
+
+def test_borrar_carpeta_no_existe():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    assert not os.path.exists(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
+
+    assert not os.path.exists(ruta_carpeta)
+
+def test_borrar_carpeta_existe():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    crearCarpeta(ruta_carpeta)
+
+    assert os.path.exists(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
+
+    assert not os.path.exists(ruta_carpeta)
+
+def test_vaciar_carpeta_vacia():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    crearCarpeta(ruta_carpeta)
+
+    assert not os.listdir(ruta_carpeta)
+
+    vaciarCarpeta(ruta_carpeta)
+
+    assert not os.listdir(ruta_carpeta)
+
+def crearHTML(ruta:str)->None:
+
+    contenido="""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Mi Archivo HTML</title>
+            </head>
+            <body>
+                <h1>Hola, este es mi archivo HTML creado con Python</h1>
+            </body>
+            </html>
+            """
+
+    with open(ruta, "w") as html:
+
+        html.write(contenido)
+
+def test_vaciar_carpeta_llena():
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    assert not os.listdir(ruta_carpeta)
+
+    ruta_html=os.path.join(ruta_carpeta, "html.html")
+
+    crearHTML(ruta_html)
+
+    assert os.listdir(ruta_carpeta)
+
+    vaciarCarpeta(ruta_carpeta)
+
+    assert not os.listdir(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
+
+@pytest.mark.parametrize(["numero_archivos"],
+    [(1,),(3,),(7,),(4,),(13,)]
+)
+def test_vaciar_carpeta_llena_varios(numero_archivos):
+
+    ruta_carpeta=os.path.join(os.getcwd(), "testutilidades", "Prueba")
+
+    crearCarpeta(ruta_carpeta)
+
+    assert not os.listdir(ruta_carpeta)
+
+    for numero in range(numero_archivos):
+
+        ruta_html=os.path.join(ruta_carpeta, f"html{numero}.html")
+
+        crearHTML(ruta_html)
+
+    assert len(os.listdir(ruta_carpeta))==numero_archivos
+
+    vaciarCarpeta(ruta_carpeta)
+
+    assert not os.listdir(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
