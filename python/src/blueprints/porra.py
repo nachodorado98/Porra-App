@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from src.database.conexion import Conexion
 
 from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
+from src.utilidades.utils import obtenerPasosPorra
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -16,10 +17,19 @@ def pagina_porra():
 
 	codigo_liga=current_user.codigo_liga
 
+	con=Conexion()
+
+	estado_porra=con.obtenerEstadoPorraUsuario(usuario)
+
+	con.cerrarConexion()
+
+	paso_porra=obtenerPasosPorra(estado_porra)
+
 	return render_template("porra.html",
 							usuario=usuario,
 							nombre=current_user.nombre,
-							codigo_liga=codigo_liga)
+							codigo_liga=codigo_liga,
+							paso_porra=paso_porra)
 
 @bp_porra.route("/porra/grupos")
 @login_required

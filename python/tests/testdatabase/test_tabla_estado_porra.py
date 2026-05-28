@@ -18,6 +18,32 @@ def test_insertar_estado_porra(conexion):
 
 	assert len(estado_porras)==1
 
+def test_obtener_estado_porra_usuario_no_existe_usuario(conexion):
+
+	assert not conexion.obtenerEstadoPorraUsuario("nacho98")
+
+def test_obtener_estado_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.obtenerEstadoPorraUsuario("nacho")
+
+def test_obtener_estado_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	estado_porra_usuario=conexion.obtenerEstadoPorraUsuario("nacho98")
+
+	assert len(estado_porra_usuario)==2
+
 def test_actualizar_estado_porra_grupos_no_existe_usuario(conexion):
 
 	conexion.c.execute("SELECT * FROM estado_porra")

@@ -195,6 +195,10 @@ function generarResumen(){
 
 confirmarModal.addEventListener('click', async () => {
 
+    confirmarModal.disabled = true
+
+    mostrarLoading()
+
     const grupos = {}
 
     listas.forEach(lista => {
@@ -236,9 +240,14 @@ confirmarModal.addEventListener('click', async () => {
         window.location.href = response.url
 
     }
+    
     catch(error){
 
         console.error(error)
+
+        ocultarLoading()
+
+        confirmarModal.disabled = false
 
         window.location.href = '/porra'
 

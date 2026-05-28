@@ -135,7 +135,7 @@ def singup():
 
         payload={"correo_destino":correo, "nombre":nombre, "codigo":codigo_final}
 
-        response=requests.post(URL_AZURE_FUNCTION, json=payload)
+        response=requests.post(URL_AZURE_FUNCTION, json=payload, timeout=5)
 
     except Exception:
 

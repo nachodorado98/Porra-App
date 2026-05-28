@@ -150,3 +150,23 @@ def mejoresTercerosPorraCorrectos(equipos_mejores_terceros_real:List[tuple], equ
             return False
 
     return True
+
+def obtenerPasoEstado(estado:Dict)->int:
+
+    PASOS=[("grupo_completo", 0), ("mejor_tercero_completo", 1)]
+
+    for campo, paso in PASOS:
+
+        if not estado[campo]:
+
+            return paso
+
+    return len(PASOS)
+
+def obtenerPasosPorra(estado_porra:tuple):
+
+    nombre_estados=["grupo_completo", "mejor_tercero_completo"]
+
+    estado={nombre:estado for nombre, estado in zip(nombre_estados, estado_porra)}
+
+    return obtenerPasoEstado(estado)

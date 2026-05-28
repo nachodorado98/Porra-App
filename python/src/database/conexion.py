@@ -145,6 +145,19 @@ class Conexion:
 										usuario["nombre"],
 										usuario["apellido"]) , usuarios))
 
+	# Metodo para obtener el estado de una porra de un usuario
+	def obtenerEstadoPorraUsuario(self, usuario:str)->Optional[tuple]:
+
+		self.c.execute("""SELECT grupos_completados, mejores_terceros_completados
+							FROM estado_porra
+							WHERE usuario=%s""",
+							(usuario,))
+
+		estado_porra_usuario=self.c.fetchone()
+
+		return None if estado_porra_usuario is None else (estado_porra_usuario["grupos_completados"],
+															estado_porra_usuario["mejores_terceros_completados"])
+
 	# Metodo para insertar el estado de una porra de un usuario
 	def insertarEstadoPorraUsuario(self, usuario:str)->None:
 
@@ -183,9 +196,13 @@ class Conexion:
 	# Metodo para insertar los equipos con posiciones en grupo de un usuario
 	def insertarEquipoGruposPorraUsuario(self, usuario:str, grupo:str, equipos:List[str])->None:
 
-		for posicion, equipo in enumerate(equipos, start=1):
+		valores=[(usuario, grupo, equipo, posicion) for posicion, equipo in enumerate(equipos, start=1)]
 
-			self.insertarEquipoGrupoPorraUsuario(usuario, grupo, equipo, posicion)
+		self.c.executemany("""INSERT INTO grupo_equipos_porra (Usuario, Grupo, Equipo_Id, Posicion)
+							VALUES (%s, %s, %s, %s)""",
+							valores)
+
+		self.confirmar()
 
 	# Metodo para actualizar el estado de los grupos de la porra de un usuario
 	def actualizarEstadoPorraGruposUsuario(self, usuario:str)->None:
@@ -201,8 +218,8 @@ class Conexion:
 	def gruposPorraCompleto(self, usuario:str)->bool:
 
 		self.c.execute("""SELECT Grupos_Completados
-					        FROM estado_porra
-					        WHERE Usuario=%s""",
+							FROM estado_porra
+							WHERE Usuario=%s""",
 							(usuario,))
 
 		grupos_completados=self.c.fetchone()
@@ -248,8 +265,8 @@ class Conexion:
 	def mejoresTercerosPorraCompleto(self, usuario:str)->bool:
 
 		self.c.execute("""SELECT Mejores_Terceros_Completados
-					        FROM estado_porra
-					        WHERE Usuario=%s""",
+							FROM estado_porra
+							WHERE Usuario=%s""",
 							(usuario,))
 
 		mejores_terceros_completados=self.c.fetchone()
@@ -273,6 +290,10 @@ class Conexion:
 	# Metodo para insertar los equipos con orden de mejor tercero de un usuario
 	def insertarEquipoMejoresTercerosPorraUsuario(self, usuario:str, equipos:List[str])->None:
 
-		for orden, grupo_equipo in enumerate(equipos, start=1):
+	    valores=[(usuario, grupo, equipo_id, orden) for orden, (grupo, equipo_id) in enumerate(equipos, start=1)]
 
-			self.insertarEquipoMejorTerceroPorraUsuario(usuario, grupo_equipo[0], grupo_equipo[1], orden)
+	    self.c.executemany("""INSERT INTO mejores_terceros_porra (Usuario, Grupo, Equipo_Id, Orden)
+	        					VALUES (%s, %s, %s, %s)""",
+	        					valores)
+
+	    self.confirmar()

@@ -45,7 +45,7 @@ def test_pagina_inicio_con_login(cliente, conexion_usuario):
 	assert respuesta.status_code==200
 	assert '<main class="main-content">' in contenido
 	assert "<h1>Tu porra del Mundial</h1>" in contenido
-	assert '<a href="/porra/grupos" class="btn-empezar">Empezar porra →</a>' in contenido
+	assert '<a href="/porra/grupos" class="btn-empezar" data-loading="true">Empezar porra →</a>' in contenido
 
 def test_pagina_logout(cliente, conexion_usuario):
 

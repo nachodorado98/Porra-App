@@ -3,6 +3,7 @@ import pytest
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
+from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -539,3 +540,21 @@ def test_mejores_terceros_porra_correctos(porra_mejores_terceros):
                     ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG')]
     
     assert mejoresTercerosPorraCorrectos(real_usuario, porra_mejores_terceros)
+
+@pytest.mark.parametrize(["estado", "paso"],
+    [
+        ({'grupo_completo': False, 'mejor_tercero_completo': False}, 0),
+        ({'grupo_completo': True, 'mejor_tercero_completo': False}, 1),
+        ({'grupo_completo': True, 'mejor_tercero_completo': True}, 2),
+    ]
+)
+def test_obtener_paso_estado(estado, paso):
+
+    assert obtenerPasoEstado(estado)==paso
+
+@pytest.mark.parametrize(["estado_porra", "paso"],
+    [((False, False), 0), ((True, False), 1), ((True, True), 2)]
+)
+def test_obtener_pasos_porra(estado_porra, paso):
+
+    assert obtenerPasosPorra(estado_porra)==paso

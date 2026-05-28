@@ -161,6 +161,10 @@ function generarResumen(){
 
 confirmarModal.addEventListener('click', async () => {
 
+    confirmarModal.disabled = true
+
+    mostrarLoading()
+
     try{
 
         const response = await fetch(
@@ -184,6 +188,10 @@ confirmarModal.addEventListener('click', async () => {
     catch(error){
 
         console.error(error)
+
+        ocultarLoading()
+
+        confirmarModal.disabled = false
 
         window.location.href = '/porra'
 
