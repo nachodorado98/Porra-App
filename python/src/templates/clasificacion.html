@@ -16,18 +16,22 @@
 
     <section class="podium">
 
-        {% for usuario in usuarios_codigo %}
+        {% for usuario_codigo in usuarios_codigo %}
 
             <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}">
                 <div class="podium-position">
                     #{{ loop.index }}
                 </div>
-                <div class="podium-avatar">
-                    {{ usuario[0][0] }}
-                </div>
-                <h2>{{ usuario[1] }} {{ usuario[2] }}</h2>
+                {% if usuario_codigo[3]=='-1' %}
+                   <div class="podium-avatar">
+                        {{ usuario_codigo[0][0] }}
+                    </div>
+                {% else %}
+                    <img src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario_codigo[0] ~ '/' ~ usuario_codigo[3]) }}" alt="Perfil Usuario" class="podium-avatar-img">
+                {% endif %}
+                <h2>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h2>
                 <div class="podium-points">
-                    {{ usuario[3] }} pts
+                    {{ usuario_codigo[4] }} pts
                 </div>
             </div>
 
@@ -44,16 +48,20 @@
                     <div class="ranking-position">
                         {{ loop.index }}
                     </div>
-                    <div class="ranking-avatar">
-                        {{ usuario_codigo[0][0] }}
-                    </div>
+                    {% if usuario_codigo[3]=='-1' %}
+                        <div class="ranking-avatar">
+                            {{ usuario_codigo[0][0] }}
+                        </div>
+                    {% else %}
+                        <img src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario_codigo[0] ~ '/' ~ usuario_codigo[3]) }}" alt="Perfil Usuario" class="ranking-avatar-img">
+                    {% endif %}
                     <div class="ranking-user">
                         <h3>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h3>
                     </div>
                 </div>
 
                 <div class="ranking-right">
-                    <span>{{ usuario_codigo[3] }}</span>
+                    <span>{{ usuario_codigo[4] }}</span>
                     <small>PTS</small>
                 </div>
             </div>

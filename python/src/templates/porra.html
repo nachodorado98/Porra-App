@@ -25,7 +25,13 @@
 
     <div class="nav-right">
       <div class="profile-menu">
-        <img src="{{ url_for('static', filename='iconos/usuario.png') }}" alt="Perfil" class="profile-icon" id="profileBtn">
+
+        {% if imagen_perfil=='-1' %}
+            <img src="{{ url_for('static', filename='iconos/usuario.png') }}" alt="Perfil" class="profile-icon" id="profileBtn">
+        {% else %}
+            <img src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario ~ '/' ~ imagen_perfil) }}" alt="Perfil" class="profile-icon" id="profileBtn">
+        {% endif %}
+
         <ul class="dropdown" id="dropdownMenu">
           <li><a href="#">Mi Perfil</a></li>
           <li><a href="/settings">Ajustes</a></li>

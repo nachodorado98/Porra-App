@@ -85,6 +85,16 @@
     border: 3px solid rgba(255,255,255,0.4);
 }
 
+.podium-avatar-img {
+    width: 90px;
+    height: 90px;
+    margin: 25px auto 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid rgba(255,255,255,0.4);
+}
+
 .podium-card h2 {
     font-size: 24px;
     margin-bottom: 20px;
@@ -170,6 +180,14 @@
     font-weight: bold;
 }
 
+.ranking-avatar-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
 .ranking-user h3 {
     color: #111827;
     font-size: 18px;
@@ -234,6 +252,11 @@
 
     .ranking-right span {
         font-size: 22px;
+    }
+
+    .ranking-avatar-img {
+        width: 48px;
+        height: 48px;
     }
 
 }

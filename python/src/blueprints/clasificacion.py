@@ -14,6 +14,8 @@ def pagina_clasificacion(codigo:str):
 
 	codigo_liga=current_user.codigo_liga
 
+	imagen_perfil=current_user.imagen_perfil
+
 	con=Conexion()
 
 	if not con.existe_codigo_liga(codigo):
@@ -40,4 +42,5 @@ def pagina_clasificacion(codigo:str):
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
 							usuarios_codigo=usuarios_codigo_puntos)

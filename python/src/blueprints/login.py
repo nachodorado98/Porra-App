@@ -30,11 +30,13 @@ def cargarUsuario(usuario:str)->Optional[Usuario]:
 
 	codigo_liga=con.obtenerCodigoLigaUsuario(usuario)
 
+	imagen_perfil=con.obtenerImagenPerfilUsuario(usuario)
+
 	admin=con.obtenerAdmin(usuario)
 
 	con.cerrarConexion()
 
-	return Usuario(usuario, nombre, codigo_liga, admin)
+	return Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin)
 
 @bp_login.route("/login", methods=["GET", "POST"])
 def login():
@@ -62,11 +64,13 @@ def login():
 
 	codigo_liga=con.obtenerCodigoLigaUsuario(usuario)
 
+	imagen_perfil=con.obtenerImagenPerfilUsuario(usuario)
+
 	admin=con.obtenerAdmin(usuario)
 
 	con.cerrarConexion()
 
-	usuario=Usuario(usuario, nombre, codigo_liga, admin)
+	usuario=Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin)
 
 	login_user(usuario)
 

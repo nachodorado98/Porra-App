@@ -6,6 +6,7 @@ CREATE TABLE usuarios (Usuario VARCHAR(255) PRIMARY KEY,
 						Nombre VARCHAR(255),
 						Apellido VARCHAR(255),
 						Codigo_Liga VARCHAR(6),
+						Imagen_Perfil VARCHAR(255) DEFAULT NULL,
 						Admin BOOl DEFAULT FALSE,
 						FOREIGN KEY (Codigo_Liga) REFERENCES codigos (Codigo_Liga) ON DELETE CASCADE);
 

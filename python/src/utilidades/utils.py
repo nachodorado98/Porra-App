@@ -172,14 +172,6 @@ def obtenerPasosPorra(estado_porra:tuple):
 
     return obtenerPasoEstado(estado)
 
-
-
-
-
-
-
-
-
 def crearCarpeta(ruta:str)->None:
 
     if not os.path.exists(ruta):
@@ -215,3 +207,7 @@ def vaciarCarpeta(ruta:str)->None:
             except Exception:
                 
                 pass
+                
+def extraerExtension(archivo:str, extension_alternativa:str="jpg")->str:
+
+    return archivo.rsplit(".", 1)[1].lower() if "." in archivo else extension_alternativa

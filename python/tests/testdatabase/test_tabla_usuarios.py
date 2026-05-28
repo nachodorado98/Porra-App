@@ -175,3 +175,55 @@ def test_eliminar_usuario(conexion):
 	conexion.eliminarUsuario("nacho98")
 
 	assert not conexion.existe_usuario("nacho98")
+
+def test_obtener_imagen_perfil_usuario_no_existe_usuario(conexion):
+
+	assert not conexion.obtenerImagenPerfilUsuario("nacho98")
+
+def test_obtener_imagen_perfil_usuario_no_existe_imagen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerImagenPerfilUsuario("nacho98")=='-1'
+
+def test_obtener_imagen_perfil_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("UPDATE usuarios SET Imagen_Perfil='imagen_perfil.png'")
+
+	conexion.confirmar()
+
+	assert conexion.obtenerImagenPerfilUsuario("nacho98")=='imagen_perfil.png'
+
+def test_actualizar_imagen_perfil_usuario_no_existe_usuario(conexion):
+
+	assert not conexion.existe_usuario("nacho")
+
+	conexion.actualizarImagenPerfilUsuario("nacho", "imagen.png")
+
+	assert not conexion.existe_usuario("nacho")
+
+def test_actualizar_imagen_perfil_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("SELECT Imagen_Perfil FROM usuarios")
+
+	imagen=conexion.c.fetchone()["imagen_perfil"]
+
+	assert imagen==None
+
+	conexion.actualizarImagenPerfilUsuario("nacho98", "imagen.png")
+
+	conexion.c.execute("SELECT Imagen_Perfil FROM usuarios")
+
+	imagen=conexion.c.fetchone()["imagen_perfil"]
+
+	assert imagen=="imagen.png"

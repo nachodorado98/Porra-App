@@ -68,6 +68,10 @@ def pytest_sessionfinish(session, exitstatus):
 
 	print("\nLimpieza de la BBDD correcta")
 
+	ruta_carpeta_imagenes_perfil_usuario=os.path.join(os.path.abspath(".."), "src", "static", "imagenes", "perfil", "nacho98")
+
+	vaciarCarpeta(ruta_carpeta_imagenes_perfil_usuario)
+
 	ruta_carpeta_imagenes_perfil=os.path.join(os.path.abspath(".."), "src", "static", "imagenes", "perfil")
 
 	vaciarCarpeta(ruta_carpeta_imagenes_perfil)

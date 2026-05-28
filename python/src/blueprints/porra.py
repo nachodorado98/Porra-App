@@ -17,6 +17,8 @@ def pagina_porra():
 
 	codigo_liga=current_user.codigo_liga
 
+	imagen_perfil=current_user.imagen_perfil
+
 	con=Conexion()
 
 	estado_porra=con.obtenerEstadoPorraUsuario(usuario)
@@ -29,6 +31,7 @@ def pagina_porra():
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
 							paso_porra=paso_porra)
 
 @bp_porra.route("/porra/grupos")
@@ -38,6 +41,8 @@ def pagina_porra_grupos():
 	usuario=current_user.id
 
 	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
 
@@ -59,6 +64,7 @@ def pagina_porra_grupos():
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
 							grupos=grupos_limpios)
 
 @bp_porra.route("/porra/grupos/guardar", methods=["POST"])
@@ -68,6 +74,8 @@ def pagina_porra_grupos_guardar():
 	usuario=current_user.id
 
 	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
 
@@ -123,6 +131,8 @@ def pagina_porra_mejores_terceros():
 
 	codigo_liga=current_user.codigo_liga
 
+	imagen_perfil=current_user.imagen_perfil
+
 	con=Conexion()
 
 	grupos_completos=con.gruposPorraCompleto(usuario)
@@ -151,6 +161,7 @@ def pagina_porra_mejores_terceros():
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
 							terceros=terceros_grupos_limpios)
 
 @bp_porra.route("/porra/mejores_terceros/guardar", methods=["POST"])
@@ -160,6 +171,8 @@ def pagina_porra_mejores_terceros_guardar():
 	usuario=current_user.id
 
 	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
 
@@ -223,6 +236,8 @@ def pagina_porra_reiniciar():
 	usuario=current_user.id
 
 	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
 

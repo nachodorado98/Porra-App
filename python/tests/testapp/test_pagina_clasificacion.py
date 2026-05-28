@@ -1,3 +1,5 @@
+import os
+
 def test_pagina_clasificacion_sin_login(cliente, conexion):
 
 	respuesta=cliente.get("/clasificacion/123456", follow_redirects=True)
@@ -52,3 +54,33 @@ def test_pagina_clasificacion(cliente, conexion_usuario):
 		assert '<div class="clasificacion-header">' in contenido
 		assert '<section class="podium">' in contenido
 		assert '<section class="ranking-list">' in contenido
+		assert '<div class="podium-avatar">' in contenido
+		assert "nacho98_perfil.jpeg" not in contenido
+
+def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		ruta_imagen_test=os.path.join(os.getcwd(), "testapp", "imagenes_tests", "imagen_tests.jpeg")
+
+		data={}
+
+		with open(ruta_imagen_test, "rb") as imagen_file:
+			
+			data["imagen"]=(imagen_file, "imagen_tests.jpeg")
+
+			cliente_abierto.post("/settings/actualizar_imagen_perfil", data=data, buffered=True, content_type="multipart/form-data")
+
+		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert '<main class="clasificacion-container">' in contenido
+		assert '<div class="clasificacion-header">' in contenido
+		assert '<section class="podium">' in contenido
+		assert '<section class="ranking-list">' in contenido
+		assert '<div class="podium-avatar">' not in contenido
+		assert "nacho98_perfil.jpeg" in contenido

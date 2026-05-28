@@ -15,6 +15,64 @@
 
         <p class="descripcion-settings"> Gestiona las opciones de tu cuenta.</p>
 
+    <div class="settings-section">
+
+        {% if imagen_perfil == '-1' %}
+
+            <form  action="/settings/actualizar_imagen_perfil" method="POST" enctype="multipart/form-data" novalidate class="form-imagen-perfil">
+
+                <h2>Imagen de perfil</h2>
+
+                <p class="descripcion-settings">Sube una imagen personalizada para tu perfil.</p>
+
+                <div class="contenedor-subir-imagen">
+                    <label for="imagen" class="boton-seleccionar-imagen">Seleccionar imagen</label>
+                    <input type="file" name="imagen" id="imagen" accept=".jpg, .jpeg, .png">
+                    <div class="previsualizacion">
+                        <p class="mensaje" id="mensaje">No se ha seleccionado archivo</p>
+                        <img class="imagen-preview" id="preview" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <button type="submit" class="boton-guardar-imagen">Confirmar imagen</button>
+
+            </form>
+
+        {% else %}
+
+                <div class="contenedor-imagen-actual" id="contenedorImagen">
+                    <h2>Imagen de perfil</h2>
+                    <img class="imagen-perfil" src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario ~ '/' ~ imagen_perfil) }}" alt="Imagen perfil">
+                    <button  class="boton-actualizar-imagen" id="botonActualizarImagenPerfil">Actualizar imagen</button>
+                </div>
+
+                <div class="seccion-actualizar-imagen" id="contenedorActualizarImagenPerfil">
+
+                    <form action="/settings/actualizar_imagen_perfil" method="POST" enctype="multipart/form-data" novalidate class="form-imagen-perfil">
+
+                        <div class="contenedor-subir-imagen">
+
+                            <label for="imagenActualizar" class="boton-seleccionar-imagen">Seleccionar nueva imagen</label>
+
+                            <input type="file" name="imagen" id="imagenActualizar" accept=".jpg, .jpeg, .png">
+
+                            <div class="previsualizacion">
+                                <p class="mensaje" id="mensajeActualizar">No se ha seleccionado archivo</p>
+                                <img class="imagen-preview" id="previewActualizar" src="" alt="Preview">
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="boton-guardar-imagen">Guardar nueva imagen</button>
+
+                    </form>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
         <div class="settings-section danger-zone">
             <h2>Zona peligrosa</h2>
             <p>Si eliminas tu cuenta perderás todos tus datos y predicciones. Esta acción no se puede deshacer.</p>
@@ -46,5 +104,7 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cargar_imagen_preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/abrir_actualizar_imagen_perfil.js') }}"></script>
 
 {% endblock principal %}

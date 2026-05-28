@@ -5,7 +5,7 @@ from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correct
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra
-from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta
+from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, extraerExtension
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -682,3 +682,15 @@ def test_vaciar_carpeta_llena_varios(numero_archivos):
     assert not os.listdir(ruta_carpeta)
 
     borrarCarpeta(ruta_carpeta)
+
+@pytest.mark.parametrize(["archivo", "extension"],
+    [
+        ("mipdf.pdf", "pdf"),
+        ("miimagen.jpeg", "jpeg"),
+        ("imagen", "jpg"),
+        ("mitxt.txt", "txt"),
+    ]
+)
+def test_extraer_extension(archivo, extension):
+
+    assert extraerExtension(archivo)==extension

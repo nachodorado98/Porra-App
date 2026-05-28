@@ -237,3 +237,169 @@
     }
 
 }
+
+.form-imagen-perfil{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+.contenedor-imagen-actual{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:25px;
+}
+
+.imagen-perfil{
+    width:180px;
+    height:180px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    border:5px solid #3897f0;
+
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+}
+
+.contenedor-subir-imagen{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+}
+
+input[type="file"]{
+    display:none;
+}
+
+.boton-seleccionar-imagen{
+    background:#3897f0;
+    color:white;
+
+    padding:14px 22px;
+
+    border-radius:14px;
+
+    font-weight:700;
+    font-size:16px;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.boton-seleccionar-imagen:hover{
+    background:#2176c7;
+    transform:translateY(-2px);
+}
+
+.previsualizacion{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
+}
+
+.mensaje{
+    color:#666;
+    font-size:15px;
+}
+
+.imagen-preview{
+    display:none;
+
+    width:180px;
+    height:180px;
+
+    object-fit:cover;
+
+    border-radius:50%;
+
+    border:4px solid #ddd;
+
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.boton-guardar-imagen{
+    background:#3897f0;
+    color:white;
+
+    border:none;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.boton-guardar-imagen:hover{
+    background:#2176c7;
+}
+
+.boton-actualizar-imagen{
+    background:#3897f0;
+    color:white;
+
+    border:none;
+
+    padding:14px 20px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.boton-actualizar-imagen:hover{
+    background:#2176c7;
+}
+
+.seccion-actualizar-imagen{
+    margin-top:30px;
+
+    display:none;
+
+    padding-top:30px;
+
+    border-top:2px solid #f0f0f0;
+}
+
+@media (max-width:768px){
+
+    .imagen-perfil,
+    .imagen-preview{
+        width:150px;
+        height:150px;
+    }
+
+}
+
+@media (max-width:480px){
+
+    .imagen-perfil,
+    .imagen-preview{
+        width:130px;
+        height:130px;
+    }
+
+    .boton-seleccionar-imagen,
+    .boton-guardar-imagen,
+    .boton-actualizar-imagen{
+        width:100%;
+        text-align:center;
+    }
+
+}

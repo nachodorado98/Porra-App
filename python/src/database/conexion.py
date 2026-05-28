@@ -143,7 +143,11 @@ class Conexion:
 	# Metodo para obtener los usuarios del codigo liga
 	def obtenerUsuariosCodigoLiga(self, codigo_liga:str)->Optional[List[tuple]]:
 
-		self.c.execute("""SELECT usuario, nombre, apellido
+		self.c.execute("""SELECT usuario, nombre, apellido,
+								CASE WHEN Imagen_Perfil IS NULL
+									THEN '-1'
+									ELSE Imagen_Perfil
+								END as Imagen
 						FROM usuarios
 						WHERE codigo_liga=%s""",
 						(codigo_liga,))
@@ -152,7 +156,34 @@ class Conexion:
 
 		return list(map(lambda usuario: (usuario["usuario"],
 										usuario["nombre"],
-										usuario["apellido"]) , usuarios))
+										usuario["apellido"],
+										usuario["imagen"]) , usuarios))
+		
+	# Metodo para obtener la imagen de usuario
+	def obtenerImagenPerfilUsuario(self, usuario:str)->Optional[str]:
+
+		self.c.execute("""SELECT
+							CASE WHEN Imagen_Perfil IS NULL
+									THEN '-1'
+									ELSE Imagen_Perfil
+							END as Imagen
+							FROM usuarios
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		imagen=self.c.fetchone()
+
+		return None if not imagen else imagen["imagen"]
+
+	# Metodo para actualizar la imagen de perfil del usuario
+	def actualizarImagenPerfilUsuario(self, usuario:str, imagen:str)->None:
+
+		self.c.execute("""UPDATE usuarios
+							SET Imagen_Perfil=%s
+							WHERE Usuario=%s""",
+							(imagen, usuario))
+
+		self.confirmar()
 
 	# Metodo para obtener el estado de una porra de un usuario
 	def obtenerEstadoPorraUsuario(self, usuario:str)->Optional[tuple]:
