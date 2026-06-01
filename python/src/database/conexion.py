@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from .confconexion import *
 
@@ -337,6 +337,59 @@ class Conexion:
 	        					valores)
 
 	    self.confirmar()
+
+	# Metodo para obtener los equipos primeros y segundos de los grupos de un usuario
+	def obtenerPrimerosSegundosGruposUsuario(self, usuario:str)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera, gep.posicion
+						FROM grupo_equipos_porra gep
+						JOIN equipos e
+						ON gep.equipo_id=e.equipo_id
+						WHERE gep.usuario=%s
+						AND gep.posicion in (1, 2)
+						ORDER BY gep.posicion, gep.grupo, e.nombre""",
+						(usuario,))
+
+		primero_segundos_grupos=self.c.fetchall()
+
+		return list(map(lambda primero_segundo_grupo: (primero_segundo_grupo["grupo"],
+														primero_segundo_grupo["equipo_id"],
+														primero_segundo_grupo["nombre"],
+														primero_segundo_grupo["escudo"],
+														primero_segundo_grupo["bandera"],
+														primero_segundo_grupo["posicion"]) , primero_segundos_grupos))
+
+	# Metodo para obtener los mejores equipos terceros de un usuario
+	def obtenerMejoresTercerosUsuario(self, usuario:str)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT mtp.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+						FROM mejores_terceros_porra mtp
+						JOIN equipos e
+						ON mtp.equipo_id=e.equipo_id
+						WHERE mtp.usuario=%s
+						ORDER BY mtp.grupo, e.nombre""",
+						(usuario,))
+
+		mejores_terceros=self.c.fetchall()
+
+		return list(map(lambda mejor_tercero: (mejor_tercero["grupo"],
+												mejor_tercero["equipo_id"],
+												mejor_tercero["nombre"],
+												mejor_tercero["escudo"],
+												mejor_tercero["bandera"],
+												3) , mejores_terceros))
+
+	# Metodo para obtener la combinacion de los partidos de los mejores_terceros
+	def obtenerCombinacionPartidosMejoresTerceros(self, combinacion_mejores_terceros:str)->Optional[Dict]:
+
+		self.c.execute("""SELECT M74, M77, M79, M80, M81, M82, M85, M87
+						FROM lookup_bracket_mejores_terceros
+						WHERE mejores_terceros=%s""",
+						(combinacion_mejores_terceros,))
+
+		combinacion_partidos_mejores_terceros=self.c.fetchone()
+
+		return False if combinacion_partidos_mejores_terceros is None else  {partido.upper():equipo for partido, equipo in combinacion_partidos_mejores_terceros.items()}
 
  	# Metodo para reiniciar porra grupos de un usuario
 	def reiniciarGruposPorraUsuario(self, usuario:str)->None:

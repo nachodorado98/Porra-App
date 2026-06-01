@@ -109,6 +109,76 @@ def test_obtener_terceros_grupos_usuario_varios(conexion):
 
 		assert tercero_grupo[1] in ('seleccion-republica-corea', 'seleccion-escocia', 'seleccion-paraguay', 'seleccion-arabia-saudi')
 
+def test_obtener_primeros_segundos_grupos_usuario_usuario_no_existe(conexion):
+
+	assert not conexion.obtenerPrimerosSegundosGruposUsuario("nacho98")
+
+def test_obtener_primeros_segundos_grupos_usuario_porra_grupos_no_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.obtenerPrimerosSegundosGruposUsuario("nacho98")
+
+def test_obtener_primeros_segundos_grupos_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	assert not conexion.obtenerPrimerosSegundosGruposUsuario("nacho")
+
+def test_obtener_primeros_segundos_grupos_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	primeros_segundos_grupos=conexion.obtenerPrimerosSegundosGruposUsuario("nacho98")
+
+	assert len(primeros_segundos_grupos)==2
+	assert primeros_segundos_grupos[0][0]=="H"
+	assert primeros_segundos_grupos[0][1]=="seleccion-espanola"
+	assert primeros_segundos_grupos[0][-1]==1
+	assert primeros_segundos_grupos[1][0]=="H"
+	assert primeros_segundos_grupos[1][1]=="seleccion-uruguay"
+	assert primeros_segundos_grupos[1][-1]==2
+
+def test_obtener_primeros_segundos_grupos_usuario_varios(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "A", ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "C", ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "D", ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	primeros_segundos_grupos=conexion.obtenerPrimerosSegundosGruposUsuario("nacho98")
+
+	assert len(primeros_segundos_grupos)==8
+
+	for primero_segundo_grupo in primeros_segundos_grupos:
+
+		assert primero_segundo_grupo[-1] in (1, 2)
+
+		if primero_segundo_grupo[-1]==1:
+
+			primero_segundo_grupo[1] in ('seleccion-mexico', 'seleccion-brasil', 'seleccion-estados-unidos', 'seleccion-espanola')
+
+		else:
+
+			primero_segundo_grupo[1] in ('republica-checa', 'seleccion-marruecos', 'seleccion-turquia', 'seleccion-uruguay')
+
 def test_reiniciar_grupos_porra_usuario_usuario_no_existe(conexion):
 
 	conexion.c.execute("SELECT * FROM grupo_equipos_porra")

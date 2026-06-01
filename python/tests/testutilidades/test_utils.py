@@ -4,7 +4,7 @@ import os
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
-from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra
+from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra, obtenerCombinacionMejoresTerceros, construirLookup, crearBracketDieciseisavos
 from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, extraerExtension
 
 @pytest.mark.parametrize(["codigo"],
@@ -561,10 +561,136 @@ def test_obtener_pasos_porra(estado_porra, paso):
 
     assert obtenerPasosPorra(estado_porra)==paso
 
+def test_obtener_combinacion_mejores_terceros_no_hay():
 
+    assert not obtenerCombinacionMejoresTerceros([])
 
+def test_obtener_combinacion_mejores_terceros():
 
+    mejores_terceros=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                        ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                        ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3), ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                        ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                        ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3), ('I', 'senegal', 'Senegal', 5658, 'SEN', 3),
+                        ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
 
+    combinacion_mejores_terceros=obtenerCombinacionMejoresTerceros(mejores_terceros)
+
+    assert len(combinacion_mejores_terceros)==8
+
+def test_construir_lookup_no_hay():
+
+    assert not construirLookup([], [])
+
+def test_construir_lookup():
+
+    primero_segundos=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                        ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                        ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                        ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                        ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                        ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 1),
+                        ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                        ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                        ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                        ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                        ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                        ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                        ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                        ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 2),
+                        ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                        ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 2),
+                        ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 2),
+                        ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 2),
+                        ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                        ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 2),
+                        ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 2),
+                        ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                        ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                        ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 2)]
+
+    terceros=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 3),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 3),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 3),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    lookup=construirLookup(primero_segundos, terceros)
+
+    assert len(lookup)==32
+    assert len(lookup) == len(set(lookup.keys()))
+
+    for g in "ABCDEFGHIJKL":
+
+        assert f"1{g}" in lookup
+        assert f"2{g}" in lookup
+
+    for g in "ACDEFHIL":
+
+        assert f"3{g}" in lookup
+
+def test_crear_bracket_dieciseisavos_no_hay():
+
+    partidos_variables_equipo_tercero={'M74': '3C', 'M77': '3D', 'M79': '3H', 'M80': '3I', 'M81': '3F', 'M82': '3A', 'M85': '3E', 'M87': '3L'}
+
+    assert not crearBracketDieciseisavos(partidos_variables_equipo_tercero, [], [])
+
+def test_crear_bracket_dieciseisavos():
+
+    primero_segundos=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                        ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                        ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                        ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                        ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                        ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 1),
+                        ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                        ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                        ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                        ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                        ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                        ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                        ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                        ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 2),
+                        ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                        ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 2),
+                        ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 2),
+                        ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 2),
+                        ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                        ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 2),
+                        ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 2),
+                        ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                        ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                        ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 2)]
+
+    terceros=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 3),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 3),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 3),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    partidos_variables_equipo_tercero={'M74': '3C', 'M77': '3D', 'M79': '3H', 'M80': '3I', 'M81': '3F', 'M82': '3A', 'M85': '3E', 'M87': '3L'}
+
+    bracket_16avos=crearBracketDieciseisavos(partidos_variables_equipo_tercero, primero_segundos, terceros)
+
+    assert len(bracket_16avos)==16
+
+    partidos=["M73","M74","M75","M76","M77","M78","M79","M80", "M81","M82","M83","M84","M85","M86","M87","M88"]
+
+    for partido in partidos:
+
+        assert partido in bracket_16avos
+
+    for equipos in bracket_16avos.values():
+
+        assert len(equipos)==2
+        assert all(isinstance(e, tuple) for e in equipos)
+        assert all(len(e)==4 for e in equipos)
 
 def test_crear_carpeta_no_existe():
 

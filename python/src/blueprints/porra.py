@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from src.database.conexion import Conexion
 
 from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
-from src.utilidades.utils import obtenerPasosPorra
+from src.utilidades.utils import obtenerPasosPorra, obtenerCombinacionMejoresTerceros, crearBracketDieciseisavos
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -228,6 +228,40 @@ def pagina_porra_mejores_terceros_guardar():
 		con.cerrarConexion()
 
 		return redirect("/porra/mejores_terceros")
+
+@bp_porra.route("/porra/eliminatorias")
+@login_required
+def pagina_porra_eliminatorias():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
+
+	con=Conexion()
+
+	mejores_terceros_completos=con.mejoresTercerosPorraCompleto(usuario)
+
+	if not mejores_terceros_completos:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mejores_terceros")
+
+	primeros_segundos=con.obtenerPrimerosSegundosGruposUsuario(usuario)
+
+	mejores_terceros_grupos=con.obtenerMejoresTercerosUsuario(usuario)
+
+	combinacion_mejores_terceros=obtenerCombinacionMejoresTerceros(mejores_terceros_grupos)
+
+	partidos_variables_equipo_tercero=con.obtenerCombinacionPartidosMejoresTerceros(combinacion_mejores_terceros)
+
+	con.cerrarConexion()
+
+	bracket_16avos=crearBracketDieciseisavos(partidos_variables_equipo_tercero, primeros_segundos, mejores_terceros_grupos)
+
+	return str(bracket_16avos)
 
 @bp_porra.route("/porra/reiniciar")
 @login_required

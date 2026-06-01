@@ -19,6 +19,7 @@ def test_conexion(conexion):
 	assert "grupo_equipos_real" in tablas
 	assert "grupo_equipos_porra" in tablas
 	assert "mejores_terceros_porra" in tablas
+	assert "lookup_bracket_mejores_terceros" in tablas
 	
 def test_cerrar_conexion(conexion):
 

@@ -121,3 +121,16 @@ CREATE TABLE mejores_terceros_porra (Usuario VARCHAR(255),
 										FOREIGN KEY (Grupo) REFERENCES grupos (Grupo) ON DELETE CASCADE,
 										FOREIGN KEY (Equipo_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
 										CHECK (Orden BETWEEN 1 AND 8));
+
+CREATE TABLE lookup_bracket_mejores_terceros (Mejores_Terceros VARCHAR(8) PRIMARY KEY,
+												Posibilidad INTEGER,
+												M74 CHAR(2),
+												M77 CHAR(2),
+												M79 CHAR(2),
+												M80 CHAR(2),
+												M81 CHAR(2),
+												M82 CHAR(2),
+												M85 CHAR(2),
+												M87 CHAR(2));
+
+\copy lookup_bracket_mejores_terceros (Mejores_Terceros, Posibilidad, M74, M77, M79, M80, M81, M82, M85, M87) FROM '/docker-entrypoint-initdb.d/mejores_terceros.csv' WITH CSV HEADER;

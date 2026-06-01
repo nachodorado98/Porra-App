@@ -4,6 +4,8 @@ from passlib.context import CryptContext
 from typing import List, Dict
 import os
 
+from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO
+
 def codigo_valido(codigo:str)->bool:
 
     if not codigo:
@@ -171,6 +173,54 @@ def obtenerPasosPorra(estado_porra:tuple):
     estado={nombre:estado for nombre, estado in zip(nombre_estados, estado_porra)}
 
     return obtenerPasoEstado(estado)
+
+def obtenerCombinacionMejoresTerceros(mejores_terceros:List[tuple])->str:
+
+    if not mejores_terceros:
+
+        return ""
+
+    grupos_mejores_terceros=[mejor_tercero[0] for mejor_tercero in mejores_terceros]
+
+    return "".join(sorted(grupos_mejores_terceros))
+
+def construirLookup(primeros_segundos:List[tuple], terceros:List[tuple])->Dict:
+
+    lookup={}
+
+    for grupo, slug, nombre, id_equipo, fifa, pos in primeros_segundos:
+
+        lookup[f"{pos}{grupo}"]=(slug, nombre, id_equipo, fifa)
+
+    for grupo, slug, nombre, id_equipo, fifa, pos in terceros:
+
+        lookup[f"{pos}{grupo}"]=(slug, nombre, id_equipo, fifa)
+
+    return lookup
+
+def crearBracketDieciseisavos(partidos_variables_equipo_tercero:Dict, primeros_segundos:List[tuple], terceros:List[tuple])->Dict:
+
+    lookup=construirLookup(primeros_segundos, terceros)
+
+    bracket_final={}
+
+    try:
+
+        for partido, (slot1, slot2) in PARTIDOS_FIJOS.items():
+
+            bracket_final[partido]=[lookup[slot1], lookup[slot2]]
+
+        for partido, primero in PARTIDOS_VARIABLES_EQUIPO_PRIMERO.items():
+
+            slot_tercero=partidos_variables_equipo_tercero[partido]
+
+            bracket_final[partido]=[lookup[primero], lookup[slot_tercero]]
+
+        return dict(sorted(bracket_final.items()))
+
+    except Exception:
+
+        return {}
 
 def crearCarpeta(ruta:str)->None:
 
