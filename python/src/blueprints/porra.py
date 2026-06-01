@@ -261,7 +261,12 @@ def pagina_porra_eliminatorias():
 
 	bracket_16avos=crearBracketDieciseisavos(partidos_variables_equipo_tercero, primeros_segundos, mejores_terceros_grupos)
 
-	return str(bracket_16avos)
+	return render_template("porra_eliminatorias.html",
+							usuario=usuario,
+							nombre=current_user.nombre,
+							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
+							bracket_16avos=bracket_16avos)
 
 @bp_porra.route("/porra/reiniciar")
 @login_required

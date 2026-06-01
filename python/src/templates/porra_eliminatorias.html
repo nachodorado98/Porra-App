@@ -1,0 +1,70 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/porra_eliminatorias.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<script>
+    const BRACKET_16AVOS = {{ bracket_16avos|tojson }};
+</script>
+
+<div class="eliminatorias-wrapper">
+
+    <div class="info-eliminatorias">
+        <h1>Fase Eliminatoria 🏆</h1>
+        <p>Selecciona el ganador de cada cruce hasta completar tu campeón.</p>
+    </div>
+
+    <div class="scroll-hint">
+        ← Desliza para ver el cuadro completo →
+    </div>
+
+    <div class="bracket-scroll">
+        <div id="campeonBox" class="campeon-box">
+            <div class="campeon-titulo">🏆 CAMPEÓN</div>
+            <div id="campeonContenido" class="campeon-contenido">
+                Completa la final para ver tu campeón
+            </div>
+        </div>
+        <div id="bracket"></div>
+    </div>
+    <div class="tercer-puesto-wrapper">
+        <div class="round-title">3º y 4º puesto</div>
+        <div id="third-place-container"></div>
+    </div>
+
+    <button id="btnContinuar" disabled>Ver resumen</button>
+
+    <div id="modalResumen" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Confirmar eliminatorias</h2>
+            <div id="resumenContenido"></div>
+
+            <form id="formConfirmar" method="POST" action="/porra/eliminatorias/guardar">
+                <input type="hidden" name="elecciones_eliminatorias" id="inputElecciones">
+
+                <div class="modal-buttons">
+                    <button type="button" id="cancelarModal">Cancelar</button>
+                    <button type="submit" id="confirmarModal">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalCampeon" class="modal-campeon-overlay">
+        <div class="modal-campeon-content">
+            <div class="campeon-confetti">🎉 ✨ 🏆 ✨ 🎉</div>
+            <h2>¡CAMPEÓN DEL MUNDO!</h2>
+            <div id="modalCampeonContenido"></div>
+            <button type="button" id="cerrarModalCampeon">Seguir viendo bracket</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/porra_eliminatorias.js') }}"></script>
+
+{% endblock principal %}
