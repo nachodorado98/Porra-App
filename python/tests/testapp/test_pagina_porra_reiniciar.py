@@ -1,3 +1,5 @@
+import json
+
 def test_pagina_porra_reiniciar_sin_login(cliente, conexion):
 
 	respuesta=cliente.get("/porra/reiniciar", follow_redirects=True)
@@ -21,12 +23,18 @@ def test_pagina_porra_reiniciar_sin_iniciar(cliente, conexion_usuario):
 
 		assert not conexion_usuario.c.fetchall()
 
-		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")
+
+		assert not conexion_usuario.c.fetchall()
+
+		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 		estado=conexion_usuario.c.fetchone()
 
 		assert not estado["grupos_completados"]
 		assert not estado["mejores_terceros_completados"]
+		assert not estado["eliminatorias_completadas"]
+		assert not estado["porra_completada"]
 
 		respuesta=cliente_abierto.get("/porra/reiniciar")
 
@@ -44,44 +52,30 @@ def test_pagina_porra_reiniciar_sin_iniciar(cliente, conexion_usuario):
 
 		assert not conexion_usuario.c.fetchall()
 
-		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")
+
+		assert not conexion_usuario.c.fetchall()
+
+		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 		estado=conexion_usuario.c.fetchone()
 
 		assert not estado["grupos_completados"]
 		assert not estado["mejores_terceros_completados"]
+		assert not estado["eliminatorias_completadas"]
+		assert not estado["porra_completada"]
 
-def test_pagina_porra_reiniciar(cliente, conexion_usuario):
-
-	porra={'A': ['republica-checa', 'seleccion-republica-corea', 'seleccion-mexico', 'seleccion-sudafrica'],
-			'B': ['canada', 'seleccion-bosnia-herzegovina', 'seleccion-suiza', 'seleccion-qatar'],
-			'C': ['seleccion-marruecos', 'seleccion-escocia', 'seleccion-brasil', 'haiti'],
-			'D': ['seleccion-estados-unidos', 'seleccion-paraguay', 'seleccion-turquia', 'seleccion-australia'],
-			'E': ['seleccion-ecuador', 'seleccion-costa-marfil', 'seleccion-alemania', 'curazao'],
-			'F': ['seleccion-japon', 'seleccion-suecia', 'seleccion-holanda', 'seleccion-tunez'],
-			'G': ['seleccion-egipto', 'seleccion-iran', 'seleccion-belgica', 'seleccion-nueva-zelanda'],
-			'H': ['seleccion-uruguay', 'seleccion-arabia-saudi', 'seleccion-espanola', 'cabo-verde'],
-			'I': ['seleccion-noruega', 'senegal', 'seleccion-francia', 'seleccion-iraq'],
-			'J': ['seleccion-austria', 'seleccion-argelia', 'seleccion-argentina', 'jordania'],
-			'K': ['seleccion-colombia', 'rd-congo', 'seleccion-portugal', 'seleccion-uzbekistan'],
-			'L': ['seleccion-croacia', 'seleccion-ghana', 'seleccion-inglaterra', 'panama-seleccion']}
-
-	porra_mejores_terceros=[{'equipo_id': 'seleccion-brasil', 'grupo': 'C'},
-				            {'equipo_id': 'seleccion-espanola', 'grupo': 'H'},
-				            {'equipo_id': 'seleccion-alemania', 'grupo': 'E'},
-				            {'equipo_id': 'seleccion-holanda', 'grupo': 'F'},
-				            {'equipo_id': 'seleccion-francia', 'grupo': 'I'},
-				            {'equipo_id': 'seleccion-argentina', 'grupo': 'J'},
-				            {'equipo_id': 'seleccion-portugal', 'grupo': 'K'},
-				            {'equipo_id': 'seleccion-inglaterra', 'grupo': 'L'}]
+def test_pagina_porra_reiniciar(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket):
 
 	with cliente as cliente_abierto:
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra})
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
 
 		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
+
+		cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
 
 		conexion_usuario.c.execute("SELECT * FROM grupo_equipos_porra")
 
@@ -91,12 +85,18 @@ def test_pagina_porra_reiniciar(cliente, conexion_usuario):
 
 		assert conexion_usuario.c.fetchall()
 
-		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")
+
+		assert conexion_usuario.c.fetchall()
+
+		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 		estado=conexion_usuario.c.fetchone()
 
 		assert estado["grupos_completados"]
 		assert estado["mejores_terceros_completados"]
+		assert estado["eliminatorias_completadas"]
+		assert estado["porra_completada"]
 
 		respuesta=cliente_abierto.get("/porra/reiniciar")
 
@@ -114,9 +114,15 @@ def test_pagina_porra_reiniciar(cliente, conexion_usuario):
 
 		assert not conexion_usuario.c.fetchall()
 
-		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")
+
+		assert not conexion_usuario.c.fetchall()
+
+		conexion_usuario.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 		estado=conexion_usuario.c.fetchone()
 
 		assert not estado["grupos_completados"]
 		assert not estado["mejores_terceros_completados"]
+		assert not estado["eliminatorias_completadas"]
+		assert not estado["porra_completada"]

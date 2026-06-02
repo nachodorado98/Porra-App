@@ -1,10 +1,12 @@
 import pytest
 import os
+import copy
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra, obtenerCombinacionMejoresTerceros, construirLookup, crearBracketDieciseisavos
+from src.utilidades.utils import bracketEliminatoriasCorrecto
 from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, extraerExtension
 
 @pytest.mark.parametrize(["codigo"],
@@ -545,9 +547,11 @@ def test_mejores_terceros_porra_correctos(porra_mejores_terceros):
 
 @pytest.mark.parametrize(["estado", "paso"],
     [
-        ({'grupo_completo': False, 'mejor_tercero_completo': False}, 0),
-        ({'grupo_completo': True, 'mejor_tercero_completo': False}, 1),
-        ({'grupo_completo': True, 'mejor_tercero_completo': True}, 2),
+        ({'grupo_completo': False, 'mejor_tercero_completo': False, "eliminatorias_completa": False, "porra_completa": False}, 0),
+        ({'grupo_completo': True, 'mejor_tercero_completo': False, "eliminatorias_completa": False, "porra_completa": False}, 1),
+        ({'grupo_completo': True, 'mejor_tercero_completo': True, "eliminatorias_completa": False, "porra_completa": False}, 2),
+        ({'grupo_completo': True, 'mejor_tercero_completo': True, "eliminatorias_completa": True, "porra_completa": False}, 3),
+        ({'grupo_completo': True, 'mejor_tercero_completo': True, "eliminatorias_completa": True, "porra_completa": True}, 4)
     ]
 )
 def test_obtener_paso_estado(estado, paso):
@@ -555,7 +559,7 @@ def test_obtener_paso_estado(estado, paso):
     assert obtenerPasoEstado(estado)==paso
 
 @pytest.mark.parametrize(["estado_porra", "paso"],
-    [((False, False), 0), ((True, False), 1), ((True, True), 2)]
+    [((False, False, False, False), 0), ((True, False, False, False), 1), ((True, True, False, False), 2), ((True, True, True, False), 3), ((True, True, True, True), 4)]
 )
 def test_obtener_pasos_porra(estado_porra, paso):
 
@@ -691,6 +695,161 @@ def test_crear_bracket_dieciseisavos():
         assert len(equipos)==2
         assert all(isinstance(e, tuple) for e in equipos)
         assert all(len(e)==4 for e in equipos)
+
+def test_test_bracket_eliminatorias_correcto_no_es_lista():
+
+    assert not bracketEliminatoriasCorrecto("no soy una lista", {})
+    
+@pytest.mark.parametrize(["partido"],
+    [("M104",), ("M102",), ("M99",), ("M88",)]
+)
+def test_bracket_eliminatorias_correcto_falta_un_partido(partidos_bracket, bracket_16avos_real, partido):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    bracket=[p for p in partidos_bracket if p["partido"]!=partido]
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_partido_duplicado(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    bracket.append(copy.deepcopy(bracket[0]))
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_partido_no_valido(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    bracket[0]["partido"]="M999"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_ronda_incorrecta(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M89")
+
+    partido["ronda"]="cuartos"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_ganador_no_juega_el_partido(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M73")
+
+    partido["ganador_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_equipo_repetido_en_mismo_partido(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M73")
+
+    partido["equipo_2_id"]=partido["equipo_1_id"]
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_campo_vacio(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M73")
+
+    partido["ganador_id"]=""
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_16avos_no_coinciden_con_backend(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M73")
+
+    partido["equipo_1_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_octavos_no_salen_de_los_ganadores_de_16avos(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M89")
+
+    partido["equipo_1_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_cuartos_no_salen_de_los_ganadores_de_octavos(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M97")
+
+    partido["equipo_2_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_semis_no_salen_de_los_ganadores_de_cuartos(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M101")
+
+    partido["equipo_1_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_final_no_tiene_ganadores_de_semis(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M104")
+
+    partido["equipo_1_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_tercer_puesto_no_tiene_perdedores_de_semis(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M103")
+
+    partido["equipo_1_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_ganador_de_tercer_puesto_no_juega(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M103")
+
+    partido["ganador_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto_ganador_de_final_no_juega(partidos_bracket, bracket_16avos_real):
+
+    bracket=copy.deepcopy(partidos_bracket)
+
+    partido=next(p for p in bracket if p["partido"]=="M104")
+
+    partido["ganador_id"]="seleccion-falsa"
+
+    assert not bracketEliminatoriasCorrecto(bracket, bracket_16avos_real)
+
+def test_bracket_eliminatorias_correcto(partidos_bracket, bracket_16avos_real):
+
+    assert bracketEliminatoriasCorrecto(partidos_bracket, bracket_16avos_real)
 
 def test_crear_carpeta_no_existe():
 

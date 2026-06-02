@@ -188,7 +188,7 @@ class Conexion:
 	# Metodo para obtener el estado de una porra de un usuario
 	def obtenerEstadoPorraUsuario(self, usuario:str)->Optional[tuple]:
 
-		self.c.execute("""SELECT grupos_completados, mejores_terceros_completados
+		self.c.execute("""SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada
 							FROM estado_porra
 							WHERE usuario=%s""",
 							(usuario,))
@@ -196,7 +196,9 @@ class Conexion:
 		estado_porra_usuario=self.c.fetchone()
 
 		return None if estado_porra_usuario is None else (estado_porra_usuario["grupos_completados"],
-															estado_porra_usuario["mejores_terceros_completados"])
+															estado_porra_usuario["mejores_terceros_completados"],
+															estado_porra_usuario["eliminatorias_completadas"],
+															estado_porra_usuario["porra_completada"])
 
 	# Metodo para insertar el estado de una porra de un usuario
 	def insertarEstadoPorraUsuario(self, usuario:str)->None:
@@ -234,7 +236,7 @@ class Conexion:
 		self.confirmar()
 
 	# Metodo para insertar los equipos con posiciones en grupo de un usuario
-	def insertarEquipoGruposPorraUsuario(self, usuario:str, grupo:str, equipos:List[str])->None:
+	def insertarEquipoGruposPorraUsuario(self, usuario:str, grupo:str, equipos:List[tuple])->None:
 
 		valores=[(usuario, grupo, equipo, posicion) for posicion, equipo in enumerate(equipos, start=1)]
 
@@ -328,12 +330,69 @@ class Conexion:
 		self.confirmar()
 
 	# Metodo para insertar los equipos con orden de mejor tercero de un usuario
-	def insertarEquipoMejoresTercerosPorraUsuario(self, usuario:str, equipos:List[str])->None:
+	def insertarEquipoMejoresTercerosPorraUsuario(self, usuario:str, equipos:List[tuple])->None:
 
 	    valores=[(usuario, grupo, equipo_id, orden) for orden, (grupo, equipo_id) in enumerate(equipos, start=1)]
 
 	    self.c.executemany("""INSERT INTO mejores_terceros_porra (Usuario, Grupo, Equipo_Id, Orden)
 	        					VALUES (%s, %s, %s, %s)""",
+	        					valores)
+
+	    self.confirmar()
+
+	# Metodo para actualizar el estado de las eliminatorias de la porra de un usuario
+	def actualizarEstadoPorraEliminatoriasUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE estado_porra
+							SET Eliminatorias_Completadas=True
+							WHERE usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para actualizar el estado de de la porra de un usuario
+	def actualizarEstadoPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE estado_porra
+							SET Porra_Completada=True
+							WHERE usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para saber si un usuario ha completado las eliminatorias de la porra
+	def eliminatoriasPorraCompleto(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT Eliminatorias_Completadas
+							FROM estado_porra
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		eliminatorias_completadas=self.c.fetchone()
+
+		return False if eliminatorias_completadas is None else eliminatorias_completadas["eliminatorias_completadas"]
+
+	# Metodo para saber si un usuario puede editar las eliminatorias de la porra
+	def puedeEditarEliminatoriasPorra(self, usuario:str)->bool:
+
+		return not self.eliminatoriasPorraCompleto(usuario)
+
+	# Metodo para insertar un partido de ronda de eliminatorias de un usuario
+	def insertarPartidoEliminatoriaPorraUsuario(self, usuario:str, ronda:str, partido:str, equipo_1_id:str, equipo_2_id:str, ganador_id:str)->None:
+
+		self.c.execute("""INSERT INTO eliminatorias_porra (Usuario, Ronda, Partido, Equipo_1_Id, Equipo_2_Id, Ganador_Id)
+							VALUES (%s, %s, %s, %s, %s, %s)""",
+							(usuario, ronda, partido, equipo_1_id, equipo_2_id, ganador_id))
+
+		self.confirmar()
+
+	# Metodo para insertar los partidos de rondas de eliminatorias de un usuario
+	def insertarPartidosEliminatoriasPorraUsuario(self, usuario:str, partidos:List[tuple])->None:
+
+	    valores=[(usuario, ronda, partido, equipo_1, equipo_2, ganador) for ronda, partido, equipo_1, equipo_2, ganador in partidos]
+
+	    self.c.executemany("""INSERT INTO eliminatorias_porra (Usuario, Ronda, Partido, Equipo_1_Id, Equipo_2_Id, Ganador_Id)
+	        					VALUES (%s, %s, %s, %s, %s, %s)""",
 	        					valores)
 
 	    self.confirmar()
@@ -409,11 +468,21 @@ class Conexion:
 
 		self.confirmar()
 
+ 	# Metodo para reiniciar porra eliminatorias de un usuario
+	def reiniciarEliminatoriasPorraUsuario(self, usuario:str)->None:
+
+		self.c.execute("""DELETE FROM eliminatorias_porra
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		self.confirmar()
+
 	# Metodo para reiniciar estado porra de un usuario
 	def reiniciarEstadoPorraUsuario(self, usuario:str)->None:
 
 		self.c.execute("""UPDATE estado_porra
-							SET grupos_completados=False, mejores_terceros_completados=False
+							SET grupos_completados=False, mejores_terceros_completados=False,
+							eliminatorias_completadas=False, porra_completada=False
 							WHERE Usuario=%s""",
 							(usuario,))
 

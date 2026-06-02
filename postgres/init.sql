@@ -67,6 +67,9 @@ INSERT INTO equipos VALUES ('seleccion-republica-corea', 'Corea del Sur', 3804, 
 CREATE TABLE estado_porra (Usuario VARCHAR(255) PRIMARY KEY,
     						Grupos_Completados BOOLEAN DEFAULT FALSE,
     						Mejores_Terceros_Completados BOOLEAN DEFAULT FALSE,
+    						Eliminatorias_Completadas BOOLEAN DEFAULT FALSE,
+    						Porra_Completada BOOLEAN DEFAULT FALSE,
+    						Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     						FOREIGN KEY (Usuario) REFERENCES usuarios (Usuario) ON DELETE CASCADE);
 
 CREATE TABLE grupos (Grupo CHAR(1) PRIMARY KEY);
@@ -122,6 +125,14 @@ CREATE TABLE mejores_terceros_porra (Usuario VARCHAR(255),
 										FOREIGN KEY (Equipo_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
 										CHECK (Orden BETWEEN 1 AND 8));
 
+CREATE TABLE mejores_terceros_real (Grupo CHAR(1),
+										Equipo_Id VARCHAR(255),
+										Orden INTEGER,
+										PRIMARY KEY (Grupo, Equipo_Id),
+										FOREIGN KEY (Grupo) REFERENCES grupos (Grupo) ON DELETE CASCADE,
+										FOREIGN KEY (Equipo_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
+										CHECK (Orden BETWEEN 1 AND 8));
+
 CREATE TABLE lookup_bracket_mejores_terceros (Mejores_Terceros VARCHAR(8) PRIMARY KEY,
 												Posibilidad INTEGER,
 												M74 CHAR(2),
@@ -134,3 +145,24 @@ CREATE TABLE lookup_bracket_mejores_terceros (Mejores_Terceros VARCHAR(8) PRIMAR
 												M87 CHAR(2));
 
 \copy lookup_bracket_mejores_terceros (Mejores_Terceros, Posibilidad, M74, M77, M79, M80, M81, M82, M85, M87) FROM '/docker-entrypoint-initdb.d/mejores_terceros.csv' WITH CSV HEADER;
+
+CREATE TABLE eliminatorias_porra (Usuario VARCHAR(255),
+									Ronda VARCHAR(20),
+									Partido CHAR(4),
+									Equipo_1_Id VARCHAR(255),
+									Equipo_2_Id VARCHAR(255),
+									Ganador_Id VARCHAR(255),
+									Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+									PRIMARY KEY (Usuario, Partido),
+									FOREIGN KEY (Usuario)  REFERENCES usuarios (Usuario) ON DELETE CASCADE,
+									FOREIGN KEY (Equipo_1_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
+									FOREIGN KEY (Equipo_2_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
+									FOREIGN KEY (Ganador_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE);
+
+CREATE TABLE eliminatorias_real (Ronda VARCHAR(20),
+									Partido CHAR(4),
+									Equipo_1_Id VARCHAR(255),
+									Equipo_2_Id VARCHAR(255),
+									PRIMARY KEY (Partido),
+									FOREIGN KEY (Equipo_1_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
+									FOREIGN KEY (Equipo_2_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE);

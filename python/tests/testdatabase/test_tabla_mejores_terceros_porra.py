@@ -103,7 +103,7 @@ def test_reiniciar_mejores_terceros_porra_usuario_usuario_no_existe(conexion):
 
 	assert not conexion.c.fetchall()
 
-def test_reiniciar_mejores_terceros_porra_usuario_porra_grupos_no_existe(conexion):
+def test_reiniciar_mejores_terceros_porra_usuario_porra_mejores_terceros_no_existe(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 

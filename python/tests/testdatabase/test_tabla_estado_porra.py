@@ -42,7 +42,7 @@ def test_obtener_estado_porra_usuario(conexion):
 
 	estado_porra_usuario=conexion.obtenerEstadoPorraUsuario("nacho98")
 
-	assert len(estado_porra_usuario)==2
+	assert len(estado_porra_usuario)==4
 
 def test_actualizar_estado_porra_grupos_no_existe_usuario(conexion):
 
@@ -196,7 +196,7 @@ def test_mejores_terceros_porra_completa_no_existe_usuario(conexion):
 
 	assert not conexion.mejoresTercerosPorraCompleto("nacho98")
 
-def test_mejores_terceros_porra_completa_no_grupo_completado(conexion):
+def test_mejores_terceros_porra_completa_no_mejores_terceros_completado(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
@@ -206,7 +206,7 @@ def test_mejores_terceros_porra_completa_no_grupo_completado(conexion):
 
 	assert not conexion.mejoresTercerosPorraCompleto("nacho98")
 
-def test_mejores_terceros_porra_completa_grupo_completado(conexion):
+def test_mejores_terceros_porra_completa_mejores_terceros_completado(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
@@ -222,7 +222,7 @@ def test_puede_editar_mejores_terceros_porra_no_existe_usuario(conexion):
 
 	assert conexion.puedeEditarMejoresTercerosPorra("nacho98")
 
-def test_puede_editar_mejores_terceros_porra_no_grupo_completado(conexion):
+def test_puede_editar_mejores_terceros_porra_no_mejores_terceros_completado(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
@@ -232,7 +232,7 @@ def test_puede_editar_mejores_terceros_porra_no_grupo_completado(conexion):
 
 	assert conexion.puedeEditarMejoresTercerosPorra("nacho98")
 
-def test_puede_editar_mejores_terceros_porra_grupo_completado(conexion):
+def test_puede_editar_mejores_terceros_porra_mejores_terceros_completado(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
@@ -243,6 +243,154 @@ def test_puede_editar_mejores_terceros_porra_grupo_completado(conexion):
 	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
 
 	assert not conexion.puedeEditarMejoresTercerosPorra("nacho98")
+
+def test_actualizar_estado_porra_eliminatorias_no_existe_usuario(conexion):
+
+	conexion.c.execute("SELECT * FROM estado_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchall()
+
+def test_actualizar_estado_porra_eliminatorias_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Eliminatorias_Completadas FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["eliminatorias_completadas"]
+
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho")
+
+	conexion.c.execute("SELECT Eliminatorias_Completadas FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["eliminatorias_completadas"]
+
+def test_actualizar_estado_porra_eliminatorias(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Eliminatorias_Completadas FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["eliminatorias_completadas"]
+
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	conexion.c.execute("SELECT Eliminatorias_Completadas FROM estado_porra WHERE usuario='nacho98'")
+
+	assert conexion.c.fetchone()["eliminatorias_completadas"]
+
+def test_actualizar_estado_porra_no_existe_usuario(conexion):
+
+	conexion.c.execute("SELECT * FROM estado_porra")
+
+	assert not conexion.c.fetchall()
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT * FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchall()
+
+def test_actualizar_estado_porra_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Porra_Completada FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["porra_completada"]
+
+	conexion.actualizarEstadoPorraUsuario("nacho")
+
+	conexion.c.execute("SELECT Porra_Completada FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["porra_completada"]
+
+def test_actualizar_estado_porra(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Porra_Completada FROM estado_porra WHERE usuario='nacho98'")
+
+	assert not conexion.c.fetchone()["porra_completada"]
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT Porra_Completada FROM estado_porra WHERE usuario='nacho98'")
+
+	assert conexion.c.fetchone()["porra_completada"]
+
+def test_eliminatorias_porra_completa_no_existe_usuario(conexion):
+
+	assert not conexion.eliminatoriasPorraCompleto("nacho98")
+
+def test_eliminatorias_porra_completa_no_eliminatorias_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.eliminatoriasPorraCompleto("nacho98")
+
+def test_eliminatorias_porra_completa_eliminatorias_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	assert conexion.eliminatoriasPorraCompleto("nacho98")
+
+def test_puede_editar_eliminatorias_porra_no_existe_usuario(conexion):
+
+	assert conexion.puedeEditarEliminatoriasPorra("nacho98")
+
+def test_puede_editar_eliminatorias_porra_no_eliminatorias_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert conexion.puedeEditarEliminatoriasPorra("nacho98")
+
+def test_puede_editar_eliminatorias_porra_eliminatorias_completado(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	assert not conexion.puedeEditarEliminatoriasPorra("nacho98")
 
 def test_reiniciar_estado_porra_usuario_usuario_no_existe(conexion):
 
@@ -268,21 +416,29 @@ def test_reiniciar_estado_porra_usuario_otro_usuario(conexion):
 
 	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
 
-	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 	estado=conexion.c.fetchone()
 
 	assert estado["grupos_completados"]
 	assert estado["mejores_terceros_completados"]
+	assert estado["eliminatorias_completadas"]
+	assert estado["porra_completada"]
 
 	conexion.reiniciarEstadoPorraUsuario("nacho")
 
-	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 	estado=conexion.c.fetchone()
 
 	assert estado["grupos_completados"]
 	assert estado["mejores_terceros_completados"]
+	assert estado["eliminatorias_completadas"]
+	assert estado["porra_completada"]
 
 def test_reiniciar_estado_porra_usuario(conexion):
 
@@ -296,18 +452,26 @@ def test_reiniciar_estado_porra_usuario(conexion):
 
 	conexion.actualizarEstadoPorraMejoresTercerosUsuario("nacho98")
 
-	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+	conexion.actualizarEstadoPorraEliminatoriasUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 	estado=conexion.c.fetchone()
 
 	assert estado["grupos_completados"]
 	assert estado["mejores_terceros_completados"]
+	assert estado["eliminatorias_completadas"]
+	assert estado["porra_completada"]
 
 	conexion.reiniciarEstadoPorraUsuario("nacho98")
 
-	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados FROM estado_porra")
+	conexion.c.execute("SELECT grupos_completados, mejores_terceros_completados, eliminatorias_completadas, porra_completada FROM estado_porra")
 
 	estado=conexion.c.fetchone()
 
 	assert not estado["grupos_completados"]
 	assert not estado["mejores_terceros_completados"]
+	assert not estado["eliminatorias_completadas"]
+	assert not estado["porra_completada"]

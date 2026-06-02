@@ -156,7 +156,7 @@ def mejoresTercerosPorraCorrectos(equipos_mejores_terceros_real:List[tuple], equ
 
 def obtenerPasoEstado(estado:Dict)->int:
 
-    PASOS=[("grupo_completo", 0), ("mejor_tercero_completo", 1)]
+    PASOS=[("grupo_completo", 0), ("mejor_tercero_completo", 1), ("eliminatorias_completa", 2), ("porra_completa", 3)]
 
     for campo, paso in PASOS:
 
@@ -168,7 +168,7 @@ def obtenerPasoEstado(estado:Dict)->int:
 
 def obtenerPasosPorra(estado_porra:tuple):
 
-    nombre_estados=["grupo_completo", "mejor_tercero_completo"]
+    nombre_estados=["grupo_completo", "mejor_tercero_completo", "eliminatorias_completa", "porra_completa"]
 
     estado={nombre:estado for nombre, estado in zip(nombre_estados, estado_porra)}
 
@@ -221,6 +221,149 @@ def crearBracketDieciseisavos(partidos_variables_equipo_tercero:Dict, primeros_s
     except Exception:
 
         return {}
+
+def bracketEliminatoriasCorrecto(partidos_bracket:List[Dict], bracket_16avos:Dict)->bool:
+
+    errores = []
+
+    rondas_esperadas = {"dieciseisavos": 16,
+                        "octavos": 8,
+                        "cuartos": 4,
+                        "semifinales": 2,
+                        "tercer_puesto": 1,
+                        "final": 1}
+
+    ronda_por_partido = {**{f"M{i}": "dieciseisavos" for i in range(73, 89)},
+                        **{f"M{i}": "octavos" for i in range(89, 97)},
+                        **{f"M{i}": "cuartos" for i in range(97, 101)},
+                        "M101": "semifinales",
+                        "M102": "semifinales",
+                        "M103": "tercer_puesto",
+                        "M104": "final"}
+
+    siguiente = {"M74": "M89", "M77": "M89",
+                    "M73": "M90", "M75": "M90",
+                    "M76": "M91", "M78": "M91",
+                    "M79": "M92", "M80": "M92",
+                    "M83": "M93", "M84": "M93",
+                    "M81": "M94", "M82": "M94",
+                    "M86": "M95", "M88": "M95",
+                    "M85": "M96", "M87": "M96",
+
+                    "M89": "M97", "M90": "M97",
+                    "M93": "M98", "M94": "M98",
+                    "M91": "M99", "M92": "M99",
+                    "M95": "M100", "M96": "M100",
+
+                    "M97": "M101", "M98": "M101",
+                    "M99": "M102", "M100": "M102",
+
+                    "M101": "M104",
+                    "M102": "M104"}
+
+    if not isinstance(partidos_bracket, list):
+        return False
+
+    if len(partidos_bracket) != 32:
+        errores.append(f"El bracket debe tener 32 partidos y tiene {len(partidos_bracket)}")
+
+    partidos = {}
+
+    for p in partidos_bracket:
+        partido = p.get("partido")
+
+        if partido in partidos:
+            errores.append(f"Partido duplicado: {partido}")
+
+        partidos[partido] = p
+
+    for partido_esperado in ronda_por_partido:
+        if partido_esperado not in partidos:
+            errores.append(f"Falta el partido {partido_esperado}")
+
+    for match_id, p in partidos.items():
+        if match_id not in ronda_por_partido:
+            errores.append(f"Partido no válido: {match_id}")
+            continue
+
+        ronda_correcta = ronda_por_partido[match_id]
+
+        if p.get("ronda") != ronda_correcta:
+            errores.append(
+                f"{match_id} debería ser ronda {ronda_correcta}, pero viene como {p.get('ronda')}"
+            )
+
+        equipo_1 = p.get("equipo_1_id")
+        equipo_2 = p.get("equipo_2_id")
+        ganador = p.get("ganador_id")
+
+        if not equipo_1 or not equipo_2 or not ganador:
+            errores.append(f"{match_id} tiene campos vacíos")
+
+        if equipo_1 == equipo_2:
+            errores.append(f"{match_id} tiene el mismo equipo dos veces")
+
+        if ganador not in [equipo_1, equipo_2]:
+            errores.append(f"El ganador de {match_id} no juega ese partido")
+
+    for ronda, cantidad in rondas_esperadas.items():
+        total = sum(1 for p in partidos.values() if p.get("ronda") == ronda)
+
+        if total != cantidad:
+            errores.append(f"La ronda {ronda} debe tener {cantidad} partidos y tiene {total}")
+
+    for match_id, equipos in bracket_16avos.items():
+        if match_id not in partidos:
+            continue
+
+        p = partidos[match_id]
+
+        equipos_validos = {equipos[0][0], equipos[1][0]}
+        equipos_recibidos = {p.get("equipo_1_id"), p.get("equipo_2_id")}
+
+        if equipos_recibidos != equipos_validos:
+            errores.append(
+                f"{match_id} no coincide con los equipos reales de 16avos"
+            )
+
+    esperados_por_partido = {}
+
+    for origen, destino in siguiente.items():
+        if origen not in partidos:
+            continue
+
+        ganador_origen = partidos[origen].get("ganador_id")
+
+        esperados_por_partido.setdefault(destino, []).append(ganador_origen)
+
+    for destino, equipos_esperados in esperados_por_partido.items():
+        if destino not in partidos:
+            continue
+
+        p = partidos[destino]
+        equipos_recibidos = {p.get("equipo_1_id"), p.get("equipo_2_id")}
+
+        if set(equipos_esperados) != equipos_recibidos:
+            errores.append(
+                f"{destino} debería tener {equipos_esperados}, pero tiene {list(equipos_recibidos)}"
+            )
+
+    if "M101" in partidos and "M102" in partidos and "M103" in partidos:
+        perdedores_semis = []
+
+        for semi in ["M101", "M102"]:
+            p = partidos[semi]
+            perdedor = p["equipo_1_id"] if p["ganador_id"] == p["equipo_2_id"] else p["equipo_2_id"]
+            perdedores_semis.append(perdedor)
+
+        equipos_m103 = {partidos["M103"]["equipo_1_id"], partidos["M103"]["equipo_2_id"]}
+
+        if set(perdedores_semis) != equipos_m103:
+            errores.append(
+                f"M103 debería tener los perdedores de semifinales: {perdedores_semis}"
+            )
+
+    return len(errores)==0
 
 def crearCarpeta(ruta:str)->None:
 

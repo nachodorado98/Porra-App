@@ -413,14 +413,8 @@ function getBracketParaGuardar(){
     return getBracketCompleto().map(partido => ({
         ronda: partido.ronda,
         partido: partido.partido,
-
         equipo_1_id: partido.equipo_1_id,
-        equipo_1_nombre: partido.equipo_1_nombre,
-
         equipo_2_id: partido.equipo_2_id,
-        equipo_2_nombre: partido.equipo_2_nombre,
-
-        ganador_id: partido.ganador_id,
-        ganador_nombre: partido.ganador_nombre
+        ganador_id: partido.ganador_id
     }));
 }

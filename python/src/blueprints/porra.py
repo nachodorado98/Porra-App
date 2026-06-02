@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, redirect
 from flask_login import login_required, current_user
+import json
 
 from src.database.conexion import Conexion
 
 from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
-from src.utilidades.utils import obtenerPasosPorra, obtenerCombinacionMejoresTerceros, crearBracketDieciseisavos
+from src.utilidades.utils import obtenerPasosPorra, obtenerCombinacionMejoresTerceros, crearBracketDieciseisavos, bracketEliminatoriasCorrecto
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -249,6 +250,14 @@ def pagina_porra_eliminatorias():
 
 		return redirect("/porra/mejores_terceros")
 
+	puede_editar=con.puedeEditarEliminatoriasPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	primeros_segundos=con.obtenerPrimerosSegundosGruposUsuario(usuario)
 
 	mejores_terceros_grupos=con.obtenerMejoresTercerosUsuario(usuario)
@@ -268,6 +277,81 @@ def pagina_porra_eliminatorias():
 							imagen_perfil=imagen_perfil,
 							bracket_16avos=bracket_16avos)
 
+@bp_porra.route("/porra/eliminatorias/guardar", methods=["POST"])
+@login_required
+def pagina_porra_eliminatorias_guardar():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	con=Conexion()
+
+	mejores_terceros_completos=con.mejoresTercerosPorraCompleto(usuario)
+
+	if not mejores_terceros_completos:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mejores_terceros")
+
+	puede_editar=con.puedeEditarEliminatoriasPorra(usuario)
+
+	if not puede_editar:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	bracket_json=request.form.get("elecciones_eliminatorias")
+
+	try:
+
+		bracket=json.loads(bracket_json)
+
+	except Exception:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/eliminatorias")
+
+	primeros_segundos=con.obtenerPrimerosSegundosGruposUsuario(usuario)
+
+	mejores_terceros_grupos=con.obtenerMejoresTercerosUsuario(usuario)
+
+	combinacion_mejores_terceros=obtenerCombinacionMejoresTerceros(mejores_terceros_grupos)
+
+	partidos_variables_equipo_tercero=con.obtenerCombinacionPartidosMejoresTerceros(combinacion_mejores_terceros)
+
+	bracket_16avos=crearBracketDieciseisavos(partidos_variables_equipo_tercero, primeros_segundos, mejores_terceros_grupos)
+
+	if not bracketEliminatoriasCorrecto(bracket, bracket_16avos):
+
+		con.cerrarConexion()
+
+		return redirect("/porra/eliminatorias")
+
+	try:
+
+		bracket_porra_insertar=[(bracket_porra["ronda"], bracket_porra["partido"], bracket_porra["equipo_1_id"], bracket_porra["equipo_2_id"], bracket_porra["ganador_id"])
+								for bracket_porra in bracket]
+
+		con.insertarPartidosEliminatoriasPorraUsuario(usuario, bracket_porra_insertar)
+
+		con.actualizarEstadoPorraEliminatoriasUsuario(usuario)
+
+		con.actualizarEstadoPorraUsuario(usuario)
+
+		con.cerrarConexion()
+
+		return redirect("/porra/mi_porra")
+
+	except Exception:
+
+		con.cerrarConexion()
+
+		return redirect("/porra/eliminatorias")
+
 @bp_porra.route("/porra/reiniciar")
 @login_required
 def pagina_porra_reiniciar():
@@ -285,6 +369,8 @@ def pagina_porra_reiniciar():
 		con.reiniciarGruposPorraUsuario(usuario)
 
 		con.reiniciarMejoresTercerosPorraUsuario(usuario)
+
+		con.reiniciarEliminatoriasPorraUsuario(usuario)
 
 		con.reiniciarEstadoPorraUsuario(usuario)
 

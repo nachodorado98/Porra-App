@@ -19,8 +19,11 @@ def test_conexion(conexion):
 	assert "grupo_equipos_real" in tablas
 	assert "grupo_equipos_porra" in tablas
 	assert "mejores_terceros_porra" in tablas
+	assert "mejores_terceros_real" in tablas
 	assert "lookup_bracket_mejores_terceros" in tablas
-	
+	assert "eliminatorias_porra" in tablas
+	assert "eliminatorias_real" in tablas
+		
 def test_cerrar_conexion(conexion):
 
 	assert not conexion.bbdd.closed
