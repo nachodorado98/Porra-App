@@ -141,3 +141,47 @@ def  test_reiniciar_eliminatorias_porra_usuario(conexion):
 	conexion.c.execute("SELECT * FROM eliminatorias_porra")
 
 	assert not conexion.c.fetchall()
+
+def test_obtener_eliminatorias_porra_usuario_usuario_no_existe(conexion):
+
+	assert not conexion.obtenerEliminatoriasPorraUsuario("nacho98")
+
+def test_obtener_eliminatorias_porra_usuario_porra_grupos_no_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.obtenerEliminatoriasPorraUsuario("nacho98")
+
+def test_obtener_eliminatorias_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	partidos=[("dieciseisavos", "M74", "seleccion-espanola", "seleccion-uruguay", "seleccion-espanola"),
+				("dieciseisavos", "M73", "seleccion-mexico", "seleccion-alemania", "seleccion-alemania"),
+				("cuartos", "M90", "seleccion-brasil", "seleccion-holanda", "seleccion-brasil"),
+				("semis", "M100", "seleccion-espanola", "seleccion-argentina", "seleccion-espanola")]
+
+	conexion.insertarPartidosEliminatoriasPorraUsuario("nacho98", partidos)
+
+	assert not conexion.obtenerEliminatoriasPorraUsuario("nacho")
+
+def test_obtener_eliminatorias_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	partidos=[("dieciseisavos", "M74", "seleccion-espanola", "seleccion-uruguay", "seleccion-espanola"),
+				("dieciseisavos", "M73", "seleccion-mexico", "seleccion-alemania", "seleccion-alemania"),
+				("cuartos", "M90", "seleccion-brasil", "seleccion-holanda", "seleccion-brasil"),
+				("semis", "M100", "seleccion-espanola", "seleccion-argentina", "seleccion-espanola")]
+
+	conexion.insertarPartidosEliminatoriasPorraUsuario("nacho98", partidos)
+
+	eliminatorias_porra=conexion.obtenerEliminatoriasPorraUsuario("nacho98")
+
+	assert len(eliminatorias_porra)==4

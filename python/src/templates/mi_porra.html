@@ -79,6 +79,32 @@
 
     </section>
 
+    <script>const ELIMINATORIAS_PORRA={{ eliminatorias|tojson }};</script>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Fase eliminatoria 🏆</h2>
+
+        <div class="mi-campeon-box">
+            <div class="mi-campeon-titulo">Campeón</div>
+            <div id="miCampeonContenido" class="mi-campeon-contenido"></div>
+        </div>
+
+        <div class="scroll-hint"> ← Desliza para ver el cuadro completo →</div>
+
+        <div class="mi-bracket-scroll">
+            <div id="miBracket" class="mi-bracket"></div>
+        </div>
+
+        <div class="mi-tercer-puesto-wrapper">
+            <div class="mi-round-title">3º y 4º puesto</div>
+            <div id="miThirdPlace"></div>
+        </div>
+
+    </section>
+
+<script src="{{ url_for('static', filename='js/mi_porra.js') }}"></script>
+
 </div>
 
 {% endblock principal %}

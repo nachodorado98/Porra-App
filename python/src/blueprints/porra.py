@@ -6,6 +6,7 @@ from src.database.conexion import Conexion
 
 from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 from src.utilidades.utils import obtenerPasosPorra, obtenerCombinacionMejoresTerceros, crearBracketDieciseisavos, bracketEliminatoriasCorrecto
+from src.utilidades.utils import obtenerEliminatoriasPorraLimpias
 
 
 bp_porra=Blueprint("porra", __name__)
@@ -408,11 +409,15 @@ def pagina_porra_mi_porra():
 
 	mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario)
 
+	eliminatorias_porra=con.obtenerEliminatoriasPorraUsuario(usuario)
+
 	con.cerrarConexion()
 
 	grupos_porra_limpios=obtenerGruposEquiposLimpios(grupos_porra)
 
 	mejores_terceros_porra_limpios=obtenerTercerosGruposEquiposLimpios(mejores_terceros_porra)
+
+	eliminatorias_porra_limpias=obtenerEliminatoriasPorraLimpias(eliminatorias_porra)
 
 	return render_template("mi_porra.html",
 							usuario=usuario,
@@ -420,4 +425,5 @@ def pagina_porra_mi_porra():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							grupos_porra=grupos_porra_limpios,
-							mejores_terceros=mejores_terceros_porra_limpios)
+							mejores_terceros=mejores_terceros_porra_limpios,
+							eliminatorias=eliminatorias_porra_limpias)

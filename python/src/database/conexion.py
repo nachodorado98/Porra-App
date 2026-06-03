@@ -545,3 +545,37 @@ class Conexion:
 									            grupo_porra["nombre"],
 									            grupo_porra["escudo"],
 									            grupo_porra["bandera"]), grupos_porra))
+
+	# Metodo para obtener las eliminatorias de la porra de un usuario
+	def obtenerEliminatoriasPorraUsuario(self, usuario:str)->Optional[List[tuple]]:
+
+	    self.c.execute("""SELECT ep.ronda, ep.partido, ep.equipo_1_id, e1.nombre AS equipo_1_nombre, e1.escudo AS equipo_1_escudo, e1.bandera AS equipo_1_bandera,
+	    						ep.equipo_2_id, e2.nombre AS equipo_2_nombre, e2.escudo AS equipo_2_escudo, e2.bandera AS equipo_2_bandera,
+	    						ep.ganador_id, eg.nombre AS ganador_nombre, eg.escudo AS ganador_escudo, eg.bandera AS ganador_bandera
+	        				FROM eliminatorias_porra ep
+	        				JOIN equipos e1
+	            			ON ep.equipo_1_id=e1.equipo_id
+	            			JOIN equipos e2
+	            			ON ep.equipo_2_id=e2.equipo_id
+	            			JOIN equipos eg
+	            			ON ep.ganador_id=eg.equipo_id
+	            			WHERE ep.usuario=%s
+	            			ORDER BY CAST(SUBSTRING(ep.partido FROM 2) AS INTEGER)""",
+	            			(usuario,))
+
+	    eliminatorias_porra=self.c.fetchall()
+
+	    return list(map(lambda eliminatoria_porra: (eliminatoria_porra["ronda"],
+				    								eliminatoria_porra["partido"],
+											        eliminatoria_porra["equipo_1_id"],
+											        eliminatoria_porra["equipo_1_nombre"],
+											        eliminatoria_porra["equipo_1_escudo"],
+											        eliminatoria_porra["equipo_1_bandera"],
+											        eliminatoria_porra["equipo_2_id"],
+											        eliminatoria_porra["equipo_2_nombre"],
+											        eliminatoria_porra["equipo_2_escudo"],
+											        eliminatoria_porra["equipo_2_bandera"],
+											        eliminatoria_porra["ganador_id"],
+											        eliminatoria_porra["ganador_nombre"],
+											        eliminatoria_porra["ganador_escudo"],
+											        eliminatoria_porra["ganador_bandera"]), eliminatorias_porra))

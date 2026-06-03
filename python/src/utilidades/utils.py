@@ -365,6 +365,21 @@ def bracketEliminatoriasCorrecto(partidos_bracket:List[Dict], bracket_16avos:Dic
 
     return len(errores)==0
 
+def obtenerEliminatoriasPorraLimpias(eliminatorias:List[tuple])->Dict:
+
+    partidos={}
+
+    for fila in eliminatorias:
+
+        partido=fila[1].strip()
+
+        partidos[partido]={"ronda": fila[0], "partido": partido,
+                            "equipo_1": {"equipo_id": fila[2], "nombre": fila[3], "escudo": fila[4], "bandera": fila[5]},
+                            "equipo_2": {"equipo_id": fila[6], "nombre": fila[7], "escudo": fila[8], "bandera": fila[9]},
+                            "ganador": {"equipo_id": fila[10], "nombre": fila[11], "escudo": fila[12], "bandera": fila[13]}}
+
+    return partidos
+
 def crearCarpeta(ruta:str)->None:
 
     if not os.path.exists(ruta):

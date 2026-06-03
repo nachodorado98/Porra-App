@@ -148,7 +148,7 @@ CREATE TABLE lookup_bracket_mejores_terceros (Mejores_Terceros VARCHAR(8) PRIMAR
 
 CREATE TABLE eliminatorias_porra (Usuario VARCHAR(255),
 									Ronda VARCHAR(20),
-									Partido CHAR(4),
+									Partido VARCHAR(4),
 									Equipo_1_Id VARCHAR(255),
 									Equipo_2_Id VARCHAR(255),
 									Ganador_Id VARCHAR(255),
@@ -160,7 +160,7 @@ CREATE TABLE eliminatorias_porra (Usuario VARCHAR(255),
 									FOREIGN KEY (Ganador_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE);
 
 CREATE TABLE eliminatorias_real (Ronda VARCHAR(20),
-									Partido CHAR(4),
+									Partido VARCHAR(4),
 									Equipo_1_Id VARCHAR(255),
 									Equipo_2_Id VARCHAR(255),
 									PRIMARY KEY (Partido),
