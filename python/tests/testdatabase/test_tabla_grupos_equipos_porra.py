@@ -242,3 +242,63 @@ def  test_reiniciar_grupos_porra_usuario(conexion):
 	conexion.c.execute("SELECT * FROM grupo_equipos_porra")
 
 	assert not conexion.c.fetchall()
+
+def test_obtener_grupos_porra_usuario_usuario_no_existe(conexion):
+
+	assert not conexion.obtenerGruposPorraUsuario("nacho98")
+
+def test_obtener_grupos_porra_usuario_porra_grupos_no_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.obtenerGruposPorraUsuario("nacho98")
+
+def test_obtener_grupos_porra_usuario_otro_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	assert not conexion.obtenerGruposPorraUsuario("nacho")
+
+def test_obtener_grupos_porra_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	grupos_porra=conexion.obtenerGruposPorraUsuario("nacho98")
+
+	assert len(grupos_porra)==4
+
+	for equipo in grupos_porra:
+
+		assert equipo[0]=="H"
+
+def test_obtener_grupos_porra_usuario_varios(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "A", ['seleccion-mexico', 'republica-checa', 'seleccion-republica-corea', 'seleccion-sudafrica'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "C", ['seleccion-brasil', 'seleccion-marruecos', 'seleccion-escocia', 'haiti'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "D", ['seleccion-estados-unidos', 'seleccion-turquia', 'seleccion-paraguay', 'seleccion-australia'])
+
+	conexion.insertarEquipoGruposPorraUsuario("nacho98", "H", ['seleccion-espanola', 'seleccion-uruguay', 'seleccion-arabia-saudi', 'cabo-verde'])
+
+	grupos_porra=conexion.obtenerGruposPorraUsuario("nacho98")
+
+	assert len(grupos_porra)==16
+
+	for equipo in grupos_porra:
+
+		assert equipo[0] in ("A", "C", "D", "H")

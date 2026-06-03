@@ -399,6 +399,23 @@ class Conexion:
 
 		return not self.eliminatoriasPorraCompleto(usuario)
 
+	# Metodo para saber si un usuario ha completado la porra
+	def porraCompleta(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT Porra_Completada
+							FROM estado_porra
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		porra_completada=self.c.fetchone()
+
+		return False if porra_completada is None else porra_completada["porra_completada"]
+
+	# Metodo para saber si un usuario puede visualizar la porra
+	def puedeVisualizarPorra(self, usuario:str)->bool:
+
+		return self.porraCompleta(usuario)
+
 	# Metodo para insertar un partido de ronda de eliminatorias de un usuario
 	def insertarPartidoEliminatoriaPorraUsuario(self, usuario:str, ronda:str, partido:str, equipo_1_id:str, equipo_2_id:str, ganador_id:str)->None:
 
@@ -509,3 +526,22 @@ class Conexion:
 							(usuario,))
 
 		self.confirmar()
+
+	# Metodo para obtener la porra de los grupos de un usuario
+	def obtenerGruposPorraUsuario(self, usuario:str)->Optional[List[tuple]]:
+
+	    self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+					        FROM grupo_equipos_porra gep
+					        JOIN equipos e
+				            ON gep.equipo_id = e.equipo_id
+					        WHERE gep.usuario=%s
+					        ORDER BY gep.grupo, gep.posicion""",
+	    					(usuario,))
+
+	    grupos_porra=self.c.fetchall()
+
+	    return list(map(lambda grupo_porra: (grupo_porra["grupo"],
+									            grupo_porra["equipo_id"],
+									            grupo_porra["nombre"],
+									            grupo_porra["escudo"],
+									            grupo_porra["bandera"]), grupos_porra))

@@ -383,3 +383,36 @@ def pagina_porra_reiniciar():
 		con.cerrarConexion()
 
 		return redirect("/porra")
+
+@bp_porra.route("/porra/mi_porra")
+@login_required
+def pagina_porra_mi_porra():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
+
+	con=Conexion()
+
+	puede_ver_porra=con.puedeVisualizarPorra(usuario)
+
+	if not puede_ver_porra:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	grupos_porra=con.obtenerGruposPorraUsuario(usuario)
+
+	con.cerrarConexion()
+
+	grupos_porra_limpios=obtenerGruposEquiposLimpios(grupos_porra)
+
+	return render_template("mi_porra.html",
+							usuario=usuario,
+							nombre=current_user.nombre,
+							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
+							grupos_completos=grupos_porra_limpios)

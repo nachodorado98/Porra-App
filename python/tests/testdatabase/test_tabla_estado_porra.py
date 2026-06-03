@@ -392,6 +392,58 @@ def test_puede_editar_eliminatorias_porra_eliminatorias_completado(conexion):
 
 	assert not conexion.puedeEditarEliminatoriasPorra("nacho98")
 
+def test_porra_completa_no_existe_usuario(conexion):
+
+	assert not conexion.porraCompleta("nacho98")
+
+def test_porra_completa_no_completada(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.porraCompleta("nacho98")
+
+def test_porra_completa_porra_completada(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	assert conexion.porraCompleta("nacho98")
+
+def test_puede_visualizar_porra_no_existe_usuario(conexion):
+
+	assert not conexion.puedeVisualizarPorra("nacho98")
+
+def test_puede_visualizar_porra_no_porra_completada(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	assert not conexion.puedeVisualizarPorra("nacho98")
+
+def test_puede_visualizar_porra_porra_completada(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarEstadoPorraUsuario("nacho98")
+
+	conexion.actualizarEstadoPorraUsuario("nacho98")
+
+	assert conexion.puedeVisualizarPorra("nacho98")
+
 def test_reiniciar_estado_porra_usuario_usuario_no_existe(conexion):
 
 	conexion.c.execute("SELECT * FROM estado_porra")

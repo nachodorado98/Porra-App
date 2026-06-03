@@ -1,0 +1,61 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mi_porra.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="mi-porra-wrapper">
+
+    <div class="info-clasificacion">
+        <h1 class="titulo-pagina">Mi Porra 🏆</h1>
+
+        <p class="descripcion-grupos">Aquí puedes ver todas tus predicciones de la porra del Mundial</p>
+    </div>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Fase de grupos</h2>
+
+        <div class="grupos-grid">
+
+            {% for grupo, equipos in grupos_completos.items() %}
+
+                <div class="grupo-container">
+
+                    <h2>Grupo {{ grupo }}</h2>
+
+                    <div class="grupo-lista">
+
+                        {% for equipo in equipos %}
+
+                            <div class="equipo-card {% if loop.index <= 2 %}clasificado{% elif loop.index == 3 %}tercero{% else %}eliminado{% endif %}">
+                                <div class="equipo-left">
+                                    <div class="posicion">{{ loop.index }}</div>
+                                    <div class="equipo-info">
+                                        <div class="imagenes-equipo">
+                                            <img class="escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                            <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                        </div>
+                                        <span class="nombre-equipo">{{ equipo.nombre }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock principal %}
