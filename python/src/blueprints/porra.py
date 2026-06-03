@@ -427,3 +427,53 @@ def pagina_porra_mi_porra():
 							grupos_porra=grupos_porra_limpios,
 							mejores_terceros=mejores_terceros_porra_limpios,
 							eliminatorias=eliminatorias_porra_limpias)
+
+@bp_porra.route("/porra/<usuario_porra>")
+@login_required
+def pagina_porra_usuario(usuario_porra:str):
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
+
+	con=Conexion()
+
+	if not current_user.admin:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	puede_ver_porra=con.puedeVisualizarPorra(usuario_porra)
+
+	if not puede_ver_porra:
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
+	grupos_porra=con.obtenerGruposPorraUsuario(usuario_porra)
+
+	mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario_porra)
+
+	eliminatorias_porra=con.obtenerEliminatoriasPorraUsuario(usuario_porra)
+
+	con.cerrarConexion()
+
+	grupos_porra_limpios=obtenerGruposEquiposLimpios(grupos_porra)
+
+	mejores_terceros_porra_limpios=obtenerTercerosGruposEquiposLimpios(mejores_terceros_porra)
+
+	eliminatorias_porra_limpias=obtenerEliminatoriasPorraLimpias(eliminatorias_porra)
+
+	return render_template("porra_usuario.html",
+							usuario=usuario,
+							nombre=current_user.nombre,
+							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
+							grupos_porra=grupos_porra_limpios,
+							mejores_terceros=mejores_terceros_porra_limpios,
+							eliminatorias=eliminatorias_porra_limpias,
+							usuario_porra=usuario_porra)

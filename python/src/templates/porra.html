@@ -33,6 +33,9 @@
         {% endif %}
 
         <ul class="dropdown" id="dropdownMenu">
+          {% if paso_porra==4 %}
+            <li><a href="/porra/mi_porra">Mi Porra</a></li>
+          {% endif %}
           <li><a href="/settings">Ajustes</a></li>
           <li><a href="/logout" data-loading="true">Cerrar Sesión</a></li>
         </ul>
@@ -82,7 +85,7 @@
   </div>
 
   <footer>
-      <p>&copy; 2026 Porra Mundial App. Todos los derechos reservados.</p>
+      <p>&copy; 2026 Porra Mundial App. Todos los derechos reservados. Launched by Nacho Dorado</p>
   </footer>
 
   <script src="{{ url_for('static', filename='js/perfil.js') }}"></script>

@@ -1,0 +1,110 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mi_porra.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="mi-porra-wrapper">
+
+    <div class="info-clasificacion">
+        <h1 class="titulo-pagina">Porra de {{ usuario_porra }} 🏆</h1>
+
+        <p class="descripcion-grupos">Aquí puedes ver todas sus predicciones de la porra del Mundial</p>
+    </div>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Fase de grupos</h2>
+
+        <div class="grupos-grid">
+
+            {% for grupo, equipos in grupos_porra.items() %}
+
+                <div class="grupo-container">
+
+                    <h2>Grupo {{ grupo }}</h2>
+
+                    <div class="grupo-lista">
+
+                        {% for equipo in equipos %}
+
+                            <div class="equipo-card {% if loop.index <= 2 %}clasificado{% elif loop.index == 3 %}tercero{% else %}eliminado{% endif %}">
+                                <div class="equipo-left">
+                                    <div class="posicion">{{ loop.index }}</div>
+                                    <div class="equipo-info">
+                                        <div class="imagenes-equipo">
+                                            <img class="escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                            <img class="bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                                        </div>
+                                        <span class="nombre-equipo">{{ equipo.nombre }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Mejores terceros 🥉</h2>
+
+        <div class="terceros-grid">
+
+            {% for equipo in mejores_terceros %}
+
+                <div class="tercero-card">
+                    <div class="grupo-badge">Grupo {{ equipo.grupo }}</div>
+                    <div class="tercero-imagenes">
+                        <img class="tercero-escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}" alt="{{ equipo.nombre }}">
+                        <img class="tercero-bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                    </div>
+                    <div class="tercero-nombre-equipo">{{ equipo.nombre }}</div>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <script>const ELIMINATORIAS_PORRA={{ eliminatorias|tojson }};</script>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Fase eliminatoria 🏆</h2>
+
+        <div class="mi-campeon-box">
+            <div class="mi-campeon-titulo">Campeón</div>
+            <div id="miCampeonContenido" class="mi-campeon-contenido"></div>
+        </div>
+
+        <div class="scroll-hint"> ← Desliza para ver el cuadro completo →</div>
+
+        <div class="mi-bracket-scroll">
+            <div id="miBracket" class="mi-bracket"></div>
+        </div>
+
+        <div class="mi-tercer-puesto-wrapper">
+            <div class="mi-round-title">3º y 4º puesto</div>
+            <div id="miThirdPlace"></div>
+        </div>
+
+    </section>
+
+<script src="{{ url_for('static', filename='js/mi_porra.js') }}"></script>
+
+</div>
+
+{% endblock principal %}
