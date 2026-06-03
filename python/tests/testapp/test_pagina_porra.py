@@ -22,6 +22,7 @@ def test_pagina_porra(cliente, conexion_usuario):
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' not in contenido
 	assert '<p class="descripcion-pregunta">¡Gracias por completar la porra del Mundial!</p>' not in contenido
 	assert '<p class="descripcion-pregunta secundaria">Puedes rehacer la porra definitiva hasta el dia previo al comienzo del evento (10/06/2026).</p>' not in contenido
+	assert '<a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>' not in contenido
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Rehacer porra desde el inicio ⟳</a>' not in contenido
 
 def test_pagina_porra_grupos_completos(cliente, conexion_usuario):
@@ -62,6 +63,7 @@ def test_pagina_porra_mejores_terceros_completos(cliente, conexion_usuario):
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' in contenido
 	assert '<p class="descripcion-pregunta">¡Gracias por completar la porra del Mundial!</p>' not in contenido
 	assert '<p class="descripcion-pregunta secundaria">Puedes rehacer la porra definitiva hasta el dia previo al comienzo del evento (10/06/2026).</p>' not in contenido
+	assert '<a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>' not in contenido
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Rehacer porra desde el inicio ⟳</a>' not in contenido
 
 def test_pagina_porra_eliminatorias_completas(cliente, conexion_usuario):
@@ -87,4 +89,5 @@ def test_pagina_porra_eliminatorias_completas(cliente, conexion_usuario):
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>' not in contenido
 	assert '<p class="descripcion-pregunta">¡Gracias por completar la porra del Mundial!</p>' in contenido
 	assert '<p class="descripcion-pregunta secundaria">Puedes rehacer la porra definitiva hasta el dia previo al comienzo del evento (10/06/2026).</p>' in contenido
+	assert '<a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>' in contenido
 	assert '<a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Rehacer porra desde el inicio ⟳</a>' in contenido

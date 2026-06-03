@@ -49,3 +49,6 @@ def test_pagina_porra_mi_porra(cliente, conexion_usuario, porra_grupos, porra_me
 		assert '<div class="grupo-container">' in contenido
 		assert '<div class="grupo-lista">' in contenido
 		assert '<div class="equipo-card' in contenido
+		assert '<h2 class="titulo-seccion">Mejores terceros' in contenido
+		assert '<div class="terceros-grid">' in contenido
+		assert '<div class="tercero-card">' in contenido

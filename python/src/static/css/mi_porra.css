@@ -1,4 +1,4 @@
-/*------------------------------------------------------ MI PORRA COMPACTA --------------------------------------------*/
+/*------------------------------------------------------MI PORRA--------------------------------------------*/
 
 .mi-porra-wrapper{
     width:100%;
@@ -394,6 +394,123 @@
 
     .nombre-equipo{
         max-width:none;
+    }
+
+}
+
+.terceros-grid{
+    display:grid;
+    grid-template-columns:repeat(8, 1fr);
+    gap:12px;
+}
+
+.tercero-card{
+    background:white;
+    border-radius:14px;
+    padding:14px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+    border:2px solid #3897f0;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    position:relative;
+    min-height:120px;
+}
+
+.grupo-badge{
+    position:absolute;
+    top:8px;
+    right:8px;
+
+    background:#222;
+    color:white;
+
+    padding:4px 7px;
+    border-radius:8px;
+
+    font-size:10px;
+    font-weight:700;
+}
+
+.tercero-imagenes{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:14px;
+}
+
+.tercero-escudo-img{
+    width:30px;
+    height:30px;
+    object-fit:contain;
+}
+
+.tercero-bandera-img{
+    width:34px;
+    height:24px;
+    object-fit:cover;
+    border-radius:4px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+}
+
+.tercero-nombre-equipo{
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+    color:#222;
+
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+@media (max-width:1150px){
+
+    .terceros-grid{
+        grid-template-columns:repeat(4, 1fr);
+    }
+
+}
+
+@media (max-width:560px){
+
+    .terceros-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:8px;
+    }
+
+    .tercero-card{
+        padding:10px 8px;
+        min-height:95px;
+        border-radius:12px;
+    }
+
+    .grupo-badge{
+        font-size:9px;
+        padding:3px 6px;
+    }
+
+    .tercero-imagenes{
+        margin-top:12px;
+    }
+
+    .tercero-escudo-img{
+        width:24px;
+        height:24px;
+    }
+
+    .tercero-bandera-img{
+        width:28px;
+        height:20px;
+    }
+
+    .tercero-nombre-equipo{
+        font-size:11px;
     }
 
 }

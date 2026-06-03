@@ -21,7 +21,7 @@
 
         <div class="grupos-grid">
 
-            {% for grupo, equipos in grupos_completos.items() %}
+            {% for grupo, equipos in grupos_porra.items() %}
 
                 <div class="grupo-container">
 
@@ -48,6 +48,29 @@
 
                     </div>
 
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <section class="mi-porra-seccion">
+
+        <h2 class="titulo-seccion">Mejores terceros 🥉</h2>
+
+        <div class="terceros-grid">
+
+            {% for equipo in mejores_terceros %}
+
+                <div class="tercero-card">
+                    <div class="grupo-badge">Grupo {{ equipo.grupo }}</div>
+                    <div class="tercero-imagenes">
+                        <img class="tercero-escudo-img" src="{{ url_for('static', filename='imagenes/escudos/' ~ equipo.escudo ~ '.png') }}" alt="{{ equipo.nombre }}">
+                        <img class="tercero-bandera-img" src="{{ url_for('static', filename='imagenes/banderas/' ~ equipo.bandera ~ '.png') }}" alt="{{ equipo.nombre }}">
+                    </div>
+                    <div class="tercero-nombre-equipo">{{ equipo.nombre }}</div>
                 </div>
 
             {% endfor %}

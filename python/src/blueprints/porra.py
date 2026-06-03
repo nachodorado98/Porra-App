@@ -344,7 +344,7 @@ def pagina_porra_eliminatorias_guardar():
 
 		con.cerrarConexion()
 
-		return redirect("/porra")
+		return redirect("/porra/mi_porra")
 
 	except Exception:
 
@@ -406,13 +406,18 @@ def pagina_porra_mi_porra():
 
 	grupos_porra=con.obtenerGruposPorraUsuario(usuario)
 
+	mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario)
+
 	con.cerrarConexion()
 
 	grupos_porra_limpios=obtenerGruposEquiposLimpios(grupos_porra)
+
+	mejores_terceros_porra_limpios=obtenerTercerosGruposEquiposLimpios(mejores_terceros_porra)
 
 	return render_template("mi_porra.html",
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
-							grupos_completos=grupos_porra_limpios)
+							grupos_porra=grupos_porra_limpios,
+							mejores_terceros=mejores_terceros_porra_limpios)
