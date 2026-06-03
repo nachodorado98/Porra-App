@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputs = [
         {input: "correo", tooltip: "tooltipCorreo"},
         {input: "contrasena", tooltip: "tooltipContrasena"},
-        {input: "fecha-nacimiento", tooltip: "tooltipFecha"}
+        {input: "usuario", tooltip: "tooltipUsuario"}
     ];
 
     inputs.forEach(({input, tooltip}) => {

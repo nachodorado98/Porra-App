@@ -1,7 +1,7 @@
 CREATE TABLE codigos (Codigo_Liga VARCHAR(6) PRIMARY KEY);
 
 CREATE TABLE usuarios (Usuario VARCHAR(255) PRIMARY KEY,
-						Correo VARCHAR(255),
+						Correo VARCHAR(255) UNIQUE NOT NULL,
 						Contrasena VARCHAR(255),
 						Nombre VARCHAR(255),
 						Apellido VARCHAR(255),

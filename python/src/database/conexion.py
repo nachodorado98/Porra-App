@@ -56,6 +56,16 @@ class Conexion:
 
 		return False if not self.c.fetchone() else True
 
+	# Metodo para comprobar si ya existe un correo
+	def existe_correo(self, correo:str)->bool:
+
+		self.c.execute("""SELECT *
+						FROM usuarios
+						WHERE correo=%s""",
+						(correo,))
+
+		return False if not self.c.fetchone() else True
+
 	# Metodo para comprobar si existe un codigo de liga
 	def existe_codigo_liga(self, codigo_liga:str)->bool:
 
@@ -127,6 +137,18 @@ class Conexion:
 		admin=self.c.fetchone()
 
 		return False if admin is None else admin["admin"]
+
+	# Metodo para obtener los datos (correos, nombres y usuarios) de todos de los usuarios
+	def obtenerDatosUsuarios(self)->List[tuple]:
+
+		self.c.execute("""SELECT usuario, nombre, correo, codigo_liga FROM usuarios""")
+
+		datos=self.c.fetchall()
+
+		return list(map(lambda dato: (dato["usuario"],
+										dato["nombre"],
+										dato["correo"],
+										dato["codigo_liga"]), datos))
 
 	# Metodo para obtener el codigo liga de un usuario
 	def obtenerCodigoLigaUsuario(self, usuario:str)->Optional[str]:

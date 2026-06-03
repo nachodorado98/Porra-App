@@ -344,7 +344,7 @@ def pagina_porra_eliminatorias_guardar():
 
 		con.cerrarConexion()
 
-		return redirect("/porra/mi_porra")
+		return redirect("/porra")
 
 	except Exception:
 

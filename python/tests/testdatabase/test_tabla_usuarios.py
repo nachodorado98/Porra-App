@@ -34,7 +34,7 @@ def test_insertar_usuarios(conexion, numero_usuarios):
 
 	for numero in range(numero_usuarios):
 
-		conexion.insertarUsuario(f"nacho{numero}", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+		conexion.insertarUsuario(f"nacho{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
 	conexion.c.execute("SELECT * FROM usuarios")
 
@@ -61,6 +61,26 @@ def test_existe_usuario_existe(conexion):
 	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
 	assert conexion.existe_usuario("nacho98")
+
+def test_existe_corrreo_no_existen(conexion):
+
+	assert not conexion.existe_correo("micorreo@correo.es")
+
+def test_existe_correo_existen_no_existente(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert not conexion.existe_correo("micorreo1@correo.es")
+
+def test_existe_correo_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.existe_correo("micorreo@correo.es")
 
 def test_obtener_contrasena_usuario_no_existe(conexion):
 
@@ -150,7 +170,7 @@ def test_obtener_usuarios_codigo_liga_existentes(conexion):
 
 	for numero in range(1, 11):
 
-		conexion.insertarUsuario(f"nacho98{numero}", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+		conexion.insertarUsuario(f"nacho98{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
 	usuarios=conexion.obtenerUsuariosCodigoLiga("C4N5VT")
 
@@ -227,3 +247,22 @@ def test_actualizar_imagen_perfil_usuario(conexion):
 	imagen=conexion.c.fetchone()["imagen_perfil"]
 
 	assert imagen=="imagen.png"
+
+def test_obtener_datos_usuarios_no_existen(conexion):
+
+	assert not conexion.obtenerDatosUsuarios()
+
+@pytest.mark.parametrize(["numero_usuarios"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_obtener_datos_usuarios_existen(conexion, numero_usuarios):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(numero_usuarios):
+
+		conexion.insertarUsuario(f"nacho{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	datos_usuarios=conexion.obtenerDatosUsuarios()
+
+	assert len(datos_usuarios)==numero_usuarios

@@ -172,6 +172,25 @@ def test_pagina_singup_usuario_existente(cliente, conexion, usuario):
 	assert respuesta.location=="/registro"
 	assert "<h1>Redirecting...</h1>" in contenido
 
+@pytest.mark.parametrize(["correo"],
+	[("usuario@gmail.com",),("correo@gmail.com",),("nacho@gmail.com",),("golden@gmail.com",),("hola123@gmail.com",)]
+)
+def test_pagina_singup_correo_existente(cliente, conexion, correo):
+
+	conexion.insertarCodigoLiga("3YYZKP")
+
+	conexion.insertarUsuario("nacho98", correo, "Ab!CdEfGhIJK3LMN", "nachogolden", "dorado", "3YYZKP")
+
+	respuesta=cliente.post("/singup", data={"usuario":"nacho99", "correo":correo, "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==302
+	assert respuesta.location=="/registro"
+	assert "<h1>Redirecting...</h1>" in contenido
+
 def test_pagina_singup_crear_liga_codigo_existente(cliente, conexion):
 
 	conexion.insertarCodigoLiga("3YYZKP")
@@ -199,7 +218,7 @@ def test_pagina_singup_crear_liga_codigo_no_existente(cliente, conexion):
 	assert "<p>Gracias por registrarte en nuestra plataforma, Nacho.</p>" in contenido
 	assert "<p>Se ha creado la nueva liga con codigo <strong>3YYZKP</strong>.</p>" in contenido
 	assert "<p>Te has unido a la liga con codigo <strong>3YYZKP</strong>.</p>" not in contenido
-	assert "<p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>" in contenido
+	assert "<p>¡Esperamos que disfrutes de la experiencia a la que ya puedes acceder!</p>" in contenido
 
 	conexion.c.execute("SELECT * FROM usuarios")
 
@@ -240,7 +259,7 @@ def test_pagina_singup_unirse_liga_codigo_existente(cliente, conexion):
 	assert "<p>Gracias por registrarte en nuestra plataforma, Nacho.</p>" in contenido
 	assert "<p>Se ha creado la nueva liga con codigo <strong>3YYZKP</strong>.</p>" not in contenido
 	assert "<p>Te has unido a la liga con codigo <strong>3YYZKP</strong>.</p>" in contenido
-	assert "<p>¡Esperamos que disfrutes de la experiencia a la que proximamente podras acceder!</p>" in contenido
+	assert "<p>¡Esperamos que disfrutes de la experiencia a la que ya puedes acceder!</p>" in contenido
 
 	conexion.c.execute("SELECT * FROM usuarios")
 

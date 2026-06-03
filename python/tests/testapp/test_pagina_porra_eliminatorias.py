@@ -502,7 +502,7 @@ def test_pagina_porra_eliminatorias_guardar_porra_correcto(cliente, conexion_usu
 		contenido=respuesta.data.decode()
 
 		assert respuesta.status_code==302
-		assert respuesta.location=="/porra/mi_porra"
+		assert respuesta.location=="/porra"
 		assert "<h1>Redirecting...</h1>" in contenido
 
 		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")

@@ -16,7 +16,7 @@
 
     <section class="podium">
 
-        {% for usuario_codigo in usuarios_codigo %}
+        {% for usuario_codigo in usuarios_codigo[:3] %}
 
             <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}">
                 <div class="podium-position">

@@ -72,6 +72,11 @@ resource "azurerm_container_app" "app" {
         secret_name = "endpointazurefunction"
       }
 
+      env {
+        name        = "ENDPOINT_AZURE_FUNCTION_LANZAMIENTO"
+        secret_name = "endpointazurefunctionlanzamiento"
+      }
+
     }
   }
 
@@ -113,6 +118,11 @@ resource "azurerm_container_app" "app" {
   secret {
     name  = "endpointazurefunction"
     value = var.endpoint_az_function
+  }
+
+  secret {
+    name  = "endpointazurefunctionlanzamiento"
+    value = var.endpoint_az_function_lanzamiento
   }
 
 
@@ -169,6 +179,7 @@ resource "azurerm_linux_function_app" "azure_function" {
     CONTRASENA_LOGIN = var.contrasena_login
     SERVIDOR_CORREO  = var.servidor_correo
     PUERTO_CORREO    = var.puerto_correo
+    URL_APP          = "https://${azurerm_container_app.app.ingress[0].fqdn}"
 
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

@@ -95,6 +95,12 @@ def singup():
 
         return redirect("/registro")
 
+    if con.existe_correo(correo):
+
+        con.cerrarConexion()
+
+        return redirect("/registro")
+
     insertar_codigo_nuevo=True if accion_liga=="crear" else False
 
     if insertar_codigo_nuevo:
