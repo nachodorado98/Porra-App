@@ -11,7 +11,7 @@ def test_pagina_inicio_sin_login(cliente, conexion):
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
 @pytest.mark.parametrize(["usuario"],
-	[("nacho",),("nacho98",),("usuario_correcto",), ("amanda",)]
+	[("nacho",),("nacho98",),("usuario_correcto",), ("amanda",),("",),(" ",)]
 )
 def test_pagina_inicio_con_login_usuario_no_existe(cliente, conexion, usuario):
 
@@ -35,6 +35,20 @@ def test_pagina_inicio_con_login_usuario_existe_contrasena_error(cliente, conexi
 	assert respuesta.status_code==302
 	assert respuesta.location=="/"
 	assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["usuario"],
+	[("nacho98 ",),(" nacho98",),(" nacho98 ",)]
+)
+def test_pagina_inicio_con_login_espacios(cliente, conexion_usuario, usuario):
+
+	respuesta=cliente.post("/login", data={"usuario": usuario, "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert '<main class="main-content">' in contenido
+	assert "<h1>Tu porra del Mundial</h1>" in contenido
+	assert '<a href="/porra/grupos" class="btn-empezar" data-loading="true">Empezar porra →</a>' in contenido
 
 def test_pagina_inicio_con_login(cliente, conexion_usuario):
 

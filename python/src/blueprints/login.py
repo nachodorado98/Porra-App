@@ -41,7 +41,7 @@ def cargarUsuario(usuario:str)->Optional[Usuario]:
 @bp_login.route("/login", methods=["GET", "POST"])
 def login():
 
-	usuario=request.form.get("usuario")
+	usuario=(request.form.get("usuario") or "").strip()
 	contrasena=request.form.get("contrasena")
 
 	con=Conexion()

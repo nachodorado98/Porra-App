@@ -403,3 +403,88 @@ input[type="file"]{
     }
 
 }
+
+.password-section{
+    margin-top:30px;
+}
+
+.form-cambiar-contrasena{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.campo-password{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.campo-password label{
+    font-weight:700;
+    color:#333;
+    font-size:15px;
+}
+
+.campo-password input{
+    width:100%;
+
+    padding:15px 16px;
+
+    border:2px solid #e6e6e6;
+    border-radius:14px;
+
+    font-size:16px;
+    color:#222;
+
+    outline:none;
+
+    transition:0.25s;
+}
+
+.campo-password input:focus{
+    border-color:#3897f0;
+    box-shadow:0 0 0 4px rgba(56,151,240,0.12);
+}
+
+.boton-cambiar-contrasena{
+    background:#3897f0;
+    color:white;
+
+    border:none;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.boton-cambiar-contrasena:hover{
+    background:#2176c7;
+    transform:translateY(-2px);
+}
+
+@media (max-width:480px){
+
+    .boton-cambiar-contrasena{
+        width:100%;
+    }
+
+}
+
+.boton-cambiar-contrasena:disabled{
+    background:#bfc8d2;
+    cursor:not-allowed;
+    transform:none;
+    opacity:0.7;
+}
+
+.boton-cambiar-contrasena:disabled:hover{
+    background:#bfc8d2;
+}

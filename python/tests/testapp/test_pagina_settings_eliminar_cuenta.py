@@ -1,6 +1,6 @@
 def test_pagina_settings_eliminar_cuenta_sin_login(cliente, conexion):
 
-	respuesta=cliente.get("/settings", follow_redirects=True)
+	respuesta=cliente.get("/settings/eliminar_cuenta", follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 

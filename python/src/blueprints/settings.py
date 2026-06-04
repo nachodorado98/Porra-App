@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, redirect
 from flask_login import login_required, current_user
 import os
+from datetime import datetime, timedelta
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import crearCarpeta, extraerExtension, vaciarCarpeta
+from src.utilidades.utils import crearCarpeta, extraerExtension, vaciarCarpeta, contrasena_correcta, comprobarHash, generarHash
 
 
 bp_settings=Blueprint("settings", __name__)
@@ -20,11 +21,18 @@ def pagina_settings():
 
 	imagen_perfil=current_user.imagen_perfil
 
+	con=Conexion()
+
+	puede_cambio_contrasena=con.puedeCambiarContrasena(usuario)
+
+	con.cerrarConexion()
+
 	return render_template("settings.html",
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
-							imagen_perfil=imagen_perfil)
+							imagen_perfil=imagen_perfil,
+							puede_cambio_contrasena=puede_cambio_contrasena)
 
 @bp_settings.route("/settings/eliminar_cuenta")
 @login_required
@@ -94,6 +102,68 @@ def pagina_settings_actualizar_imagen_perfil():
 
 				print(f"Error al subir imagen {archivo_imagen}")
 
+	con.cerrarConexion()
+
+	return redirect("/settings")
+
+@bp_settings.route("/settings/cambiar_contrasena", methods=["POST"])
+@login_required
+def pagina_settings_cambiar_contrasena():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	contrasena_actual=request.form.get("contrasena_actual")
+	nueva_contrasena=request.form.get("nueva_contrasena")
+	repetir_contrasena=request.form.get("repetir_contrasena")
+
+	if not contrasena_actual or not nueva_contrasena or not repetir_contrasena:
+
+		return redirect("/settings")
+
+	if contrasena_actual==nueva_contrasena:
+
+		return redirect("/settings")
+		
+	if nueva_contrasena!=repetir_contrasena:
+
+		return redirect("/settings")
+
+	if not contrasena_correcta(nueva_contrasena):
+
+		return redirect("/settings")
+
+	con=Conexion()
+
+	if not con.puedeCambiarContrasena(usuario):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	contrasena_hash_usuario=con.obtenerContrasenaUsuario(usuario)
+
+	if not comprobarHash(contrasena_actual, contrasena_hash_usuario):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	if comprobarHash(nueva_contrasena, contrasena_hash_usuario):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	nueva_contrasena_hash=generarHash(nueva_contrasena)
+
+	cambios, ultimo_cambio=con.obtenerDatosCambioContrasenaUsuario(usuario)
+
+	ahora=datetime.now()
+
+	con.actualizarContrasenaUsuario(usuario, nueva_contrasena_hash, cambios+1, ahora)
+	
 	con.cerrarConexion()
 
 	return redirect("/settings")

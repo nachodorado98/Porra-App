@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timedelta
 
 def test_tabla_usuarios_vacia(conexion):
 
@@ -266,3 +267,105 @@ def test_obtener_datos_usuarios_existen(conexion, numero_usuarios):
 	datos_usuarios=conexion.obtenerDatosUsuarios()
 
 	assert len(datos_usuarios)==numero_usuarios
+
+def test_obtener_datos_cambio_contrasena_usuario_usuario_no_existe(conexion):
+
+	assert not conexion.obtenerDatosCambioContrasenaUsuario("nacho98")
+
+def test_obtener_datos_cambio_contrasena_usuario_sin_cambios(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	datos_cambio_contrasena=conexion.obtenerDatosCambioContrasenaUsuario("nacho98")
+
+	assert datos_cambio_contrasena[0]==0
+	assert datos_cambio_contrasena[1]==None
+
+def test_obtener_datos_cambio_contrasena_usuario_con_cambios(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute("UPDATE usuarios SET Cambios_Contrasena=1, Ultimo_Cambio_Contrasena='2026-06-22 19:40:36.361302'")
+
+	conexion.confirmar()
+
+	datos_cambio_contrasena=conexion.obtenerDatosCambioContrasenaUsuario("nacho98")
+
+	assert datos_cambio_contrasena[0]==1
+	assert datos_cambio_contrasena[1].strftime("%Y-%m-%d")=="2026-06-22"
+
+def test_puede_cambiar_contrasena_no_existe_usuario(conexion):
+
+	assert not conexion.puedeCambiarContrasena("nacho98")
+
+def test_puede_cambiar_contrasena_nunca_cambio(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.puedeCambiarContrasena("nacho98")
+
+def test_puede_cambiar_contrasena_no_existe_usuario(conexion):
+
+	assert not conexion.puedeCambiarContrasena("nacho98")
+
+def test_puede_cambiar_contrasena_nunca_cambio(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.puedeCambiarContrasena("nacho98")
+
+@pytest.mark.parametrize(["cambios", "ultimo_cambio", "puede"],
+	[
+		(0, datetime.now()-timedelta(hours=23), False),
+		(0, datetime.now()-timedelta(hours=48), True),
+		(2, datetime.now()-timedelta(hours=48), True),
+		(2, datetime.now()-timedelta(hours=24), True),
+		(2, datetime.now()-timedelta(hours=12), False),
+		(3, datetime.now()-timedelta(days=20), False),
+		(4, datetime.now()-timedelta(days=100), False)
+	]
+)
+def test_puede_cambiar_contrasena_varios_casos(conexion, cambios, ultimo_cambio, puede):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.c.execute(f"UPDATE usuarios SET Cambios_Contrasena={cambios}, Ultimo_Cambio_Contrasena='{ultimo_cambio}'")
+
+	conexion.confirmar()
+
+	assert conexion.puedeCambiarContrasena("nacho98")==puede
+
+def test_actualizar_contrasena_usuario_no_existe_usuario(conexion):
+
+	assert not conexion.existe_usuario("nacho")
+
+	ultimo_cambio=datetime.now()
+
+	conexion.actualizarContrasenaUsuario("nacho", "12345678", 1, ultimo_cambio)
+
+	assert not conexion.existe_usuario("nacho")
+
+def test_actualizar_contrasena_usuario(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	ultimo_cambio=datetime.now()
+
+	conexion.actualizarContrasenaUsuario("nacho98", "12345678", 1, ultimo_cambio)
+
+	datos_cambio_contrasena=conexion.obtenerDatosCambioContrasenaUsuario("nacho98")
+
+	assert datos_cambio_contrasena[0]==1
+	assert datos_cambio_contrasena[1].strftime("%Y-%m-%d")==ultimo_cambio.strftime("%Y-%m-%d")

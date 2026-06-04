@@ -73,6 +73,46 @@
 
         </div>
 
+        {% if puede_cambio_contrasena %}
+
+            <div class="settings-section password-section">
+
+                <h2>Cambiar contraseña</h2>
+
+                <p>Actualiza tu contraseña de acceso. Solo puedes hacer un cambio de contraseña al día, con un maximo de tres cambios en total. Por seguridad, necesitarás introducir tu contraseña actual.</p>
+
+                <form action="/settings/cambiar_contrasena" method="POST" class="form-cambiar-contrasena">
+
+                    <div class="campo-password">
+                        <label for="contrasena_actual">Contraseña actual</label>
+                        <input type="password" name="contrasena_actual" id="contrasena_actual" required>
+                    </div>
+
+                    <div class="campo-password">
+                        <label for="nueva_contrasena">Nueva contraseña</label>
+                        <input type="password" name="nueva_contrasena" id="nueva_contrasena" minlength="8" required>
+                    </div>
+
+                    <div class="campo-password">
+                        <label for="repetir_contrasena">Repetir nueva contraseña</label>
+                        <input type="password" name="repetir_contrasena" id="repetir_contrasena" minlength="8" required>
+                    </div>
+
+                    <button type="submit" class="boton-cambiar-contrasena" id="botonCambiarContrasena" disabled>Guardar nueva contraseña</button>
+
+                </form>
+
+            </div>
+
+        {% else %}
+
+            <div class="settings-section password-section">
+                <h2>Cambiar contraseña</h2>
+                <p>Debe pasar mínimo un dia para volver a cambiar la contraseña. Si has realizado ya tres cambios de contraseña, contacta con el Administrador</p>
+            </div>
+
+        {% endif %}
+
         <div class="settings-section danger-zone">
             <h2>Zona peligrosa</h2>
             <p>Si eliminas tu cuenta perderás todos tus datos y predicciones. Esta acción no se puede deshacer.</p>
@@ -106,5 +146,6 @@
 <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 <script src="{{ url_for('static', filename='js/cargar_imagen_preview.js') }}"></script>
 <script src="{{ url_for('static', filename='js/abrir_actualizar_imagen_perfil.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cambiar_contrasena.js') }}"></script>
 
 {% endblock principal %}

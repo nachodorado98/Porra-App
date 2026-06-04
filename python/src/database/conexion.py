@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Optional, Dict
+from datetime import datetime, timedelta
 
 from .confconexion import *
 
@@ -207,6 +208,49 @@ class Conexion:
 
 		self.confirmar()
 
+	# Metodo para obtener los datos del cambio de contraseña del usuario
+	def obtenerDatosCambioContrasenaUsuario(self, usuario:str)->Optional[tuple]:
+
+		self.c.execute("""SELECT Cambios_Contrasena, Ultimo_Cambio_Contrasena
+							FROM usuarios
+							WHERE Usuario=%s""",
+							(usuario,))
+
+		datos_contrasena=self.c.fetchone()
+
+		return None if not datos_contrasena else (datos_contrasena["cambios_contrasena"], datos_contrasena["ultimo_cambio_contrasena"])
+
+	# Metodo para saber si un usuario puede cambiar la contraseña
+	def puedeCambiarContrasena(self, usuario:str)->bool:
+
+		try:
+
+			cambios, ultimo_cambio=self.obtenerDatosCambioContrasenaUsuario(usuario)
+
+			if cambios>=3:
+
+				return False
+
+			if not ultimo_cambio:
+
+					return True
+
+			return datetime.now()-ultimo_cambio>timedelta(days=1)
+
+		except Exception:
+
+			return False
+
+	# Metodo para actualizar la contrasena del usuario
+	def actualizarContrasenaUsuario(self, usuario:str, nueva_contrasena:str, cambios_contrasena:int, ultimo_cambio:str)->None:
+
+		self.c.execute("""UPDATE usuarios
+							SET Contrasena=%s, Cambios_Contrasena=%s, Ultimo_Cambio_Contrasena=%s
+							WHERE Usuario=%s""",
+							(nueva_contrasena, cambios_contrasena, ultimo_cambio, usuario))
+
+		self.confirmar()
+
 	# Metodo para obtener el estado de una porra de un usuario
 	def obtenerEstadoPorraUsuario(self, usuario:str)->Optional[tuple]:
 
@@ -354,13 +398,13 @@ class Conexion:
 	# Metodo para insertar los equipos con orden de mejor tercero de un usuario
 	def insertarEquipoMejoresTercerosPorraUsuario(self, usuario:str, equipos:List[tuple])->None:
 
-	    valores=[(usuario, grupo, equipo_id, orden) for orden, (grupo, equipo_id) in enumerate(equipos, start=1)]
+		valores=[(usuario, grupo, equipo_id, orden) for orden, (grupo, equipo_id) in enumerate(equipos, start=1)]
 
-	    self.c.executemany("""INSERT INTO mejores_terceros_porra (Usuario, Grupo, Equipo_Id, Orden)
-	        					VALUES (%s, %s, %s, %s)""",
-	        					valores)
+		self.c.executemany("""INSERT INTO mejores_terceros_porra (Usuario, Grupo, Equipo_Id, Orden)
+								VALUES (%s, %s, %s, %s)""",
+								valores)
 
-	    self.confirmar()
+		self.confirmar()
 
 	# Metodo para actualizar el estado de las eliminatorias de la porra de un usuario
 	def actualizarEstadoPorraEliminatoriasUsuario(self, usuario:str)->None:
@@ -428,13 +472,13 @@ class Conexion:
 	# Metodo para insertar los partidos de rondas de eliminatorias de un usuario
 	def insertarPartidosEliminatoriasPorraUsuario(self, usuario:str, partidos:List[tuple])->None:
 
-	    valores=[(usuario, ronda, partido, equipo_1, equipo_2, ganador) for ronda, partido, equipo_1, equipo_2, ganador in partidos]
+		valores=[(usuario, ronda, partido, equipo_1, equipo_2, ganador) for ronda, partido, equipo_1, equipo_2, ganador in partidos]
 
-	    self.c.executemany("""INSERT INTO eliminatorias_porra (Usuario, Ronda, Partido, Equipo_1_Id, Equipo_2_Id, Ganador_Id)
-	        					VALUES (%s, %s, %s, %s, %s, %s)""",
-	        					valores)
+		self.c.executemany("""INSERT INTO eliminatorias_porra (Usuario, Ronda, Partido, Equipo_1_Id, Equipo_2_Id, Ganador_Id)
+								VALUES (%s, %s, %s, %s, %s, %s)""",
+								valores)
 
-	    self.confirmar()
+		self.confirmar()
 
 	# Metodo para obtener los equipos primeros y segundos de los grupos de un usuario
 	def obtenerPrimerosSegundosGruposUsuario(self, usuario:str)->Optional[List[tuple]]:
@@ -489,7 +533,7 @@ class Conexion:
 
 		return False if combinacion_partidos_mejores_terceros is None else  {partido.upper():equipo for partido, equipo in combinacion_partidos_mejores_terceros.items()}
 
- 	# Metodo para reiniciar porra grupos de un usuario
+	# Metodo para reiniciar porra grupos de un usuario
 	def reiniciarGruposPorraUsuario(self, usuario:str)->None:
 
 		self.c.execute("""DELETE FROM grupo_equipos_porra
@@ -498,7 +542,7 @@ class Conexion:
 
 		self.confirmar()
 
- 	# Metodo para reiniciar porra mejores terceros de un usuario
+	# Metodo para reiniciar porra mejores terceros de un usuario
 	def reiniciarMejoresTercerosPorraUsuario(self, usuario:str)->None:
 
 		self.c.execute("""DELETE FROM mejores_terceros_porra
@@ -507,7 +551,7 @@ class Conexion:
 
 		self.confirmar()
 
- 	# Metodo para reiniciar porra eliminatorias de un usuario
+	# Metodo para reiniciar porra eliminatorias de un usuario
 	def reiniciarEliminatoriasPorraUsuario(self, usuario:str)->None:
 
 		self.c.execute("""DELETE FROM eliminatorias_porra
@@ -530,52 +574,52 @@ class Conexion:
 	# Metodo para obtener la porra de los grupos de un usuario
 	def obtenerGruposPorraUsuario(self, usuario:str)->Optional[List[tuple]]:
 
-	    self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
-					        FROM grupo_equipos_porra gep
-					        JOIN equipos e
-				            ON gep.equipo_id = e.equipo_id
-					        WHERE gep.usuario=%s
-					        ORDER BY gep.grupo, gep.posicion""",
-	    					(usuario,))
+		self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+							FROM grupo_equipos_porra gep
+							JOIN equipos e
+							ON gep.equipo_id = e.equipo_id
+							WHERE gep.usuario=%s
+							ORDER BY gep.grupo, gep.posicion""",
+							(usuario,))
 
-	    grupos_porra=self.c.fetchall()
+		grupos_porra=self.c.fetchall()
 
-	    return list(map(lambda grupo_porra: (grupo_porra["grupo"],
-									            grupo_porra["equipo_id"],
-									            grupo_porra["nombre"],
-									            grupo_porra["escudo"],
-									            grupo_porra["bandera"]), grupos_porra))
+		return list(map(lambda grupo_porra: (grupo_porra["grupo"],
+												grupo_porra["equipo_id"],
+												grupo_porra["nombre"],
+												grupo_porra["escudo"],
+												grupo_porra["bandera"]), grupos_porra))
 
 	# Metodo para obtener las eliminatorias de la porra de un usuario
 	def obtenerEliminatoriasPorraUsuario(self, usuario:str)->Optional[List[tuple]]:
 
-	    self.c.execute("""SELECT ep.ronda, ep.partido, ep.equipo_1_id, e1.nombre AS equipo_1_nombre, e1.escudo AS equipo_1_escudo, e1.bandera AS equipo_1_bandera,
-	    						ep.equipo_2_id, e2.nombre AS equipo_2_nombre, e2.escudo AS equipo_2_escudo, e2.bandera AS equipo_2_bandera,
-	    						ep.ganador_id, eg.nombre AS ganador_nombre, eg.escudo AS ganador_escudo, eg.bandera AS ganador_bandera
-	        				FROM eliminatorias_porra ep
-	        				JOIN equipos e1
-	            			ON ep.equipo_1_id=e1.equipo_id
-	            			JOIN equipos e2
-	            			ON ep.equipo_2_id=e2.equipo_id
-	            			JOIN equipos eg
-	            			ON ep.ganador_id=eg.equipo_id
-	            			WHERE ep.usuario=%s
-	            			ORDER BY CAST(SUBSTRING(ep.partido FROM 2) AS INTEGER)""",
-	            			(usuario,))
+		self.c.execute("""SELECT ep.ronda, ep.partido, ep.equipo_1_id, e1.nombre AS equipo_1_nombre, e1.escudo AS equipo_1_escudo, e1.bandera AS equipo_1_bandera,
+								ep.equipo_2_id, e2.nombre AS equipo_2_nombre, e2.escudo AS equipo_2_escudo, e2.bandera AS equipo_2_bandera,
+								ep.ganador_id, eg.nombre AS ganador_nombre, eg.escudo AS ganador_escudo, eg.bandera AS ganador_bandera
+							FROM eliminatorias_porra ep
+							JOIN equipos e1
+							ON ep.equipo_1_id=e1.equipo_id
+							JOIN equipos e2
+							ON ep.equipo_2_id=e2.equipo_id
+							JOIN equipos eg
+							ON ep.ganador_id=eg.equipo_id
+							WHERE ep.usuario=%s
+							ORDER BY CAST(SUBSTRING(ep.partido FROM 2) AS INTEGER)""",
+							(usuario,))
 
-	    eliminatorias_porra=self.c.fetchall()
+		eliminatorias_porra=self.c.fetchall()
 
-	    return list(map(lambda eliminatoria_porra: (eliminatoria_porra["ronda"],
-				    								eliminatoria_porra["partido"],
-											        eliminatoria_porra["equipo_1_id"],
-											        eliminatoria_porra["equipo_1_nombre"],
-											        eliminatoria_porra["equipo_1_escudo"],
-											        eliminatoria_porra["equipo_1_bandera"],
-											        eliminatoria_porra["equipo_2_id"],
-											        eliminatoria_porra["equipo_2_nombre"],
-											        eliminatoria_porra["equipo_2_escudo"],
-											        eliminatoria_porra["equipo_2_bandera"],
-											        eliminatoria_porra["ganador_id"],
-											        eliminatoria_porra["ganador_nombre"],
-											        eliminatoria_porra["ganador_escudo"],
-											        eliminatoria_porra["ganador_bandera"]), eliminatorias_porra))
+		return list(map(lambda eliminatoria_porra: (eliminatoria_porra["ronda"],
+													eliminatoria_porra["partido"],
+													eliminatoria_porra["equipo_1_id"],
+													eliminatoria_porra["equipo_1_nombre"],
+													eliminatoria_porra["equipo_1_escudo"],
+													eliminatoria_porra["equipo_1_bandera"],
+													eliminatoria_porra["equipo_2_id"],
+													eliminatoria_porra["equipo_2_nombre"],
+													eliminatoria_porra["equipo_2_escudo"],
+													eliminatoria_porra["equipo_2_bandera"],
+													eliminatoria_porra["ganador_id"],
+													eliminatoria_porra["ganador_nombre"],
+													eliminatoria_porra["ganador_escudo"],
+													eliminatoria_porra["ganador_bandera"]), eliminatorias_porra))

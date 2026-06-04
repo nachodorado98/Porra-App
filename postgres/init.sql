@@ -8,6 +8,8 @@ CREATE TABLE usuarios (Usuario VARCHAR(255) PRIMARY KEY,
 						Codigo_Liga VARCHAR(6),
 						Imagen_Perfil VARCHAR(255) DEFAULT NULL,
 						Admin BOOl DEFAULT FALSE,
+						Cambios_Contrasena INT DEFAULT 0,
+						Ultimo_Cambio_Contrasena TIMESTAMP DEFAULT NULL,
 						FOREIGN KEY (Codigo_Liga) REFERENCES codigos (Codigo_Liga) ON DELETE CASCADE);
 
 CREATE TABLE equipos (Equipo_Id VARCHAR(255) PRIMARY KEY,
