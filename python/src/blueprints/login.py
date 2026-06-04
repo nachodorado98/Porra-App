@@ -8,7 +8,7 @@ from src.modelos.usuario import Usuario
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import comprobarHash
+from src.utilidades.utils import comprobarHash, obtenerPasosPorra
 
 
 bp_login=Blueprint("login", __name__)
@@ -34,9 +34,13 @@ def cargarUsuario(usuario:str)->Optional[Usuario]:
 
 	admin=con.obtenerAdmin(usuario)
 
+	estado_porra=con.obtenerEstadoPorraUsuario(usuario)
+
 	con.cerrarConexion()
 
-	return Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin)
+	paso_porra=obtenerPasosPorra(estado_porra)
+
+	return Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin, paso_porra)
 
 @bp_login.route("/login", methods=["GET", "POST"])
 def login():
@@ -68,9 +72,13 @@ def login():
 
 	admin=con.obtenerAdmin(usuario)
 
+	estado_porra=con.obtenerEstadoPorraUsuario(usuario)
+
 	con.cerrarConexion()
 
-	usuario=Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin)
+	paso_porra=obtenerPasosPorra(estado_porra)
+
+	usuario=Usuario(usuario, nombre, codigo_liga, imagen_perfil, admin, paso_porra)
 
 	login_user(usuario)
 

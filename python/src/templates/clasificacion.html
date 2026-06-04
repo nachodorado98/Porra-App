@@ -18,7 +18,8 @@
 
         {% for usuario_codigo in usuarios_codigo[:3] %}
 
-            <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}">
+            <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}"
+                    {% if es_admin %}onclick="window.location.href='/porra/{{ usuario_codigo[0] }}'" style="cursor: pointer;" data-podium-card-user="{{ usuario_codigo[0] }}"{% endif %}>
                 <div class="podium-position">
                     #{{ loop.index }}
                 </div>
@@ -43,7 +44,8 @@
 
         {% for usuario_codigo in usuarios_codigo %}
 
-            <div class="ranking-card {% if usuario_codigo[0]==usuario %}mi-usuario{% endif %}">
+            <div class="ranking-card {% if usuario_codigo[0]==usuario %}mi-usuario{% endif %}"
+            {% if es_admin %}onclick="window.location.href='/porra/{{ usuario_codigo[0] }}'" style="cursor: pointer;" data-ranking-card-user="{{ usuario_codigo[0] }}"{% endif %}>
                 <div class="ranking-left">
                     <div class="ranking-position">
                         {{ loop.index }}

@@ -24,6 +24,6 @@ for usuario, nombre, correo, codigo_liga in datos_usuarios:
 
     print(f"Enviando correo a la direccion {correo}...")
 
-    response=requests.post(URL_AZURE_FUNCTION, json=payload, timeout=10)
+    response=requests.post(URL_AZURE_FUNCTION, json=payload, timeout=120)
 
-    time.sleep(2.5)
+    time.sleep(5)

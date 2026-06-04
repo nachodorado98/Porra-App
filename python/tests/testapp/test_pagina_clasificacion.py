@@ -84,3 +84,39 @@ def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 		assert '<section class="ranking-list">' in contenido
 		assert '<div class="podium-avatar">' not in contenido
 		assert "nacho98_perfil.jpeg" in contenido
+
+def test_pagina_clasificacion_no_admin(cliente, conexion_usuario):
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert "/porra/nacho98" not in contenido
+		assert 'data-podium-card-user="nacho98"' not in contenido
+		assert 'style="cursor: pointer;"' not in contenido
+		assert 'data-ranking-card-user="nacho98"' not in contenido
+
+def test_pagina_clasificacion_admin(cliente, conexion_usuario):
+
+	conexion_usuario.c.execute("UPDATE usuarios SET Admin=True")
+
+	conexion_usuario.confirmar()
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert "/porra/nacho98" in contenido
+		assert 'data-podium-card-user="nacho98"' in contenido
+		assert 'style="cursor: pointer;"' in contenido
+		assert 'data-ranking-card-user="nacho98"' in contenido

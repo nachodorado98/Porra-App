@@ -21,6 +21,8 @@ def pagina_settings():
 
 	imagen_perfil=current_user.imagen_perfil
 
+	paso_porra=current_user.paso_porra
+
 	con=Conexion()
 
 	puede_cambio_contrasena=con.puedeCambiarContrasena(usuario)
@@ -33,7 +35,8 @@ def pagina_settings():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							puede_cambio_contrasena=puede_cambio_contrasena,
-							es_admin=current_user.admin)
+							es_admin=current_user.admin,
+							paso_porra=paso_porra)
 
 @bp_settings.route("/settings/eliminar_cuenta")
 @login_required

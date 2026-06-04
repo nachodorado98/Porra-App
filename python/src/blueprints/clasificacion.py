@@ -16,6 +16,8 @@ def pagina_clasificacion(codigo:str):
 
 	imagen_perfil=current_user.imagen_perfil
 
+	paso_porra=current_user.paso_porra
+
 	con=Conexion()
 
 	if not con.existe_codigo_liga(codigo):
@@ -36,6 +38,8 @@ def pagina_clasificacion(codigo:str):
 
 	usuarios_codigo=con.obtenerUsuariosCodigoLiga(codigo)
 
+	con.cerrarConexion()
+
 	usuarios_codigo_puntos=sorted([tuple(list(usuario_codigo)+[int("0")]) for usuario_codigo in usuarios_codigo], key=lambda x: (x[3], x[1]), reverse=True)
 
 	return render_template("clasificacion.html",
@@ -43,4 +47,6 @@ def pagina_clasificacion(codigo:str):
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
-							usuarios_codigo=usuarios_codigo_puntos)
+							usuarios_codigo=usuarios_codigo_puntos,
+							es_admin=current_user.admin,
+							paso_porra=paso_porra)
