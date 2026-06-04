@@ -1,5 +1,6 @@
 import json
 import pytest
+from datetime import datetime, timedelta
 
 def test_pagina_porra_grupos_sin_login(cliente, conexion):
 
@@ -9,6 +10,50 @@ def test_pagina_porra_grupos_sin_login(cliente, conexion):
 
 	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_porra_grupos_porra_cerrada(cliente, conexion_usuario, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/porra/grupos")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_pagina_porra_grupos_porra_abierta(cliente, conexion_usuario, dias):
+
+	fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_posterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/porra/grupos")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert '<div class="porra-grupos-wrapper">' in contenido
+		assert '<div class="info-clasificacion">' in contenido
+		assert '<h1 class="titulo-pagina">Fase de Grupos' in contenido
+		assert '<div class="grupo-container">' in contenido
 
 def test_pagina_porra_grupos(cliente, conexion_usuario):
 
@@ -183,6 +228,58 @@ def test_pagina_porra_grupos_guardar_porra_error_equipos_error(cliente, conexion
 		assert respuesta.status_code==302
 		assert respuesta.location=="/porra/grupos"
 		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_porra_grupos_guardar_porra_cerrada(cliente, conexion_usuario, porra_grupos, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_pagina_porra_grupos_guardar_porra_abierta(cliente, conexion_usuario, porra_grupos, dias):
+
+	fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_posterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra/mejores_terceros"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+		conexion_usuario.c.execute("SELECT * FROM grupo_equipos_porra ORDER BY Posicion ASC")
+
+		equipos_grupos=conexion_usuario.c.fetchall()
+
+		assert len(equipos_grupos)==48
+
+		conexion_usuario.c.execute("SELECT Grupos_Completados FROM estado_porra")
+
+		assert conexion_usuario.c.fetchone()["grupos_completados"]
 
 def test_pagina_porra_grupos_guardar_porra_correcto(cliente, conexion_usuario, porra_grupos):
 

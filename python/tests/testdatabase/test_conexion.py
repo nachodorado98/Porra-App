@@ -23,6 +23,7 @@ def test_conexion(conexion):
 	assert "lookup_bracket_mejores_terceros" in tablas
 	assert "eliminatorias_porra" in tablas
 	assert "eliminatorias_real" in tablas
+	assert "maestro" in tablas
 		
 def test_cerrar_conexion(conexion):
 

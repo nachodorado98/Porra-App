@@ -1,6 +1,7 @@
 import json
 import pytest
 import copy
+from datetime import datetime, timedelta
 
 def test_pagina_porra_mejores_terceros_sin_login(cliente, conexion):
 
@@ -24,6 +25,57 @@ def test_pagina_porra_eliminatorias_mejores_terceros_no_completados(cliente, con
 		assert respuesta.status_code==302
 		assert respuesta.location=="/porra/mejores_terceros"
 		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_porra_eliminatorias_porra_cerrada(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
+
+		respuesta=cliente_abierto.get("/porra/eliminatorias")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_pagina_porra_eliminatorias_abierta(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, dias):
+
+	fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_posterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
+
+		respuesta=cliente_abierto.get("/porra/eliminatorias")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert '<div class="eliminatorias-wrapper">' in contenido
+		assert '<div class="info-eliminatorias">' in contenido
+		assert '<h1>Fase Eliminatoria' in contenido
 
 def test_pagina_porra_eliminatorias(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros):
 
@@ -486,6 +538,69 @@ def test_pagina_porra_eliminatorias_guardar_porra_ganador_de_final_no_juega(clie
 		assert respuesta.status_code==302
 		assert respuesta.location=="/porra/eliminatorias"
 		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_porra_eliminatorias_guardar_porra_cerrada(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
+		
+		respuesta=cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_pagina_porra_eliminatorias_guardar_porra_abierta(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket, dias):
+
+	fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_posterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
+
+		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
+		
+		respuesta=cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra/mi_porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
+		conexion_usuario.c.execute("SELECT * FROM eliminatorias_porra")
+
+		partidos_eliminatorias=conexion_usuario.c.fetchall()
+
+		assert len(partidos_eliminatorias)==32
+
+		conexion_usuario.c.execute("SELECT Eliminatorias_Completadas, Porra_Completada FROM estado_porra")
+
+		estado_porra=conexion_usuario.c.fetchone()
+
+		assert estado_porra["eliminatorias_completadas"]
+		assert estado_porra["porra_completada"]
 
 def test_pagina_porra_eliminatorias_guardar_porra_correcto(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket):
 

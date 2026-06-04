@@ -36,6 +36,8 @@ class Conexion:
 
 		self.c.execute("DELETE FROM codigos")
 
+		self.c.execute("DELETE FROM maestro")
+
 		self.confirmar()
 
 	# Metodo para obtener los codigos de las ligas
@@ -172,7 +174,8 @@ class Conexion:
 									ELSE Imagen_Perfil
 								END as Imagen
 						FROM usuarios
-						WHERE codigo_liga=%s""",
+						WHERE codigo_liga=%s
+						ORDER BY nombre, apellido, usuario""",
 						(codigo_liga,))
 
 		usuarios=self.c.fetchall()
@@ -623,3 +626,34 @@ class Conexion:
 													eliminatoria_porra["ganador_nombre"],
 													eliminatoria_porra["ganador_escudo"],
 													eliminatoria_porra["ganador_bandera"]), eliminatorias_porra))
+
+	# Metodo para insertar un registro en la tabla maestro
+	def insertarClaveValorMaestro(self, clave:str, valor:str)->None:
+
+		self.c.execute("""INSERT INTO maestro VALUES (%s, %s)""",
+						(clave, valor))
+
+		self.confirmar()
+
+	# Metodo para obtener el valor de una clave en la tabla maestro
+	def obtenerValorClaveMaestro(self, clave:str)->Optional[str]:
+
+		self.c.execute("""SELECT valor
+						FROM maestro
+						WHERE Clave=%s""",
+						(clave,))
+
+		valor=self.c.fetchone()
+
+		return None if valor is None else valor["valor"]
+
+	# Metodo para saber si la porra esta abierta
+	def porraAbierta(self)->bool:
+
+		fecha_cierre=self.obtenerValorClaveMaestro("fecha_cierre_porra")
+
+		if fecha_cierre is None:
+
+			return True
+
+		return datetime.now()<=datetime.strptime(fecha_cierre, "%Y-%m-%d")

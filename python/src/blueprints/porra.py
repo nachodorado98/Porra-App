@@ -23,12 +23,19 @@ def pagina_porra():
 
 	paso_porra=current_user.paso_porra
 
+	con=Conexion()
+
+	porra_abierta=con.porraAbierta()
+
+	con.cerrarConexion()
+
 	return render_template("porra.html",
 							usuario=usuario,
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							porra_abierta=porra_abierta)
 
 @bp_porra.route("/porra/grupos")
 @login_required
@@ -43,6 +50,12 @@ def pagina_porra_grupos():
 	paso_porra=current_user.paso_porra
 
 	con=Conexion()
+
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
 
 	puede_editar=con.puedeEditarGruposPorra(usuario)
 
@@ -77,6 +90,12 @@ def pagina_porra_grupos_guardar():
 	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
+
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
 
 	puede_editar=con.puedeEditarGruposPorra(usuario)
 
@@ -136,6 +155,12 @@ def pagina_porra_mejores_terceros():
 
 	con=Conexion()
 
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	grupos_completos=con.gruposPorraCompleto(usuario)
 
 	if not grupos_completos:
@@ -177,6 +202,12 @@ def pagina_porra_mejores_terceros_guardar():
 	imagen_perfil=current_user.imagen_perfil
 
 	con=Conexion()
+
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
 
 	grupos_completos=con.gruposPorraCompleto(usuario)
 
@@ -245,6 +276,12 @@ def pagina_porra_eliminatorias():
 
 	con=Conexion()
 
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	mejores_terceros_completos=con.mejoresTercerosPorraCompleto(usuario)
 
 	if not mejores_terceros_completos:
@@ -290,6 +327,12 @@ def pagina_porra_eliminatorias_guardar():
 	codigo_liga=current_user.codigo_liga
 
 	con=Conexion()
+
+	if not con.porraAbierta():
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
 
 	mejores_terceros_completos=con.mejoresTercerosPorraCompleto(usuario)
 
@@ -369,6 +412,12 @@ def pagina_porra_reiniciar():
 	con=Conexion()
 
 	try:
+
+		if not con.porraAbierta():
+
+			con.cerrarConexion()
+
+			return redirect("/porra")
 
 		con.reiniciarGruposPorraUsuario(usuario)
 
