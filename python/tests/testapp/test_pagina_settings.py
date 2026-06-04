@@ -1,6 +1,7 @@
 import pytest
 import os
 from datetime import datetime, timedelta
+import json
 
 def test_pagina_settings_sin_login(cliente, conexion):
 
@@ -34,6 +35,7 @@ def test_pagina_settings_sin_imagen_perfil(cliente, conexion_usuario):
 		assert '<div class="settings-section password-section">' in contenido
 		assert '<h2>Cambiar contraseña</h2>' in contenido
 		assert '<form action="/settings/cambiar_contrasena" method="POST" class="form-cambiar-contrasena">' in contenido
+		assert '<div class="settings-section admin-password-section">' not in contenido
 
 def test_pagina_settings_con_imagen_perfil(cliente, conexion_usuario):
 
@@ -70,6 +72,7 @@ def test_pagina_settings_con_imagen_perfil(cliente, conexion_usuario):
 		assert '<div class="settings-section password-section">' in contenido
 		assert '<h2>Cambiar contraseña</h2>' in contenido
 		assert '<form action="/settings/cambiar_contrasena" method="POST" class="form-cambiar-contrasena">' in contenido
+		assert '<div class="settings-section admin-password-section">' not in contenido
 
 @pytest.mark.parametrize(["cambios", "ultimo_cambio"],
 	[
@@ -107,6 +110,7 @@ def test_pagina_settings_no_puede_cambio_contrasena(cliente, conexion_usuario, c
 		assert '<div class="settings-section password-section">' in contenido
 		assert '<h2>Cambiar contraseña</h2>' in contenido
 		assert '<form action="/settings/cambiar_contrasena" method="POST" class="form-cambiar-contrasena">' not in contenido
+		assert '<div class="settings-section admin-password-section">' not in contenido
 
 @pytest.mark.parametrize(["cambios", "ultimo_cambio"],
 	[
@@ -143,3 +147,68 @@ def test_pagina_settings_puede_cambio_contrasena(cliente, conexion_usuario, camb
 		assert '<div class="settings-section password-section">' in contenido
 		assert '<h2>Cambiar contraseña</h2>' in contenido
 		assert '<form action="/settings/cambiar_contrasena" method="POST" class="form-cambiar-contrasena">' in contenido
+		assert '<div class="settings-section admin-password-section">' not in contenido
+
+def test_pagina_settings_no_admin(cliente, conexion_usuario):
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/settings")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert '<div class="settings-section admin-password-section">' not in contenido
+
+def test_pagina_settings_admin(cliente, conexion_usuario):
+
+	conexion_usuario.c.execute("UPDATE usuarios SET Admin=True")
+
+	conexion_usuario.confirmar()
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/settings")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert '<div class="settings-section admin-password-section">' in contenido
+
+@pytest.mark.parametrize(["usuario"],
+	[("nacho98",),("naCho98",),("nacho",),("amanditaa",),("amanda99",)]
+)
+def test_pagina_settings_verificar_usuario_no_existente(cliente, conexion, usuario):
+
+	respuesta=cliente.get(f"/settings/verificar_usuario/{usuario}")
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==404
+	assert "error" in contenido
+	assert "Usuario no existente" in contenido
+
+@pytest.mark.parametrize(["usuario"],
+	[("nacho98",),("naCho98",),("nacho",),("amanditaa",),("amanda99",)]
+)
+def test_pagina_settings_verificar_usuario_existente(cliente, conexion, password_hash, usuario):
+
+	conexion.insertarCodigoLiga("3YYZKP")
+
+	conexion.insertarUsuario(usuario, "micorreo@correo.es", password_hash, "nacho", "dorado", "3YYZKP")
+
+	respuesta=cliente.get(f"/settings/verificar_usuario/{usuario}")
+
+	contenido=respuesta.data.decode()
+
+	respuesta.status_code==200
+
+	diccionario_valido=json.loads(contenido)
+
+	valido=diccionario_valido["valido"]
+
+	assert valido

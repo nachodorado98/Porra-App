@@ -42,7 +42,7 @@ def generarCodigo():
         return jsonify({"error": "Codigo No Valido"}), 404
 
 @bp_registro.route("/registro/verificar_codigo/<codigo>")
-def verificarCodigo(codigo):
+def verificarCodigo(codigo:str):
 
     codigo_validado=codigo_valido(codigo)
 

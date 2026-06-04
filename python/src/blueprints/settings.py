@@ -32,7 +32,8 @@ def pagina_settings():
 							nombre=current_user.nombre,
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
-							puede_cambio_contrasena=puede_cambio_contrasena)
+							puede_cambio_contrasena=puede_cambio_contrasena,
+							es_admin=current_user.admin)
 
 @bp_settings.route("/settings/eliminar_cuenta")
 @login_required
@@ -163,6 +164,80 @@ def pagina_settings_cambiar_contrasena():
 	ahora=datetime.now()
 
 	con.actualizarContrasenaUsuario(usuario, nueva_contrasena_hash, cambios+1, ahora)
+	
+	con.cerrarConexion()
+
+	return redirect("/settings")
+
+@bp_settings.route("/settings/verificar_usuario/<usuario>")
+def verificarUsuario(usuario:str):
+
+    usuario=usuario.strip()
+
+    if not usuario:
+
+        return jsonify({"error": "Usuario vacío"}), 400
+
+    con=Conexion()
+
+    existe_usuario=con.existe_usuario(usuario)
+
+    con.cerrarConexion()
+
+    if existe_usuario:
+
+        return jsonify({"valido": True}), 200
+
+    else:
+
+        return jsonify({"error": "Usuario no existente"}), 404
+
+@bp_settings.route("/settings/admin/cambiar_contrasena_usuario", methods=["POST"])
+@login_required
+def pagina_settings_admin_cambiar_contrasena_usuario():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
+
+	usuario_cambiar=request.form.get("usuario")
+	nueva_contrasena=request.form.get("nueva_contrasena")
+
+	con=Conexion()
+
+	if not current_user.admin:
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	if not con.existe_usuario(usuario_cambiar):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	if not contrasena_correcta(nueva_contrasena):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	contrasena_hash_usuario_cambiar=con.obtenerContrasenaUsuario(usuario_cambiar)
+
+	if comprobarHash(nueva_contrasena, contrasena_hash_usuario_cambiar):
+
+		con.cerrarConexion()
+
+		return redirect("/settings")
+
+	nueva_contrasena_hash=generarHash(nueva_contrasena)
+
+	cambios, ultimo_cambio=con.obtenerDatosCambioContrasenaUsuario(usuario_cambiar)
+
+	con.actualizarContrasenaUsuario(usuario_cambiar, nueva_contrasena_hash, cambios, ultimo_cambio)
 	
 	con.cerrarConexion()
 

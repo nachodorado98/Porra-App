@@ -108,7 +108,36 @@
 
             <div class="settings-section password-section">
                 <h2>Cambiar contraseña</h2>
-                <p>Debe pasar mínimo un dia para volver a cambiar la contraseña. Si has realizado ya tres cambios de contraseña, contacta con el Administrador</p>
+                <p>Debe pasar mínimo un dia para volver a cambiar la contraseña. Si has realizado ya tres cambios de contraseña, contacta con el Administrador.</p>
+            </div>
+
+        {% endif %}
+
+        {% if es_admin %}
+
+            <div class="settings-section admin-password-section">
+
+                <h2>Cambiar contraseña de usuario</h2>
+
+                <p>Cambia rápidamente la contraseña de cualquier usuario. Esta opción solo está disponible para Administradores.</p>
+
+                <form action="/settings/admin/cambiar_contrasena_usuario" method="POST" class="form-admin-contrasena">
+
+                    <div class="campo-password">
+                        <label for="usuario_objetivo">Usuario</label>
+                        <input type="text" name="usuario" id="usuario_objetivo" required>
+                        <span id="mensaje_usuario_objetivo" class="mensaje-validacion-usuario"></span>
+                    </div>
+
+                    <div class="campo-password">
+                        <label for="nueva_contrasena_usuario">Nueva contraseña</label>
+                        <input type="password" name="nueva_contrasena" id="nueva_contrasena_usuario" minlength="8" required>
+                    </div>
+
+                    <button type="submit" class="boton-admin-contrasena" id="botonAdminContrasena" disabled>Cambiar contraseña</button>
+
+                </form>
+
             </div>
 
         {% endif %}
@@ -147,5 +176,6 @@
 <script src="{{ url_for('static', filename='js/cargar_imagen_preview.js') }}"></script>
 <script src="{{ url_for('static', filename='js/abrir_actualizar_imagen_perfil.js') }}"></script>
 <script src="{{ url_for('static', filename='js/cambiar_contrasena.js') }}"></script>
+<script src="{{ url_for('static', filename='js/verificar_usuario_admin.js') }}"></script>
 
 {% endblock principal %}

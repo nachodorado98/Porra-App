@@ -488,3 +488,63 @@ input[type="file"]{
 .boton-cambiar-contrasena:disabled:hover{
     background:#bfc8d2;
 }
+
+.admin-password-section{
+    margin-top:30px;
+    border:2px solid #ffd8a8;
+    background:#fff8f0;
+}
+.form-admin-contrasena{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.boton-admin-contrasena{
+    background:#222;
+    color:white;
+
+    border:none;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.25s;
+}
+
+.boton-admin-contrasena:hover{
+    background:#000;
+    transform:translateY(-2px);
+}
+
+@media (max-width:480px){
+
+    .boton-admin-contrasena{
+        width:100%;
+    }
+
+}
+
+.mensaje-validacion-usuario{
+    font-size:14px;
+    font-weight:600;
+    margin-top:4px;
+}
+
+.boton-admin-contrasena:disabled{
+    background:#bfc8d2;
+    cursor:not-allowed;
+    transform:none;
+    opacity:0.7;
+}
+
+.boton-admin-contrasena:disabled:hover{
+    background:#bfc8d2;
+    transform:none;
+}

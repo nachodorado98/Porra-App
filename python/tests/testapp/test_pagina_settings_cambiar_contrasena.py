@@ -123,6 +123,8 @@ def test_pagina_settings_cambiar_contrasena_no_puede_cambio_contrasena(cliente, 
 
 	conexion_usuario.confirmar()
 
+	contrasena_previa=conexion_usuario.obtenerContrasenaUsuario("nacho98")
+
 	with cliente as cliente_abierto:
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
@@ -137,6 +139,10 @@ def test_pagina_settings_cambiar_contrasena_no_puede_cambio_contrasena(cliente, 
 		assert respuesta.location=="/settings"
 		assert "<h1>Redirecting...</h1>" in contenido
 
+		contrasena_nueva=conexion_usuario.obtenerContrasenaUsuario("nacho98")
+
+		assert contrasena_previa==contrasena_nueva
+
 @pytest.mark.parametrize(["cambios", "ultimo_cambio"],
 	[
 		(0, datetime.now()-timedelta(hours=48)),
@@ -149,6 +155,8 @@ def test_pagina_settings_cambiar_contrasena_puede_cambio_contrasena(cliente, con
 	conexion_usuario.c.execute(f"UPDATE usuarios SET Cambios_Contrasena={cambios}, Ultimo_Cambio_Contrasena='{ultimo_cambio}'")
 
 	conexion_usuario.confirmar()
+
+	contrasena_previa=conexion_usuario.obtenerContrasenaUsuario("nacho98")
 
 	with cliente as cliente_abierto:
 
@@ -168,3 +176,7 @@ def test_pagina_settings_cambiar_contrasena_puede_cambio_contrasena(cliente, con
 
 		assert datos_usuario[0]==cambios+1
 		assert datos_usuario[1].strftime("%Y-%m-%d")==datetime.now().strftime("%Y-%m-%d")
+
+		contrasena_nueva=conexion_usuario.obtenerContrasenaUsuario("nacho98")
+
+		assert contrasena_previa!=contrasena_nueva
