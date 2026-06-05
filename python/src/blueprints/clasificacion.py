@@ -3,6 +3,8 @@ from flask_login import login_required, current_user
 
 from src.database.conexion import Conexion
 
+from src.config import URL_DATALAKE_PERFIL
+
 
 bp_clasificacion=Blueprint("clasificacion", __name__)
 
@@ -40,7 +42,7 @@ def pagina_clasificacion(codigo:str):
 
 	con.cerrarConexion()
 
-	usuarios_codigo_puntos=sorted([tuple(list(usuario_codigo)+[int("0")]) for usuario_codigo in usuarios_codigo], key=lambda x: (x[3], x[1]), reverse=True)
+	usuarios_codigo_puntos=sorted([tuple(list(usuario_codigo)+[int("0")]) for usuario_codigo in usuarios_codigo], key=lambda x: (-x[4], x[1], x[2]))
 
 	return render_template("clasificacion.html",
 							usuario=usuario,
@@ -49,4 +51,5 @@ def pagina_clasificacion(codigo:str):
 							imagen_perfil=imagen_perfil,
 							usuarios_codigo=usuarios_codigo_puntos,
 							es_admin=current_user.admin,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

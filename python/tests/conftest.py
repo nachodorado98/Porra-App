@@ -18,6 +18,11 @@ def entorno():
 	return config[entorno].ENVIROMENT
 
 @pytest.fixture()
+def contenedor_dl(entorno):
+
+	return entorno.lower()
+
+@pytest.fixture()
 def app(entorno):
 
 	configuracion=config[entorno]

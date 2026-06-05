@@ -42,7 +42,7 @@
 
                 <div class="contenedor-imagen-actual" id="contenedorImagen">
                     <h2>Imagen de perfil</h2>
-                    <img class="imagen-perfil" src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario ~ '/' ~ imagen_perfil) }}" alt="Imagen perfil">
+                    <img class="imagen-perfil" src="{{ url_imagen_usuario_perfil }}{{ usuario }}/{{ imagen_perfil }}" alt="Imagen perfil">
                     <button  class="boton-actualizar-imagen" id="botonActualizarImagenPerfil">Actualizar imagen</button>
                 </div>
 

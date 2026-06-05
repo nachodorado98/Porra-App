@@ -28,7 +28,7 @@
                         {{ usuario_codigo[0][0] }}
                     </div>
                 {% else %}
-                    <img src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario_codigo[0] ~ '/' ~ usuario_codigo[3]) }}" alt="Perfil Usuario" class="podium-avatar-img">
+                    <img src="{{ url_imagen_usuario_perfil }}{{ usuario_codigo[0] }}/{{ usuario_codigo[3] }}" alt="Perfil Usuario" class="podium-avatar-img">
                 {% endif %}
                 <h2>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h2>
                 <div class="podium-points">
@@ -55,7 +55,7 @@
                             {{ usuario_codigo[0][0] }}
                         </div>
                     {% else %}
-                        <img src="{{ url_for('static', filename='imagenes/perfil/' ~ usuario_codigo[0] ~ '/' ~ usuario_codigo[3]) }}" alt="Perfil Usuario" class="ranking-avatar-img">
+                        <img src="{{ url_imagen_usuario_perfil }}{{ usuario_codigo[0] }}/{{ usuario_codigo[3] }}" alt="Perfil Usuario" class="ranking-avatar-img">
                     {% endif %}
                     <div class="ranking-user">
                         <h3>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h3>

@@ -8,6 +8,8 @@ from src.utilidades.utils import obtenerGruposEquiposLimpios, gruposPorraCorrect
 from src.utilidades.utils import obtenerPasosPorra, obtenerCombinacionMejoresTerceros, crearBracketDieciseisavos, bracketEliminatoriasCorrecto
 from src.utilidades.utils import obtenerEliminatoriasPorraLimpias
 
+from src.config import URL_DATALAKE_PERFIL
+
 
 bp_porra=Blueprint("porra", __name__)
 
@@ -35,7 +37,8 @@ def pagina_porra():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							paso_porra=paso_porra,
-							porra_abierta=porra_abierta)
+							porra_abierta=porra_abierta,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/grupos")
 @login_required
@@ -77,7 +80,8 @@ def pagina_porra_grupos():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							grupos=grupos_limpios,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/grupos/guardar", methods=["POST"])
 @login_required
@@ -189,7 +193,8 @@ def pagina_porra_mejores_terceros():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							terceros=terceros_grupos_limpios,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/mejores_terceros/guardar", methods=["POST"])
 @login_required
@@ -316,7 +321,8 @@ def pagina_porra_eliminatorias():
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							bracket_16avos=bracket_16avos,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/eliminatorias/guardar", methods=["POST"])
 @login_required
@@ -481,7 +487,8 @@ def pagina_porra_mi_porra():
 							grupos_porra=grupos_porra_limpios,
 							mejores_terceros=mejores_terceros_porra_limpios,
 							eliminatorias=eliminatorias_porra_limpias,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/<usuario_porra>")
 @login_required
@@ -538,4 +545,5 @@ def pagina_porra_usuario(usuario_porra:str):
 							mejores_terceros=mejores_terceros_porra_limpios,
 							eliminatorias=eliminatorias_porra_limpias,
 							usuario_porra=usuario_porra,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

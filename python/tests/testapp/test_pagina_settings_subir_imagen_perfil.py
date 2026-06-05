@@ -1,4 +1,7 @@
 import os
+import time
+
+from src.utilidades.utils import existe_imagen_datalake
 
 def test_pagina_settings_actualizar_imagen_perfil_sin_login(cliente):
 
@@ -9,7 +12,7 @@ def test_pagina_settings_actualizar_imagen_perfil_sin_login(cliente):
 	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
-def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_no_valida(cliente, conexion_usuario):
+def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_no_valida(cliente, conexion_usuario, datalake, contenedor_dl):
 
 	with cliente as cliente_abierto:
 
@@ -49,7 +52,13 @@ def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_no_valida(c
 
 		assert not imagen_usuario["imagen_perfil"]
 
-def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_valida(cliente, conexion_usuario):
+		datalake.existe_carpeta(contenedor_dl, "perfil/nacho98")
+
+		assert not existe_imagen_datalake("nacho98", "imagen_tests_no_valida.txt", contenedor_dl)
+
+		datalake.cerrarConexion()
+
+def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_valida(cliente, conexion_usuario, datalake, contenedor_dl):
 
 	with cliente as cliente_abierto:
 
@@ -89,7 +98,15 @@ def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_valida(clie
 
 		assert imagen_usuario["imagen_perfil"]=="nacho98_perfil.jpeg"
 
-def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_existente(cliente, conexion_usuario):
+		datalake.existe_carpeta(contenedor_dl, "perfil/nacho98")
+
+		time.sleep(5)
+
+		assert existe_imagen_datalake("nacho98", "nacho98_perfil.jpeg", contenedor_dl)
+
+		datalake.cerrarConexion()
+
+def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_existente(cliente, conexion_usuario, datalake, contenedor_dl):
 
 	with cliente as cliente_abierto:
 
@@ -144,3 +161,11 @@ def test_pagina_settings_actualizar_imagen_perfil_usuario_con_imagen_existente(c
 		imagen_usuario=conexion_usuario.c.fetchone()
 
 		assert imagen_usuario["imagen_perfil"]=="nacho98_perfil.png"
+
+		datalake.existe_carpeta(contenedor_dl, "perfil/nacho98")
+
+		time.sleep(5)
+
+		assert existe_imagen_datalake("nacho98", "nacho98_perfil.png", contenedor_dl)
+
+		datalake.cerrarConexion()

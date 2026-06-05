@@ -8,6 +8,8 @@ from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obte
 from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra, obtenerCombinacionMejoresTerceros, construirLookup, crearBracketDieciseisavos
 from src.utilidades.utils import bracketEliminatoriasCorrecto, obtenerEliminatoriasPorraLimpias
 from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, extraerExtension
+from src.utilidades.utils import crearCarpetaDataLakePerfil, crearCarpetaDataLakePerfilUsuario, listarImagenesCarpetaDatalake
+from src.utilidades.utils import existe_imagen_datalake, eliminarImagenDatalake, subirImagenPerfilUsuarioDataLake
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -1022,3 +1024,231 @@ def test_vaciar_carpeta_llena_varios(numero_archivos):
 def test_extraer_extension(archivo, extension):
 
     assert extraerExtension(archivo)==extension
+
+def test_crear_carpeta_data_lake_perfil_no_existe(datalake, contenedor_dl):
+
+    datalake.eliminarCarpeta(contenedor_dl, "perfil")
+
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    datalake.cerrarConexion()
+
+def test_crear_carpeta_data_lake_perfil_existe(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    datalake.cerrarConexion()
+
+def test_crear_carpeta_data_lake_perfil_usuario_no_existe(datalake, contenedor_dl):
+
+    datalake.eliminarCarpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    crearCarpetaDataLakePerfilUsuario("nacho", contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    datalake.cerrarConexion()
+
+def test_crear_carpeta_data_lake_perfil_usuario_existe(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    crearCarpetaDataLakePerfilUsuario("nacho", contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    datalake.cerrarConexion()
+
+def test_listar_imagenes_carpeta_datalake_carpeta_no_existe(datalake, contenedor_dl):
+
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil/no_existo")
+
+    assert not listarImagenesCarpetaDatalake("no_existo", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_listar_imagenes_carpeta_datalake_imagenes_no_existen(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not listarImagenesCarpetaDatalake("nacho", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def crearArchivoTXT(ruta:str, nombre:str)->None:
+
+    ruta_archivo=os.path.join(ruta, nombre)
+
+    with open(ruta_archivo, "w") as file:
+
+        file.write("Nacho")
+
+def test_listar_imagenes_carpeta_datalake(datalake, contenedor_dl):
+
+    ruta_carpeta=os.path.join(os.getcwd(), "Archivos_Tests_Data_Lake")
+
+    nombre_archivo="archivo.txt"
+
+    crearCarpeta(ruta_carpeta)
+
+    vaciarCarpeta(ruta_carpeta)
+
+    crearArchivoTXT(ruta_carpeta, nombre_archivo)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    datalake.subirArchivo(contenedor_dl, "perfil/nacho", ruta_carpeta, nombre_archivo)
+
+    archivos=listarImagenesCarpetaDatalake("nacho", contenedor_dl)
+
+    assert nombre_archivo in archivos
+
+    vaciarCarpeta(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
+
+    datalake.cerrarConexion()
+
+def test_existe_imagen_datalake_carpeta_no_existe(datalake, contenedor_dl):
+
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil/no_existo")
+
+    assert not existe_imagen_datalake("no_existo", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_existe_imagen_datalake_imagen_no_existe(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not existe_imagen_datalake("nacho", "nacho.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_existe_imagen_datalake(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_eliminar_imagen_datalake_carpeta_no_existe(datalake, contenedor_dl):
+
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil/no_existo")
+
+    assert not eliminarImagenDatalake("no_existo", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_eliminar_imagen_datalake_imagen_no_existe(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not existe_imagen_datalake("nacho", "nacho.txt", contenedor_dl)
+
+    assert not eliminarImagenDatalake("nacho", "nacho.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_existe_imagen_datalake(datalake, contenedor_dl):
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    assert eliminarImagenDatalake("nacho", "archivo.txt", contenedor_dl)
+
+    assert not existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_subir_imagen_perfil_usuario_datalake_no_existe_carpeta(datalake, contenedor_dl):
+
+    ruta_carpeta=os.path.join(os.getcwd(), "Archivos_Tests_Data_Lake")
+
+    datalake.eliminarCarpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    assert not datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    subirImagenPerfilUsuarioDataLake("nacho", "archivo.txt", ruta_carpeta, contenedor_dl)
+
+    assert not existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_subir_imagen_perfil_usuario_datalake_no_existe_archivo(datalake, contenedor_dl):
+
+    ruta_carpeta=os.path.join(os.getcwd(), "Archivos_Tests_Data_Lake")
+
+    crearCarpeta(ruta_carpeta)
+
+    datalake.eliminarCarpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    crearCarpetaDataLakePerfilUsuario("nacho", contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+    
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    subirImagenPerfilUsuarioDataLake("nacho", "archivo.txt", ruta_carpeta, contenedor_dl)
+
+    assert not existe_imagen_datalake("nacho", "archivo.txt", contenedor_dl)
+
+    datalake.cerrarConexion()
+
+def test_subir_imagen_perfil_usuario_datalake(datalake, contenedor_dl):
+
+    ruta_carpeta=os.path.join(os.getcwd(), "Archivos_Tests_Data_Lake")
+
+    nombre_archivo="archivo.txt"
+
+    vaciarCarpeta(ruta_carpeta)
+
+    crearArchivoTXT(ruta_carpeta, nombre_archivo)
+
+    datalake.eliminarCarpeta(contenedor_dl, "perfil")
+
+    crearCarpetaDataLakePerfil(contenedor_dl)
+
+    crearCarpetaDataLakePerfilUsuario("nacho", contenedor_dl)
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil")
+
+    assert datalake.existe_carpeta(contenedor_dl, "perfil/nacho")
+
+    assert not existe_imagen_datalake("nacho", nombre_archivo, contenedor_dl)
+
+    subirImagenPerfilUsuarioDataLake("nacho", nombre_archivo, ruta_carpeta, contenedor_dl)
+
+    assert existe_imagen_datalake("nacho", nombre_archivo, contenedor_dl)
+
+    vaciarCarpeta(ruta_carpeta)
+
+    borrarCarpeta(ruta_carpeta)
+
+    datalake.cerrarConexion()

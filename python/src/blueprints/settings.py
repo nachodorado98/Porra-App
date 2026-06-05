@@ -2,10 +2,15 @@ from flask import Blueprint, render_template, request, jsonify, redirect
 from flask_login import login_required, current_user
 import os
 from datetime import datetime, timedelta
+from threading import Thread
+import time
 
 from src.database.conexion import Conexion
 
 from src.utilidades.utils import crearCarpeta, extraerExtension, vaciarCarpeta, contrasena_correcta, comprobarHash, generarHash
+from src.utilidades.utils import crearCarpetaDataLakePerfilUsuario, subirImagenPerfilUsuarioDataLake
+
+from src.config import URL_DATALAKE_PERFIL, CONTENEDOR_DL
 
 
 bp_settings=Blueprint("settings", __name__)
@@ -36,7 +41,8 @@ def pagina_settings():
 							imagen_perfil=imagen_perfil,
 							puede_cambio_contrasena=puede_cambio_contrasena,
 							es_admin=current_user.admin,
-							paso_porra=paso_porra)
+							paso_porra=paso_porra,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_settings.route("/settings/eliminar_cuenta")
 @login_required
@@ -92,6 +98,14 @@ def pagina_settings_actualizar_imagen_perfil():
 
 			vaciarCarpeta(ruta_carpeta)
 
+			if not crearCarpetaDataLakePerfilUsuario(usuario, CONTENEDOR_DL):
+
+				con.cerrarConexion()
+
+				print(f"No se pudo crear la carpeta de perfil en DataLake para {usuario}")
+
+				return redirect("/settings")
+
 			archivo_imagen=f"{usuario}_perfil.{extension}"
 
 			ruta_imagen=os.path.join(ruta_carpeta, archivo_imagen)
@@ -100,6 +114,10 @@ def pagina_settings_actualizar_imagen_perfil():
 
 				imagen.save(ruta_imagen)
 
+				Thread(target=subirImagenPerfilUsuarioDataLake, args=(usuario, archivo_imagen, ruta_carpeta, CONTENEDOR_DL), daemon=True).start()
+
+				time.sleep(2)
+				
 				con.actualizarImagenPerfilUsuario(usuario, archivo_imagen)
 
 			except Exception:
@@ -175,25 +193,25 @@ def pagina_settings_cambiar_contrasena():
 @bp_settings.route("/settings/verificar_usuario/<usuario>")
 def verificarUsuario(usuario:str):
 
-    usuario=usuario.strip()
+	usuario=usuario.strip()
 
-    if not usuario:
+	if not usuario:
 
-        return jsonify({"error": "Usuario vacío"}), 400
+		return jsonify({"error": "Usuario vacío"}), 400
 
-    con=Conexion()
+	con=Conexion()
 
-    existe_usuario=con.existe_usuario(usuario)
+	existe_usuario=con.existe_usuario(usuario)
 
-    con.cerrarConexion()
+	con.cerrarConexion()
 
-    if existe_usuario:
+	if existe_usuario:
 
-        return jsonify({"valido": True}), 200
+		return jsonify({"valido": True}), 200
 
-    else:
+	else:
 
-        return jsonify({"error": "Usuario no existente"}), 404
+		return jsonify({"error": "Usuario no existente"}), 404
 
 @bp_settings.route("/settings/admin/cambiar_contrasena_usuario", methods=["POST"])
 @login_required

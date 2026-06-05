@@ -6,6 +6,8 @@ import os
 
 from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO
 
+from src.datalake.conexion_data_lake import ConexionDataLake
+
 def codigo_valido(codigo:str)->bool:
 
     if not codigo:
@@ -419,3 +421,103 @@ def vaciarCarpeta(ruta:str)->None:
 def extraerExtension(archivo:str, extension_alternativa:str="jpg")->str:
 
     return archivo.rsplit(".", 1)[1].lower() if "." in archivo else extension_alternativa
+
+def crearCarpetaDataLakePerfil(contenedor_dl:str)->bool:
+
+    try:
+
+        dl=ConexionDataLake()
+
+        if not dl.existe_carpeta(contenedor_dl, "perfil"):
+
+            dl.crearCarpeta(contenedor_dl, "perfil")
+
+        dl.cerrarConexion()
+
+        return True
+
+    except Exception as e:
+
+        print(f"Error en conexion con datalake: {e}")
+
+        return False
+
+def crearCarpetaDataLakePerfilUsuario(usuario:str, contenedor_dl:str)->bool:
+
+    try:
+
+        dl=ConexionDataLake()
+
+        if not dl.existe_carpeta(contenedor_dl, f"perfil/{usuario}"):
+
+            dl.crearCarpeta(contenedor_dl, f"perfil/{usuario}")
+
+        dl.cerrarConexion()
+
+        return True
+
+    except Exception as e:
+
+        print(f"Error en conexion con datalake: {e}")
+
+        return False
+
+def listarImagenesCarpetaDatalake(usuario:str, contenedor_dl:str)->list[str]:
+
+    try:
+
+        dl=ConexionDataLake()
+
+        imagenes=dl.obtenerArchivosCarpeta(contenedor_dl, f"perfil/{usuario}") if dl.existe_carpeta(contenedor_dl, f"perfil/{usuario}") else []
+
+        dl.cerrarConexion()
+
+        return imagenes
+
+    except Exception as e:
+
+        print(f"Error en conexion con datalake: {e}")
+
+        return []
+
+def existe_imagen_datalake(usuario:str, imagen:str, contenedor_dl:str)->bool:
+
+    imagenes=listarImagenesCarpetaDatalake(usuario, contenedor_dl)
+
+    return True if imagen in imagenes else False
+
+def eliminarImagenDatalake(usuario:str, imagen:str, contenedor_dl:str)->bool:
+
+    if existe_imagen_datalake(usuario, imagen, contenedor_dl):
+
+        try:
+
+            dl=ConexionDataLake()
+
+            dl.eliminarArchivo(contenedor_dl, f"perfil/{usuario}", imagen)
+
+            return True
+
+        except Exception:
+
+            return False
+
+    return False
+
+def subirImagenPerfilUsuarioDataLake(usuario:str, imagen:str, ruta_carpeta_local:str, contenedor_dl:str)->bool:
+
+    try:
+
+        dl=ConexionDataLake()
+
+        dl.subirArchivo(contenedor_dl, f"perfil/{usuario}", ruta_carpeta_local, imagen)
+
+        dl.cerrarConexion()
+
+        return True
+
+    except Exception as e:
+
+        print(f"Error al subir imagen de perfil a DataLake: {e}")
+
+        return False
