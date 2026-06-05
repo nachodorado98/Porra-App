@@ -77,6 +77,16 @@ resource "azurerm_container_app" "app" {
         secret_name = "endpointazurefunctionlanzamiento"
       }
 
+      env {
+        name        = "AZURE_NAME_ACCOUNT"
+        secret_name = "azurenameaccount"
+      }
+
+      env {
+        name        = "AZURE_KEY_ACCOUNT"
+        secret_name = "azurekeyaccount"
+      }
+
     }
   }
 
@@ -125,6 +135,15 @@ resource "azurerm_container_app" "app" {
     value = var.endpoint_az_function_lanzamiento
   }
 
+  secret {
+    name  = "azurenameaccount"
+    value = var.nombre_storage_account
+  }
+
+  secret {
+    name  = "azurekeyaccount"
+    value = azurerm_storage_account.storage_account.primary_access_key
+  }
 
   ingress {
     external_enabled = true
@@ -150,6 +169,19 @@ resource "azurerm_storage_account" "storage_account" {
     environment = var.entorno
     owner       = "Nacho"
   }
+}
+
+resource "azurerm_storage_container" "contenedor_pro" {
+  name                  = lower(var.entorno)
+  storage_account_name  = azurerm_storage_account.storage_account.name
+  container_access_type = "blob"
+}
+
+resource "azurerm_storage_data_lake_gen2_path" "carpeta_pro" {
+  storage_account_id = azurerm_storage_account.storage_account.id
+  filesystem_name    = azurerm_storage_container.contenedor_pro.name
+  path               = var.nombre_carpeta_storage
+  resource           = "directory"
 }
 
 resource "azurerm_service_plan" "service_plan" {

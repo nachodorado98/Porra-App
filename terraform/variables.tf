@@ -54,6 +54,10 @@ variable "nombre_storage_account" {
   description = "El nombre de la cuenta de almacenamiento"
 }
 
+variable "nombre_carpeta_storage" {
+  description = "El nombre de la carpeta del storage"
+}
+
 variable "nombre_service_plan" {
   description = "El nombre del Service Plan"
 }
