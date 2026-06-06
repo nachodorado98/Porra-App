@@ -3,7 +3,6 @@ from flask_login import login_required, current_user
 import os
 from datetime import datetime, timedelta
 from threading import Thread
-import time
 
 from src.database.conexion import Conexion
 
@@ -115,8 +114,6 @@ def pagina_settings_actualizar_imagen_perfil():
 				imagen.save(ruta_imagen)
 
 				Thread(target=subirImagenPerfilUsuarioDataLake, args=(usuario, archivo_imagen, ruta_carpeta, CONTENEDOR_DL), daemon=True).start()
-
-				time.sleep(2)
 				
 				con.actualizarImagenPerfilUsuario(usuario, archivo_imagen)
 

@@ -40,9 +40,13 @@ def pagina_clasificacion(codigo:str):
 
 	usuarios_codigo=con.obtenerUsuariosCodigoLiga(codigo)
 
+	porra_abierta=con.porraAbierta()
+
 	con.cerrarConexion()
 
 	usuarios_codigo_puntos=sorted([tuple(list(usuario_codigo)+[int("0")]) for usuario_codigo in usuarios_codigo], key=lambda x: (-x[4], x[1], x[2]))
+
+	puede_pinchar=False if not current_user.admin and porra_abierta else True
 
 	return render_template("clasificacion.html",
 							usuario=usuario,
@@ -50,6 +54,6 @@ def pagina_clasificacion(codigo:str):
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							usuarios_codigo=usuarios_codigo_puntos,
-							es_admin=current_user.admin,
+							puede_pinchar=puede_pinchar,
 							paso_porra=paso_porra,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

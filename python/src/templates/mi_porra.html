@@ -10,7 +10,17 @@
 <div class="mi-porra-wrapper">
 
     <div class="info-clasificacion">
-        <h1 class="titulo-pagina">Mi Porra 🏆</h1>
+
+        <h1 class="titulo-pagina">
+
+            {% if imagen_perfil=='-1' %}
+                <img src="{{ url_for('static', filename='iconos/usuario.png') }}" alt="Perfil" class="perfil-icon">
+            {% else %}
+                <img src="{{ url_imagen_usuario_perfil }}{{ usuario }}/{{ imagen_perfil }}" alt="Perfil" class="perfil-icon">
+            {% endif %}
+
+            Mi Porra 🏆
+        </h1>
 
         <p class="descripcion-grupos">Aquí puedes ver todas tus predicciones de la porra del Mundial</p>
     </div>

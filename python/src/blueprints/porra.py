@@ -504,7 +504,9 @@ def pagina_porra_usuario(usuario_porra:str):
 
 	con=Conexion()
 
-	if not current_user.admin:
+	porra_abierta=con.porraAbierta()
+
+	if not current_user.admin and porra_abierta:
 
 		con.cerrarConexion()
 
@@ -528,6 +530,8 @@ def pagina_porra_usuario(usuario_porra:str):
 
 	eliminatorias_porra=con.obtenerEliminatoriasPorraUsuario(usuario_porra)
 
+	imagen_perfil_usuario_porra=con.obtenerImagenPerfilUsuario(usuario_porra)
+
 	con.cerrarConexion()
 
 	grupos_porra_limpios=obtenerGruposEquiposLimpios(grupos_porra)
@@ -545,5 +549,6 @@ def pagina_porra_usuario(usuario_porra:str):
 							mejores_terceros=mejores_terceros_porra_limpios,
 							eliminatorias=eliminatorias_porra_limpias,
 							usuario_porra=usuario_porra,
+							imagen_perfil_usuario_porra=imagen_perfil_usuario_porra,
 							paso_porra=paso_porra,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
