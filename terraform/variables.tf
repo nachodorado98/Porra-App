@@ -91,7 +91,3 @@ variable "puerto_correo" {
 variable "endpoint_az_function" {
   description = "El endpoint de la Azure Function"
 }
-
-variable "endpoint_az_function_lanzamiento" {
-  description = "El endpoint de la Azure Function de lanzamiento"
-}

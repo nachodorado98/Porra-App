@@ -20,7 +20,7 @@ con.cerrarConexion()
 
 for usuario, nombre, correo, codigo_liga in datos_usuarios:
 
-    payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_liga, "tipo":"lanzamiento"}
+    payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_liga, "tipo":"cierre_porra"}
 
     print(f"Enviando correo a la direccion {correo}...")
 

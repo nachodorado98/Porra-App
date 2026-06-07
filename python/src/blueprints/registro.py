@@ -139,9 +139,9 @@ def singup():
 
         URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/{ENDPOINT_AZURE_FUNCTION}"
 
-        payload={"correo_destino":correo, "nombre":nombre, "codigo":codigo_final}
+        payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_final, "tipo":"bienvenida"}
 
-        response=requests.post(URL_AZURE_FUNCTION, json=payload, timeout=5)
+        response=requests.post(URL_AZURE_FUNCTION, json=payload, timeout=10)
 
     except Exception:
 

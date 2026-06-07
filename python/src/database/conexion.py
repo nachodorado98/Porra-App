@@ -144,7 +144,26 @@ class Conexion:
 	# Metodo para obtener los datos (correos, nombres y usuarios) de todos de los usuarios
 	def obtenerDatosUsuarios(self)->List[tuple]:
 
-		self.c.execute("""SELECT usuario, nombre, correo, codigo_liga FROM usuarios""")
+		self.c.execute("""SELECT usuario, nombre, correo, codigo_liga
+							FROM usuarios
+							ORDER BY nombre, apellido""")
+
+		datos=self.c.fetchall()
+
+		return list(map(lambda dato: (dato["usuario"],
+										dato["nombre"],
+										dato["correo"],
+										dato["codigo_liga"]), datos))
+
+	# Metodo para obtener los datos (correos, nombres y usuarios) de todos de los usuarios con la porra pendiente
+	def obtenerDatosUsuariosPorraPendiente(self)->List[tuple]:
+
+		self.c.execute("""SELECT u.usuario, u.nombre, u.correo, u.codigo_liga
+							FROM usuarios u
+							JOIN estado_porra ep
+							ON u.usuario=ep.usuario
+							WHERE ep.porra_completada=False
+							ORDER BY nombre, apellido""")
 
 		datos=self.c.fetchall()
 

@@ -2,7 +2,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-def enviarCorreo(destino:str, asunto:str, template_correo:str, origen:str, contrasena:str, servidor_correo:str, puerto:int)->None:
+def enviarCorreoBase(destino:str, asunto:str, template_correo:str, origen:str, contrasena:str, servidor_correo:str, puerto:int)->None:
 
     mensaje=MIMEMultipart()
 

@@ -73,11 +73,6 @@ resource "azurerm_container_app" "app" {
       }
 
       env {
-        name        = "ENDPOINT_AZURE_FUNCTION_LANZAMIENTO"
-        secret_name = "endpointazurefunctionlanzamiento"
-      }
-
-      env {
         name        = "AZURE_NAME_ACCOUNT"
         secret_name = "azurenameaccount"
       }
@@ -85,6 +80,37 @@ resource "azurerm_container_app" "app" {
       env {
         name        = "AZURE_KEY_ACCOUNT"
         secret_name = "azurekeyaccount"
+      }
+
+      liveness_probe {
+        transport = "TCP"
+        port      = 5000
+
+        failure_count_threshold = 3
+        initial_delay           = 0
+        interval_seconds        = 10
+        timeout                 = 5
+      }
+
+      readiness_probe {
+        transport = "TCP"
+        port      = 5000
+
+        failure_count_threshold = 48
+        initial_delay           = 0
+        interval_seconds        = 5
+        success_count_threshold = 1
+        timeout                 = 5
+      }
+
+      startup_probe {
+        transport = "TCP"
+        port      = 5000
+
+        failure_count_threshold = 240
+        initial_delay           = 1
+        interval_seconds        = 1
+        timeout                 = 3
       }
 
     }
@@ -128,11 +154,6 @@ resource "azurerm_container_app" "app" {
   secret {
     name  = "endpointazurefunction"
     value = var.endpoint_az_function
-  }
-
-  secret {
-    name  = "endpointazurefunctionlanzamiento"
-    value = var.endpoint_az_function_lanzamiento
   }
 
   secret {
@@ -214,5 +235,11 @@ resource "azurerm_linux_function_app" "azure_function" {
     URL_APP          = "https://${azurerm_container_app.app.ingress[0].fqdn}"
 
     FUNCTIONS_WORKER_RUNTIME = "python"
+
+    BUILD_FLAGS                    = "UseExpressBuild"
+    ENABLE_ORYX_BUILD              = "true"
+    SCM_DO_BUILD_DURING_DEPLOYMENT = "1"
+    XDG_CACHE_HOME                 = "/tmp/.cache"
+
   }
 }

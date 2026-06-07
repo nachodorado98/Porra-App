@@ -30,13 +30,13 @@ def pagina_clasificacion(codigo:str):
 
 	codigo_usuario=con.obtenerCodigoLigaUsuario(usuario)
 
-	assert codigo_usuario==codigo_liga
-
 	if codigo_usuario!=codigo:
 
 		con.cerrarConexion()
 
 		return redirect("/porra")
+
+	assert codigo_usuario==codigo_liga
 
 	usuarios_codigo=con.obtenerUsuariosCodigoLiga(codigo)
 
