@@ -13,6 +13,7 @@ def test_conexion(conexion):
 	assert "usuarios" in tablas 
 	assert "codigos" in tablas
 	assert "estado_porra" in tablas
+	assert "puntuaciones" in tablas
 	assert "equipos" in tablas
 	assert "grupos" in tablas
 	assert "grupo_equipos" in tablas

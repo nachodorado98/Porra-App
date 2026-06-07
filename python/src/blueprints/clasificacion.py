@@ -38,13 +38,11 @@ def pagina_clasificacion(codigo:str):
 
 	assert codigo_usuario==codigo_liga
 
-	usuarios_codigo=con.obtenerUsuariosCodigoLiga(codigo)
+	usuarios_codigo_puntos=con.obtenerPuntuacionesUsuariosCodigoLiga(codigo)
 
 	porra_abierta=con.porraAbierta()
 
 	con.cerrarConexion()
-
-	usuarios_codigo_puntos=sorted([tuple(list(usuario_codigo)+[int("0")]) for usuario_codigo in usuarios_codigo], key=lambda x: (-x[4], x[1], x[2]))
 
 	puede_pinchar=False if not current_user.admin and porra_abierta else True
 

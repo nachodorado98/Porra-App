@@ -131,6 +131,8 @@ def singup():
 
     con.insertarEstadoPorraUsuario(usuario)
 
+    con.insertarPuntuacionUsuario(usuario)
+
     try:
 
         AZURE_FUNCTION=os.getenv("AZURE_FUNCTION", "nombre_azure_function")

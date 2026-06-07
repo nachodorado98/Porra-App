@@ -76,6 +76,14 @@ CREATE TABLE estado_porra (Usuario VARCHAR(255) PRIMARY KEY,
     						Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     						FOREIGN KEY (Usuario) REFERENCES usuarios (Usuario) ON DELETE CASCADE);
 
+CREATE TABLE puntuaciones (Usuario VARCHAR(255) PRIMARY KEY,
+							Puntos_Grupos INTEGER DEFAULT 0,
+							Puntos_Mejores_Terceros INTEGER DEFAULT 0,
+							Puntos_Eliminatorias INTEGER DEFAULT 0,
+							Puntos_Total INTEGER DEFAULT 0,
+							Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+							FOREIGN KEY (Usuario) REFERENCES usuarios (Usuario) ON DELETE CASCADE);
+
 CREATE TABLE grupos (Grupo CHAR(1) PRIMARY KEY);
 
 INSERT INTO grupos VALUES ('A'), ('B'), ('C'), ('D'), ('E'), ('F'), ('G'), ('H'), ('I'), ('J'), ('K'), ('L');

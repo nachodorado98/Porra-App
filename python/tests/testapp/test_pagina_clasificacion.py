@@ -58,6 +58,8 @@ def test_pagina_clasificacion(cliente, conexion_usuario):
 		assert '<section class="ranking-list">' in contenido
 		assert '<div class="podium-avatar">' in contenido
 		assert "nacho98_perfil.jpeg" not in contenido
+		assert '<button type="button" class="ranking-btn secondary ver-puntos">Ver puntos</button>' in contenido
+		assert '<div class="detalle-puntos">' in contenido
 
 def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 
@@ -86,6 +88,8 @@ def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 		assert '<section class="ranking-list">' in contenido
 		assert '<div class="podium-avatar">' not in contenido
 		assert "nacho98_perfil.jpeg" in contenido
+		assert '<button type="button" class="ranking-btn secondary ver-puntos">Ver puntos</button>' in contenido
+		assert '<div class="detalle-puntos">' in contenido
 
 def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 
@@ -101,7 +105,7 @@ def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 		assert "/porra/nacho98" not in contenido
 		assert 'data-podium-card-user="nacho98"' not in contenido
 		assert 'style="cursor: pointer;"' not in contenido
-		assert 'data-ranking-card-user="nacho98"' not in contenido
+		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido
 
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,)]
@@ -124,7 +128,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usua
 		assert "/porra/nacho98" not in contenido
 		assert 'data-podium-card-user="nacho98"' not in contenido
 		assert 'style="cursor: pointer;"' not in contenido
-		assert 'data-ranking-card-user="nacho98"' not in contenido
+		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido
 
 def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
 
@@ -144,7 +148,7 @@ def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
 		assert "/porra/nacho98" in contenido
 		assert 'data-podium-card-user="nacho98"' in contenido
 		assert 'style="cursor: pointer;"' in contenido
-		assert 'data-ranking-card-user="nacho98"' in contenido
+		assert 'class="ranking-btn primary">Ver porra</a>' in contenido
 
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
@@ -167,4 +171,4 @@ def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usua
 		assert "/porra/nacho98" in contenido
 		assert 'data-podium-card-user="nacho98"' in contenido
 		assert 'style="cursor: pointer;"' in contenido
-		assert 'data-ranking-card-user="nacho98"' in contenido
+		assert 'class="ranking-btn primary">Ver porra</a>' in contenido

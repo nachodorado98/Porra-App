@@ -232,6 +232,12 @@ def test_pagina_singup_crear_liga_codigo_no_existente(cliente, conexion):
 
 	assert len(estado_porras)==1
 
+	conexion.c.execute("SELECT * FROM puntuaciones")
+
+	puntuacion=conexion.c.fetchall()
+
+	assert len(puntuacion)==1
+
 def test_pagina_singup_unirse_liga_codigo_no_existente(cliente, conexion):
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
@@ -272,3 +278,9 @@ def test_pagina_singup_unirse_liga_codigo_existente(cliente, conexion):
 	estado_porras=conexion.c.fetchall()
 
 	assert len(estado_porras)==1
+
+	conexion.c.execute("SELECT * FROM puntuaciones")
+
+	puntuacion=conexion.c.fetchall()
+
+	assert len(puntuacion)==1

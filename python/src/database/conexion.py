@@ -203,6 +203,36 @@ class Conexion:
 										usuario["nombre"],
 										usuario["apellido"],
 										usuario["imagen"]) , usuarios))
+
+	# Metodo para obtener los usuarios del codigo liga con sus puntuaciones
+	def obtenerPuntuacionesUsuariosCodigoLiga(self, codigo_liga:str)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT u.usuario, u.nombre, u.apellido,
+								CASE WHEN u.Imagen_Perfil IS NULL
+									THEN '-1'
+									ELSE u.Imagen_Perfil
+								END as Imagen,
+								COALESCE(p.puntos_grupos, 0) AS puntos_grupos,
+								COALESCE(p.puntos_mejores_terceros, 0) AS puntos_mejores_terceros,
+								COALESCE(p.puntos_eliminatorias, 0) AS puntos_eliminatorias,
+								COALESCE(p.puntos_total, 0) AS puntos_total
+						FROM usuarios u
+						LEFT JOIN puntuaciones p
+            			ON u.usuario=p.usuario
+						WHERE u.codigo_liga=%s
+						ORDER BY puntos_total DESC, u.nombre, u.apellido, u.usuario""",
+						(codigo_liga,))
+
+		usuarios=self.c.fetchall()
+
+		return list(map(lambda usuario: (usuario["usuario"],
+										usuario["nombre"],
+										usuario["apellido"],
+										usuario["imagen"],
+										usuario["puntos_grupos"],
+										usuario["puntos_mejores_terceros"],
+										usuario["puntos_eliminatorias"],
+										usuario["puntos_total"]) , usuarios))
 		
 	# Metodo para obtener la imagen de usuario
 	def obtenerImagenPerfilUsuario(self, usuario:str)->Optional[str]:
@@ -292,6 +322,15 @@ class Conexion:
 	def insertarEstadoPorraUsuario(self, usuario:str)->None:
 
 		self.c.execute("""INSERT INTO estado_porra
+							VALUES (%s)""",
+							(usuario,))
+
+		self.confirmar()
+
+	# Metodo para insertar la puntuacion de una porra de un usuario
+	def insertarPuntuacionUsuario(self, usuario:str)->None:
+
+		self.c.execute("""INSERT INTO puntuaciones
 							VALUES (%s)""",
 							(usuario,))
 

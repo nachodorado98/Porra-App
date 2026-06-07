@@ -177,6 +177,46 @@ def test_obtener_usuarios_codigo_liga_existentes(conexion):
 
 	assert len(usuarios)==10
 
+def test_obtener_puntuaciones_usuarios_codigo_liga_no_existen(conexion):
+
+	assert not conexion.obtenerPuntuacionesUsuariosCodigoLiga("C4N5VT")
+
+def test_obtener_puntuaciones_usuarios_codigo_liga_existen_distintos(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarPuntuacionUsuario("nacho98")
+
+	assert not conexion.obtenerPuntuacionesUsuariosCodigoLiga("123456")
+
+def test_obtener_puntuaciones_usuarios_codigo_liga_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarPuntuacionUsuario("nacho98")
+
+	usuarios=conexion.obtenerPuntuacionesUsuariosCodigoLiga("C4N5VT")
+
+	assert len(usuarios)==1
+
+def test_obtener_puntuaciones_usuarios_codigo_liga_existentes(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(1, 11):
+
+		conexion.insertarUsuario(f"nacho98{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+		conexion.insertarPuntuacionUsuario(f"nacho98{numero}")
+
+	usuarios=conexion.obtenerPuntuacionesUsuariosCodigoLiga("C4N5VT")
+
+	assert len(usuarios)==10
+
 def test_eliminar_usuario_no_existe_usuario(conexion):
 
 	assert not conexion.existe_usuario("nacho98")
