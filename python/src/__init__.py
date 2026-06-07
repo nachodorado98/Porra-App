@@ -7,6 +7,7 @@ from .blueprints.login import bp_login
 from .blueprints.porra import bp_porra
 from .blueprints.clasificacion import bp_clasificacion
 from .blueprints.settings import bp_settings
+from .blueprints.resultados import bp_resultados
 
 from .extensiones.manager import login_manager
 
@@ -32,5 +33,6 @@ def crear_app(configuracion:object)->Flask:
 	app.register_blueprint(bp_porra)
 	app.register_blueprint(bp_clasificacion)
 	app.register_blueprint(bp_settings)
+	app.register_blueprint(bp_resultados)
 
 	return app

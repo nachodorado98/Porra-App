@@ -175,6 +175,8 @@ CREATE TABLE eliminatorias_real (Ronda VARCHAR(20),
 									Partido VARCHAR(4),
 									Equipo_1_Id VARCHAR(255),
 									Equipo_2_Id VARCHAR(255),
+									Ganador_Id VARCHAR(255),
 									PRIMARY KEY (Partido),
 									FOREIGN KEY (Equipo_1_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
-									FOREIGN KEY (Equipo_2_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE);
+									FOREIGN KEY (Equipo_2_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE,
+									FOREIGN KEY (Ganador_Id) REFERENCES equipos (Equipo_Id) ON DELETE CASCADE);

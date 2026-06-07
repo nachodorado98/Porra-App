@@ -38,6 +38,12 @@ class Conexion:
 
 		self.c.execute("DELETE FROM maestro")
 
+		self.c.execute("DELETE FROM grupo_equipos_real")
+
+		self.c.execute("DELETE FROM mejores_terceros_real")
+
+		self.c.execute("DELETE FROM eliminatorias_real")
+
 		self.confirmar()
 
 	# Metodo para obtener los codigos de las ligas
@@ -715,3 +721,70 @@ class Conexion:
 			return True
 
 		return datetime.now()<=datetime.strptime(fecha_cierre, "%Y-%m-%d")
+
+	# Metodo para obtener los resultados reales de los grupos
+	def obtenerGruposReal(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT ger.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+							FROM grupo_equipos_real ger
+							JOIN equipos e
+							ON ger.equipo_id=e.equipo_id
+							ORDER BY ger.grupo, ger.posicion""")
+
+		grupos_real=self.c.fetchall()
+
+		return list(map(lambda grupo_real: (grupo_real["grupo"],
+											grupo_real["equipo_id"],
+											grupo_real["nombre"],
+											grupo_real["escudo"],
+											grupo_real["bandera"]), grupos_real))
+
+	# Metodo para obtener los resultados reales de los mejores equipos terceros
+	def obtenerMejoresTercerosReal(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT mtr.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera
+						FROM mejores_terceros_real mtr
+						JOIN equipos e
+						ON mtr.equipo_id=e.equipo_id
+						ORDER BY mtr.grupo, e.nombre""")
+
+		mejores_terceros_real=self.c.fetchall()
+
+		return list(map(lambda mejor_tercero_real: (mejor_tercero_real["grupo"],
+													mejor_tercero_real["equipo_id"],
+													mejor_tercero_real["nombre"],
+													mejor_tercero_real["escudo"],
+													mejor_tercero_real["bandera"],
+													3) , mejores_terceros_real))
+
+	# Metodo para obtener los resultados reales de las eliminatorias
+	def obtenerEliminatoriasReal(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT er.ronda, er.partido, er.equipo_1_id, e1.nombre AS equipo_1_nombre, e1.escudo AS equipo_1_escudo, e1.bandera AS equipo_1_bandera,
+								er.equipo_2_id, e2.nombre AS equipo_2_nombre, e2.escudo AS equipo_2_escudo, e2.bandera AS equipo_2_bandera,
+								er.ganador_id, eg.nombre AS ganador_nombre, eg.escudo AS ganador_escudo, eg.bandera AS ganador_bandera
+							FROM eliminatorias_real er
+							JOIN equipos e1
+							ON er.equipo_1_id=e1.equipo_id
+							JOIN equipos e2
+							ON er.equipo_2_id=e2.equipo_id
+							LEFT JOIN equipos eg
+							ON er.ganador_id=eg.equipo_id
+							ORDER BY CAST(SUBSTRING(er.partido FROM 2) AS INTEGER)""")
+
+		eliminatorias_real=self.c.fetchall()
+
+		return list(map(lambda eliminatoria_real: (eliminatoria_real["ronda"],
+													eliminatoria_real["partido"],
+													eliminatoria_real["equipo_1_id"],
+													eliminatoria_real["equipo_1_nombre"],
+													eliminatoria_real["equipo_1_escudo"],
+													eliminatoria_real["equipo_1_bandera"],
+													eliminatoria_real["equipo_2_id"],
+													eliminatoria_real["equipo_2_nombre"],
+													eliminatoria_real["equipo_2_escudo"],
+													eliminatoria_real["equipo_2_bandera"],
+													eliminatoria_real["ganador_id"],
+													eliminatoria_real["ganador_nombre"],
+													eliminatoria_real["ganador_escudo"],
+													eliminatoria_real["ganador_bandera"]), eliminatorias_real))
