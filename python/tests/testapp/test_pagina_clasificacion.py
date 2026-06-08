@@ -43,6 +43,8 @@ def test_pagina_clasificacion_no_codigo_usuario(cliente, conexion_usuario):
 
 def test_pagina_clasificacion(cliente, conexion_usuario):
 
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
+
 	with cliente as cliente_abierto:
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
@@ -62,6 +64,8 @@ def test_pagina_clasificacion(cliente, conexion_usuario):
 		assert '<div class="detalle-puntos">' in contenido
 
 def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
+
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
 	with cliente as cliente_abierto:
 
@@ -93,6 +97,8 @@ def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 
 def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
+
 	with cliente as cliente_abierto:
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
@@ -111,6 +117,8 @@ def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 	[(2,),(22,),(5,),(13,),(25,),(1,)]
 )
 def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usuario, dias):
+
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
 	fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
 
@@ -131,6 +139,8 @@ def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usua
 		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido
 
 def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
+
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
 	conexion_usuario.c.execute("UPDATE usuarios SET Admin=True")
 
@@ -155,6 +165,8 @@ def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
 )
 def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usuario, dias):
 
+	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
+
 	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
 
 	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
@@ -172,3 +184,40 @@ def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usua
 		assert 'data-podium-card-user="nacho98"' in contenido
 		assert 'style="cursor: pointer;"' in contenido
 		assert 'class="ranking-btn primary">Ver porra</a>' in contenido
+
+def test_pagina_clasificacion_puede_pinchar_admin_porra_no_completada(cliente, conexion_usuario):
+
+	conexion_usuario.c.execute("UPDATE usuarios SET Admin=True")
+
+	conexion_usuario.confirmar()
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_clasificacion_puede_pinchar_porra_cerrada_porra_no_completada(cliente, conexion_usuario, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==200
+		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido

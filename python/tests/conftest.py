@@ -59,6 +59,8 @@ def conexion_usuario(conexion, password_hash):
 
 	conexion.insertarEstadoPorraUsuario("nacho98")
 
+	conexion.insertarPuntuacionUsuario("nacho98")
+
 	return conexion
 
 @pytest.fixture

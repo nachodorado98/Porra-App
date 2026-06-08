@@ -178,6 +178,23 @@ class Conexion:
 										dato["correo"],
 										dato["codigo_liga"]), datos))
 
+	# Metodo para obtener los datos (correos, nombres y usuarios) de todos de los usuarios con la porra completa
+	def obtenerDatosUsuariosPorraCompleta(self)->List[tuple]:
+
+		self.c.execute("""SELECT u.usuario, u.nombre, u.correo, u.codigo_liga
+							FROM usuarios u
+							JOIN estado_porra ep
+							ON u.usuario=ep.usuario
+							WHERE ep.porra_completada=True
+							ORDER BY nombre, apellido""")
+
+		datos=self.c.fetchall()
+
+		return list(map(lambda dato: (dato["usuario"],
+										dato["nombre"],
+										dato["correo"],
+										dato["codigo_liga"]), datos))
+
 	# Metodo para obtener el codigo liga de un usuario
 	def obtenerCodigoLigaUsuario(self, usuario:str)->Optional[str]:
 
@@ -221,10 +238,13 @@ class Conexion:
 								COALESCE(p.puntos_grupos, 0) AS puntos_grupos,
 								COALESCE(p.puntos_mejores_terceros, 0) AS puntos_mejores_terceros,
 								COALESCE(p.puntos_eliminatorias, 0) AS puntos_eliminatorias,
-								COALESCE(p.puntos_total, 0) AS puntos_total
+								COALESCE(p.puntos_total, 0) AS puntos_total,
+								COALESCE(ep.porra_completada, FALSE) AS porra_completada
 						FROM usuarios u
 						LEFT JOIN puntuaciones p
             			ON u.usuario=p.usuario
+            			LEFT JOIN estado_porra ep
+						ON u.usuario=ep.usuario
 						WHERE u.codigo_liga=%s
 						ORDER BY puntos_total DESC, u.nombre, u.apellido, u.usuario""",
 						(codigo_liga,))
@@ -238,7 +258,8 @@ class Conexion:
 										usuario["puntos_grupos"],
 										usuario["puntos_mejores_terceros"],
 										usuario["puntos_eliminatorias"],
-										usuario["puntos_total"]) , usuarios))
+										usuario["puntos_total"],
+										usuario["porra_completada"]) , usuarios))
 		
 	# Metodo para obtener la imagen de usuario
 	def obtenerImagenPerfilUsuario(self, usuario:str)->Optional[str]:
@@ -788,3 +809,54 @@ class Conexion:
 													eliminatoria_real["ganador_nombre"],
 													eliminatoria_real["ganador_escudo"],
 													eliminatoria_real["ganador_bandera"]), eliminatorias_real))
+
+	# Metodo para obtener la porra de los grupos de un usuario para la puntuacion
+	def obtenerGruposPorraUsuarioPuntuacion(self, usuario:str)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT gep.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera, gep.posicion
+							FROM grupo_equipos_porra gep
+							JOIN equipos e
+							ON gep.equipo_id = e.equipo_id
+							WHERE gep.usuario=%s
+							ORDER BY gep.grupo, gep.posicion""",
+							(usuario,))
+
+		grupos_porra=self.c.fetchall()
+
+		return list(map(lambda grupo_porra: (grupo_porra["grupo"],
+												grupo_porra["equipo_id"],
+												grupo_porra["nombre"],
+												grupo_porra["escudo"],
+												grupo_porra["bandera"],
+												grupo_porra["posicion"]), grupos_porra))
+
+	# Metodo para obtener los resultados reales de los grupos para la puntuacion
+	def obtenerGruposRealPuntuacion(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT ger.grupo, e.equipo_id, e.nombre, e.escudo, e.bandera, ger.posicion
+							FROM grupo_equipos_real ger
+							JOIN equipos e
+							ON ger.equipo_id=e.equipo_id
+							ORDER BY ger.grupo, ger.posicion""")
+
+		grupos_real=self.c.fetchall()
+
+		return list(map(lambda grupo_real: (grupo_real["grupo"],
+											grupo_real["equipo_id"],
+											grupo_real["nombre"],
+											grupo_real["escudo"],
+											grupo_real["bandera"],
+											grupo_real["posicion"]), grupos_real))
+
+	# Metodo para actualizar la puntuacion de un usuario
+	def actualizarPuntuacionUsuario(self, usuario:str, puntos_grupos:int, puntos_mejores_terceros:int, puntos_eliminatorias:int)->None:
+
+		puntos_total=puntos_grupos+puntos_mejores_terceros+puntos_eliminatorias
+
+		self.c.execute("""UPDATE puntuaciones
+							SET Puntos_Grupos=%s, Puntos_Mejores_Terceros=%s,
+							Puntos_Eliminatorias=%s, Puntos_Total=%s
+							WHERE Usuario=%s""",
+							(puntos_grupos, puntos_mejores_terceros, puntos_eliminatorias, puntos_total, usuario))
+
+		self.confirmar()

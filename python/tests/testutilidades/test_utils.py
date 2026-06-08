@@ -1,6 +1,9 @@
 import pytest
 import os
 import copy
+import pandas as pd
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
 from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
@@ -10,6 +13,7 @@ from src.utilidades.utils import bracketEliminatoriasCorrecto, obtenerEliminator
 from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, extraerExtension
 from src.utilidades.utils import crearCarpetaDataLakePerfil, crearCarpetaDataLakePerfilUsuario, listarImagenesCarpetaDatalake
 from src.utilidades.utils import existe_imagen_datalake, eliminarImagenDatalake, subirImagenPerfilUsuarioDataLake
+from src.utilidades.utils import calcularPuntos, calcularMotivo, compararGrupoDataFrameDetalle, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
 
 @pytest.mark.parametrize(["codigo"],
     [("123456",),("ABCDE",),("ABCDE&",),(None,),("ABCDEFG",),("A1BC2DEF",)]
@@ -1342,3 +1346,635 @@ def test_subir_imagen_perfil_usuario_datalake(datalake, contenedor_dl):
     borrarCarpeta(ruta_carpeta)
 
     datalake.cerrarConexion()
+
+@pytest.mark.parametrize(["real", "posicon_porra", "puntos"],
+    [   
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 1, 3),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 2, 2),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 3, 1),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 4, 0),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 4, 1),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 3, 2),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 2, 3),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 1, 2)
+    ]
+)
+def test_calcular_puntos(real, posicon_porra, puntos):
+
+    fila={"equipo_porra_id": "seleccion-republica-corea", "posicion": posicon_porra}
+
+    assert calcularPuntos(fila, real)==puntos
+
+@pytest.mark.parametrize(["real", "posicon_porra", "motivo"],
+    [   
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 1, "Posición exacta"),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 2, "Diferencia de 1 posición"),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 3, "Diferencia de 2 posiciones"),
+        ({'seleccion-republica-corea': 1, 'seleccion-mexico': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 4, "Diferencia de 3 posiciones"),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 4, "Diferencia de 2 posiciones"),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 3, "Diferencia de 1 posición"),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 2, "Posición exacta"),
+        ({'seleccion-mexico': 1, 'seleccion-republica-corea': 2, 'republica-checa': 3, 'seleccion-sudafrica': 4}, 1, "Diferencia de 1 posición")
+    ]
+)
+def test_calcular_motivo(real, posicon_porra, motivo):
+
+    fila={"equipo_porra_id": "seleccion-republica-corea", "posicion": posicon_porra}
+
+    assert calcularMotivo(fila, real)==motivo
+
+def test_comparar_grupo_dataframe_detalle_grupo_real_sin_datos():
+
+    grupos_real=[]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    df=compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert df.empty
+
+def test_comparar_grupo_dataframe_detalle_grupo_porra_sin_datos():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[]
+
+    df=compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==4
+    assert df["equipo_porra_id"].isnull().all()
+    assert df["equipo_porra_nombre"].isnull().all()
+    assert (df["puntos"]==0).all()
+    assert (df["motivo"]=="Usuario sin porra para este grupo").all()
+
+def test_comparar_grupo_dataframe_detalle_grupos_porra_menos_4_registros():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3)]
+
+    with pytest.raises(Exception):
+
+        compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+def test_comparar_grupo_dataframe_detalle_grupos_real_menos_4_registros():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    with pytest.raises(Exception):
+
+        compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+def test_comparar_grupo_dataframe_detalle_merge_erroneo():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 1),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    with pytest.raises(Exception):
+
+        compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+@pytest.mark.parametrize(["grupos_porra", "puntos_totales"],
+    [   
+        ([('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+            ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+            ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+            ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)], 8),
+        ([('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 1),
+            ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+            ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+            ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 4)], 6),
+        ([('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 1),
+            ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 2),
+            ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 3),
+            ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 4)], 6)
+    ]
+)
+def test_comparar_grupo_dataframe_detalle(grupos_porra, puntos_totales):
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    df=compararGrupoDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==4
+    assert df["puntos"].sum()==puntos_totales
+
+def test_comparar_grupos_disponibles_dataframe_detalle_sin_grupo_real_sin_grupo_porra():
+
+    grupos_real=[]
+
+    grupos_porra=[]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert df.empty
+
+def test_comparar_grupos_disponibles_dataframe_detalle_sin_grupo_real():
+
+    grupos_real=[]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert df.empty
+
+def test_comparar_grupos_disponibles_dataframe_detalle_un_grupo_real_un_grupo_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==4
+    assert df["grupo"].unique().tolist()==["A"]
+
+def test_comparar_grupos_disponibles_dataframe_detalle_un_grupo_real_dos_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==4
+    assert df["grupo"].unique().tolist()==["A"]
+
+def test_comparar_grupos_disponibles_dataframe_detalle_dos_grupos_real_dos_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==8
+    assert sorted(df["grupo"].unique().tolist())==["A", "B"]
+
+def test_comparar_grupos_disponibles_dataframe_detalle_dos_grupos_real_tres_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==8
+    assert sorted(df["grupo"].unique().tolist())==["A", "B"]
+
+def test_comparar_grupos_disponibles_dataframe_detalle_tres_grupos_real_tres_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==12
+    assert sorted(df["grupo"].unique().tolist())==["A", "B", "C"]
+
+def test_comparar_grupos_disponibles_dataframe_detalle_todos():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4),
+                ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 2),
+                ('D', 'seleccion-australia', 'Australia', 3801, 'AUS', 3),
+                ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 4),
+                ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 2),
+                ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 3),
+                ('E', 'curazao', 'Curazao', 61757, 'CUR', 4),
+                ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 1),
+                ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 2),
+                ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 4),
+                ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                ('G', 'seleccion-nueva-zelanda', 'Nueva Zelanda', 3808, 'NZL', 3),
+                ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 4),
+                ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 2),
+                ('H', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 3),
+                ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 4),
+                ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 2),
+                ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                ('I', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 4),
+                ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                ('J', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 3),
+                ('J', 'jordania', 'Jordania', 5480, 'JOR', 4),
+                ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                ('K', 'seleccion-uzbekistan', 'Uzbekistán', 3800, 'UZB', 3),
+                ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 4),
+                ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 2),
+                ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 3),
+                ('L', 'panama-seleccion', 'Panamá', 17581, 'PAN', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4),
+                ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 2),
+                ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                ('D', 'seleccion-australia', 'Australia', 3801, 'AUS', 4),
+                ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 2),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 3),
+                ('E', 'curazao', 'Curazao', 61757, 'CUR', 4),
+                ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 1),
+                ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 2),
+                ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 4),
+                ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                ('G', 'seleccion-nueva-zelanda', 'Nueva Zelanda', 3808, 'NZL', 4),
+                ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 2),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                ('H', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 4),
+                ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 2),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 3),
+                ('I', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 4),
+                ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                ('J', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 3),
+                ('J', 'jordania', 'Jordania', 5480, 'JOR', 4),
+                ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                ('K', 'seleccion-uzbekistan', 'Uzbekistán', 3800, 'UZB', 4),
+                ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 2),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3),
+                ('L', 'panama-seleccion', 'Panamá', 17581, 'PAN', 4)]
+
+    df=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    assert not df.empty
+    assert len(df)==48
+    assert sorted(df["grupo"].unique().tolist())==["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+
+def test_calcular_puntos_totales_grupos_sin_grupo_real_sin_grupo_porra():
+
+    grupos_real=[]
+
+    grupos_porra=[]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==0
+
+def test_calcular_puntos_totales_grupos_sin_grupo_real():
+
+    grupos_real=[]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==0
+
+def test_calcular_puntos_totales_grupos_un_grupo_real_un_grupo_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==8
+
+def test_calcular_puntos_totales_grupos_un_grupo_real_dos_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==8
+
+def test_calcular_puntos_totales_grupos_dos_grupos_real_dos_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==18
+
+def test_calcular_puntos_totales_grupos_dos_grupos_real_tres_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==18
+
+def test_calcular_puntos_totales_grupos_tres_grupos_real_tres_grupos_porra():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==30
+
+def test_calcular_puntos_totales_grupos_todos():
+
+    grupos_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 1),
+                ('A', 'seleccion-mexico', 'México', 3811, 'MEX', 2),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 1),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4),
+                ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 2),
+                ('D', 'seleccion-australia', 'Australia', 3801, 'AUS', 3),
+                ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 4),
+                ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 2),
+                ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 3),
+                ('E', 'curazao', 'Curazao', 61757, 'CUR', 4),
+                ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 1),
+                ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 2),
+                ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 4),
+                ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                ('G', 'seleccion-nueva-zelanda', 'Nueva Zelanda', 3808, 'NZL', 3),
+                ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 4),
+                ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 2),
+                ('H', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 3),
+                ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 4),
+                ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 2),
+                ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                ('I', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 4),
+                ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                ('J', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 3),
+                ('J', 'jordania', 'Jordania', 5480, 'JOR', 4),
+                ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                ('K', 'seleccion-uzbekistan', 'Uzbekistán', 3800, 'UZB', 3),
+                ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 4),
+                ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 2),
+                ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 3),
+                ('L', 'panama-seleccion', 'Panamá', 17581, 'PAN', 4)]
+
+    grupos_porra=[('A', 'seleccion-mexico', 'México', 3811, 'MEX', 1),
+                ('A', 'republica-checa', 'República Checa', 6188, 'CZE', 2),
+                ('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                ('A', 'seleccion-sudafrica', 'Sudáfrica', 3815, 'ZAF', 4),
+                ('B', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 1),
+                ('B', 'canada', 'Canadá', 5577, 'CAN', 2),
+                ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                ('B', 'seleccion-qatar', 'Catar', 3799, 'QAT', 4),
+                ('C', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 1),
+                ('C', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 2),
+                ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                ('C', 'haiti', 'Haití', 5582, 'HTI', 4),
+                ('D', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 1),
+                ('D', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 2),
+                ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                ('D', 'seleccion-australia', 'Australia', 3801, 'AUS', 4),
+                ('E', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 1),
+                ('E', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 2),
+                ('E', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 3),
+                ('E', 'curazao', 'Curazao', 61757, 'CUR', 4),
+                ('F', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 1),
+                ('F', 'seleccion-japon', 'Japón', 3798, 'JPN', 2),
+                ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                ('F', 'seleccion-tunez', 'Túnez', 3783, 'TUN', 4),
+                ('G', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 1),
+                ('G', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 2),
+                ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                ('G', 'seleccion-nueva-zelanda', 'Nueva Zelanda', 3808, 'NZL', 4),
+                ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 1),
+                ('H', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 2),
+                ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                ('H', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 4),
+                ('I', 'seleccion-francia', 'Francia', 3750, 'FRA', 1),
+                ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 2),
+                ('I', 'senegal', 'Senegal', 5658, 'SEN', 3),
+                ('I', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 4),
+                ('J', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 1),
+                ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 2),
+                ('J', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 3),
+                ('J', 'jordania', 'Jordania', 5480, 'JOR', 4),
+                ('K', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 1),
+                ('K', 'seleccion-colombia', 'Colombia', 3774, 'COL', 2),
+                ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                ('K', 'seleccion-uzbekistan', 'Uzbekistán', 3800, 'UZB', 4),
+                ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 1),
+                ('L', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 2),
+                ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3),
+                ('L', 'panama-seleccion', 'Panamá', 17581, 'PAN', 4)]
+
+    assert calcularPuntosTotalesGrupos(grupos_real, grupos_porra)==118

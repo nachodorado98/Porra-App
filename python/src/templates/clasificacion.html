@@ -81,7 +81,7 @@
 
                     <div class="ranking-actions">
 
-                        {% if puede_pinchar %}
+                        {% if puede_pinchar and usuario_codigo[8] %}
                             <a href="/porra/{{ usuario_codigo[0] }}" class="ranking-btn primary">Ver porra</a>
                         {% endif %}
 

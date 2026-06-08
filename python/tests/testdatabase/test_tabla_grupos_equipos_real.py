@@ -31,3 +31,40 @@ def test_obtener_grupos_real_grupos_varios(conexion):
 	grupos_real=conexion.obtenerGruposReal()
 
 	assert len(grupos_real)==4
+
+	for equipo in grupos_real:
+
+		assert equipo[0]=="A"
+
+def test_obtener_grupos_real_grupos_puntuacion_no_existen(conexion):
+
+	assert not conexion.obtenerGruposRealPuntuacion()
+
+def test_obtener_grupos_real_grupos_puntuacion(conexion):
+
+	conexion.c.execute("""INSERT INTO grupo_equipos_real VALUES ('A', 'seleccion-mexico', 1)""")
+
+	conexion.confirmar()
+
+	grupos_real=conexion.obtenerGruposRealPuntuacion()
+
+	assert len(grupos_real)==1
+
+def test_obtener_grupos_real_grupos_puntuacion_varios(conexion):
+
+	conexion.c.execute("""INSERT INTO grupo_equipos_real
+							VALUES ('A', 'seleccion-mexico', 1),
+									('A', 'republica-checa', 2),
+									('A', 'seleccion-republica-corea', 3),
+									('A', 'seleccion-sudafrica', 4)""")
+
+	conexion.confirmar()
+
+	grupos_real=conexion.obtenerGruposRealPuntuacion()
+
+	assert len(grupos_real)==4
+
+	for equipo in grupos_real:
+
+		assert equipo[0]=="A"
+		assert equipo[-1] in (1, 2, 3, 4)

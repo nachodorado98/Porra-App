@@ -1,8 +1,9 @@
 import re
 from datetime import datetime
 from passlib.context import CryptContext
-from typing import List, Dict
+from typing import List, Dict, Optional
 import os
+import pandas as pd
 
 from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO
 
@@ -536,3 +537,148 @@ def subirImagenPerfilUsuarioDataLake(usuario:str, imagen:str, ruta_carpeta_local
         print(f"Error al subir imagen de perfil a DataLake: {e}")
 
         return False
+
+def calcularPuntos(fila:Dict, posiciones_reales:Dict)->int:
+
+    posicion_real=posiciones_reales[fila["equipo_porra_id"]]
+
+    diferencia=abs(posicion_real-fila["posicion"])
+
+    if diferencia==0:
+
+        return 3
+
+    if diferencia==1:
+
+        return 2
+
+    if diferencia==2:
+
+        return 1
+
+    return 0
+
+def calcularMotivo(fila:Dict, posiciones_reales:Dict)->str:
+
+    equipo_porra=fila["equipo_porra_id"]
+
+    posicion_porra=fila["posicion"]
+
+    posicion_real=posiciones_reales[equipo_porra]
+
+    diferencia=abs(posicion_real-posicion_porra)
+
+    if diferencia == 0:
+
+        return "Posición exacta"
+
+    if diferencia == 1:
+
+        return "Diferencia de 1 posición"
+
+    if diferencia == 2:
+
+        return "Diferencia de 2 posiciones"
+
+    return "Diferencia de 3 posiciones"
+
+def compararGrupoDataFrameDetalle(grupos_real:List[Optional[tuple]], grupos_porra:List[Optional[tuple]])->pd.DataFrame:
+
+    columnas=["grupo", "equipo_id", "nombre", "escudo", "bandera", "posicion"]
+
+    df_real=pd.DataFrame(grupos_real, columns=columnas)
+
+    df_porra=pd.DataFrame(grupos_porra, columns=columnas)
+
+    columnas_salida=["grupo", "posicion", "equipo_real_id", "equipo_real_nombre", "equipo_real_escudo", "equipo_real_bandera",
+                        "equipo_porra_id", "equipo_porra_nombre", "equipo_porra_escudo", "equipo_porra_bandera", "puntos", "motivo"]
+
+    if df_real.empty:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    if df_porra.empty:
+
+        df_real=df_real.rename(columns={"equipo_id": "equipo_real_id",
+                                        "nombre": "equipo_real_nombre",
+                                        "escudo": "equipo_real_escudo",
+                                        "bandera": "equipo_real_bandera"})
+
+        df_real["equipo_porra_id"]=None
+        df_real["equipo_porra_nombre"]=None
+        df_real["equipo_porra_escudo"]=None
+        df_real["equipo_porra_bandera"]=None
+        df_real["puntos"]=0
+        df_real["motivo"]="Usuario sin porra para este grupo"
+
+        return df_real[columnas_salida]
+
+    grupo=df_real.iloc[0]["grupo"]
+
+    df_real=df_real[df_real["grupo"]==grupo]
+
+    df_porra=df_porra[df_porra["grupo"]==grupo]
+
+    if len(df_real)!=4:
+
+        raise Exception(f"Grupo real {grupo} incompleto: tiene {len(df_real)} equipos")
+
+    if len(df_porra)!=4:
+
+        raise Exception(f"Grupo porra {grupo} incompleto: tiene {len(df_porra)} equipos")
+
+    df_comparacion=df_real.merge(df_porra, on=["grupo", "posicion"], how="left", suffixes=("_real", "_porra"))
+
+    if len(df_comparacion)!=4:
+
+        raise Exception(f"Error comparando grupo {grupo}: no coinciden las posiciones")
+
+    df_comparacion=df_comparacion.rename(columns={"equipo_id_real": "equipo_real_id",
+                                                    "nombre_real": "equipo_real_nombre",
+                                                    "equipo_id_porra": "equipo_porra_id",
+                                                    "nombre_porra": "equipo_porra_nombre"})
+
+    posiciones_reales=dict(zip(df_real["equipo_id"], df_real["posicion"]))
+
+    df_comparacion["puntos"]=df_comparacion.apply(calcularPuntos, axis=1, args=(posiciones_reales,))
+
+    df_comparacion["motivo"]=df_comparacion.apply(calcularMotivo, axis=1, args=(posiciones_reales,))
+
+    df_comparacion=df_comparacion.rename(columns={"equipo_id_real": "equipo_real_id",
+                                                    "nombre_real": "equipo_real_nombre",
+                                                    "escudo_real": "equipo_real_escudo",
+                                                    "bandera_real": "equipo_real_bandera",
+                                                    "equipo_id_porra": "equipo_porra_id",
+                                                    "nombre_porra": "equipo_porra_nombre",
+                                                    "escudo_porra": "equipo_porra_escudo",
+                                                    "bandera_porra": "equipo_porra_bandera"})
+
+    return df_comparacion[columnas_salida]
+
+def compararGruposDisponiblesDataFrameDetalle(grupos_real:List[Optional[tuple]], grupos_porra:List[Optional[tuple]])->pd.DataFrame:
+
+    columnas_salida=["grupo", "posicion", "equipo_real_id", "equipo_real_nombre", "equipo_real_escudo", "equipo_real_bandera",
+                        "equipo_porra_id", "equipo_porra_nombre", "equipo_porra_escudo", "equipo_porra_bandera", "puntos", "motivo"]
+
+    grupos_disponibles_real=sorted(list(set([grupo[0] for grupo in grupos_real])))
+
+    dfs_detalle=[]
+
+    for grupo_disponible_real in grupos_disponibles_real:
+
+        grupo_real_grupo=list(filter(lambda grupo_real: grupo_real[0]==grupo_disponible_real, grupos_real))
+
+        grupo_porra_grupo=list(filter(lambda grupo_porra: grupo_porra[0]==grupo_disponible_real, grupos_porra))
+
+        df_detalle=compararGrupoDataFrameDetalle(grupo_real_grupo, grupo_porra_grupo)
+
+        dfs_detalle.append(df_detalle)
+
+    return pd.concat(dfs_detalle, ignore_index=True) if dfs_detalle else pd.DataFrame(columns=columnas_salida)
+
+def calcularPuntosTotalesGrupos(grupos_real:List[Optional[tuple]], grupos_porra:List[Optional[tuple]])->int:
+
+    df_detalle=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
+
+    return int(df_detalle["puntos"].sum())
+

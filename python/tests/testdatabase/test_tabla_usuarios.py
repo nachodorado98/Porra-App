@@ -346,6 +346,44 @@ def test_obtener_datos_usuarios_porra_pendiente_porra_completa(conexion, numero_
 
 	assert not conexion.obtenerDatosUsuariosPorraPendiente()
 
+def test_obtener_datos_usuarios_porra_completa_no_existen(conexion):
+
+	assert not conexion.obtenerDatosUsuariosPorraCompleta()
+
+@pytest.mark.parametrize(["numero_usuarios"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_obtener_datos_usuarios_porra_completa_porra_pendiente(conexion, numero_usuarios):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(numero_usuarios):
+
+		conexion.insertarUsuario(f"nacho{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+		conexion.insertarEstadoPorraUsuario(f"nacho{numero}")
+
+	assert not conexion.obtenerDatosUsuariosPorraCompleta()
+
+@pytest.mark.parametrize(["numero_usuarios"],
+	[(2,),(22,),(5,),(13,),(25,),(1,)]
+)
+def test_obtener_datos_usuarios_porra_completa_porra_completa(conexion, numero_usuarios):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(numero_usuarios):
+
+		conexion.insertarUsuario(f"nacho{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+		conexion.insertarEstadoPorraUsuario(f"nacho{numero}")
+
+		conexion.actualizarEstadoPorraUsuario(f"nacho{numero}")
+
+	datos_usuarios=conexion.obtenerDatosUsuariosPorraCompleta()
+
+	assert len(datos_usuarios)==numero_usuarios
+
 def test_obtener_datos_cambio_contrasena_usuario_usuario_no_existe(conexion):
 
 	assert not conexion.obtenerDatosCambioContrasenaUsuario("nacho98")
