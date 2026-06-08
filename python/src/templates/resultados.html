@@ -2,7 +2,7 @@
 
 {% block link %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mi_porra.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resultados.css') }}">
 {% endblock link %}
 
 {% block principal %}
@@ -12,6 +12,50 @@
     <div class="info-clasificacion">
         <h1 class="titulo-pagina">Resultados Oficiales 🌍</h1>
         <p class="descripcion-grupos">Aquí puedes ver la clasificación real del torneo conforme se vaya actualizando.</p>
+    </div>
+
+    <div class="contenedor-instrucciones">
+
+        <button class="btn-instrucciones" id="btnInstruccionesPuntos">🧮 Ver sistema de puntuación</button>
+
+        <div class="leyenda-puntos oculto" id="panelInstruccionesPuntos">
+
+            <div class="leyenda-puntos-header">
+                <span class="leyenda-icono">📋</span>
+
+                <div>
+                    <h3>Puntuación de la fase de grupos</h3>
+                    <p>Cada selección obtiene puntos según la diferencia entre tu predicción y la clasificación oficial.</p>
+                </div>
+
+            </div>
+
+            <div class="leyenda-puntos-grid">
+
+                <div class="leyenda-punto-card exacta">
+                    <strong>+3</strong>
+                    <span>Posición exacta</span>
+                </div>
+
+                <div class="leyenda-punto-card cerca">
+                    <strong>+2</strong>
+                    <span>Diferencia de 1 posición</span>
+                </div>
+
+                <div class="leyenda-punto-card media">
+                    <strong>+1</strong>
+                    <span>Diferencia de 2 posiciones</span>
+                </div>
+
+                <div class="leyenda-punto-card lejos">
+                    <strong>0</strong>
+                    <span>Diferencia de 3 posiciones</span>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
     {% if grupos %}

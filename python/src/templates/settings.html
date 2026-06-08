@@ -15,6 +15,12 @@
 
         <p class="descripcion-settings"> Gestiona las opciones de tu cuenta.</p>
 
+    {% if es_admin %}
+
+        <button type="button" class="boton-admin-puntuacion" id="botonCalcularPuntuacion">🔄 Recalcular clasificación</button>
+
+    {% endif %}
+
     <div class="settings-section">
 
         {% if imagen_perfil == '-1' %}
@@ -177,5 +183,6 @@
 <script src="{{ url_for('static', filename='js/abrir_actualizar_imagen_perfil.js') }}"></script>
 <script src="{{ url_for('static', filename='js/cambiar_contrasena.js') }}"></script>
 <script src="{{ url_for('static', filename='js/verificar_usuario_admin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recalcular_puntuacion.js') }}"></script>
 
 {% endblock principal %}

@@ -1,0 +1,1023 @@
+/*------------------------------------------------------RESULTADOS--------------------------------------------*/
+
+.mi-porra-wrapper{
+    width:100%;
+    max-width:1600px;
+    margin:auto;
+    padding:28px 16px;
+}
+
+.info-clasificacion{
+    background:white;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:22px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.titulo-pagina {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.perfil-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.descripcion-grupos{
+    text-align:center;
+    max-width:700px;
+    line-height:1.4;
+    font-size:15px;
+}
+
+.leyenda-clasificacion{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:14px;
+}
+
+.leyenda-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.leyenda-item.clasificado{
+    background:#e8f7e8;
+    border:2px solid #71c676;
+}
+
+.leyenda-item.tercero{
+    background:#fff8dc;
+    border:2px solid #e2cd68;
+}
+
+.leyenda-item.eliminado{
+    background:#ffe8e8;
+    border:2px solid #df8f8f;
+}
+
+.leyenda-color{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:currentColor;
+}
+
+.leyenda-item.clasificado .leyenda-color{
+    color:#4caf50;
+}
+
+.leyenda-item.tercero .leyenda-color{
+    color:#d4b100;
+}
+
+.leyenda-item.eliminado .leyenda-color{
+    color:#d9534f;
+}
+
+.mi-porra-seccion{
+    margin-top:24px;
+}
+
+.titulo-seccion{
+    font-size:26px;
+    margin-bottom:18px;
+    color:#222;
+}
+
+.grupos-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:16px;
+}
+
+.grupo-container{
+    background:white;
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+
+.grupo-container h2{
+    margin-bottom:12px;
+    color:#222;
+    font-size:22px;
+    border-bottom:2px solid #f0f0f0;
+    padding-bottom:8px;
+}
+
+.grupo-lista{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.equipo-card{
+    background:#f7fafc;
+    border:2px solid transparent;
+    border-radius:12px;
+    padding:10px 12px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    cursor:default;
+}
+
+.equipo-card.clasificado{
+    background:#e8f7e8;
+    border-color:#6cc070;
+}
+
+.equipo-card.tercero{
+    background:#fff8dd;
+    border-color:#e8d36f;
+}
+
+.equipo-card.eliminado{
+    background:#ffe9e9;
+    border-color:#e08b8b;
+}
+
+.equipo-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+
+.posicion{
+    width:28px;
+    height:28px;
+    min-width:28px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:#3897f0;
+    color:white;
+
+    border-radius:50%;
+
+    font-weight:700;
+    font-size:13px;
+
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.equipo-info{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-width:0;
+}
+
+.imagenes-equipo{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+}
+
+.escudo-img{
+    width:24px;
+    height:24px;
+    object-fit:contain;
+}
+
+.bandera-img{
+    width:30px;
+    height:21px;
+    object-fit:cover;
+    border-radius:4px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+}
+
+.nombre-equipo{
+    font-size:14px;
+    font-weight:600;
+    color:#222;
+
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.estado-equipo{
+    font-size:11px;
+    font-weight:700;
+    padding:5px 8px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.75);
+    color:#333;
+    white-space:nowrap;
+    margin-left:8px;
+}
+
+.mensaje-vacio{
+    max-width: 700px;
+    margin: 25px auto;
+
+    padding: 40px 30px;
+
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 24px;
+
+    text-align: center;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.06);
+
+    position: relative;
+    overflow: hidden;
+}
+
+.mensaje-vacio::before{
+    content: "";
+    position: absolute;
+
+    top: -80px;
+    right: -80px;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+
+    background: rgba(56,151,240,0.06);
+}
+
+.mensaje-vacio-icono{
+    font-size: 58px;
+    margin-bottom: 18px;
+
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+.mensaje-vacio h3{
+    font-size: 26px;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.mensaje-vacio p{
+    color: #6b7280;
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 500px;
+    margin: auto;
+}
+
+@media (max-width:1150px){
+
+    .grupos-grid{
+        grid-template-columns:repeat(3, 1fr);
+    }
+
+}
+
+@media (max-width:850px){
+
+    .grupos-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+    .titulo-pagina{
+        font-size:28px;
+    }
+
+    .titulo-seccion{
+        font-size:24px;
+    }
+
+}
+
+@media (max-width:560px){
+
+    .mi-porra-wrapper{
+        padding:18px 8px;
+    }
+
+    .grupos-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:8px;
+    }
+
+    .info-clasificacion{
+        padding:14px;
+        margin-bottom:16px;
+    }
+
+    .titulo-pagina{
+        font-size:24px;
+    }
+
+    .descripcion-grupos{
+        font-size:13px;
+    }
+
+    .leyenda-clasificacion{
+        gap:8px;
+    }
+
+    .leyenda-item{
+        font-size:11px;
+        padding:6px 8px;
+    }
+
+    .leyenda-color{
+        width:11px;
+        height:11px;
+    }
+
+    .titulo-seccion{
+        font-size:21px;
+        margin-bottom:12px;
+    }
+
+    .grupo-container{
+        padding:9px;
+        border-radius:12px;
+        margin-bottom:8px;
+    }
+
+    .grupo-container h2{
+        font-size:16px;
+        margin-bottom:8px;
+        padding-bottom:6px;
+    }
+
+    .grupo-lista{
+        gap:6px;
+    }
+
+    .equipo-card{
+        padding:7px 7px;
+        border-radius:9px;
+    }
+
+    .equipo-left{
+        gap:6px;
+    }
+
+    .posicion{
+        width:22px;
+        height:22px;
+        min-width:22px;
+        font-size:11px;
+    }
+
+    .equipo-info{
+        gap:6px;
+    }
+
+    .imagenes-equipo{
+        gap:4px;
+    }
+
+    .escudo-img{
+        width:18px;
+        height:18px;
+    }
+
+    .bandera-img{
+        width:23px;
+        height:16px;
+        border-radius:3px;
+    }
+
+    .nombre-equipo{
+        font-size:11px;
+        max-width:70px;
+    }
+
+    .estado-equipo{
+        display:none;
+    }
+
+}
+
+@media (max-width:360px){
+
+    .grupos-grid{
+        grid-template-columns:1fr;
+    }
+
+    .nombre-equipo{
+        max-width:none;
+    }
+
+}
+
+.terceros-grid{
+    display:grid;
+    grid-template-columns:repeat(8, 1fr);
+    gap:12px;
+}
+
+.tercero-card{
+    background:white;
+    border-radius:14px;
+    padding:14px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+    border:2px solid #3897f0;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    position:relative;
+    min-height:120px;
+}
+
+.grupo-badge{
+    position:absolute;
+    top:8px;
+    right:8px;
+
+    background:#222;
+    color:white;
+
+    padding:4px 7px;
+    border-radius:8px;
+
+    font-size:10px;
+    font-weight:700;
+}
+
+.tercero-imagenes{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:14px;
+}
+
+.tercero-escudo-img{
+    width:30px;
+    height:30px;
+    object-fit:contain;
+}
+
+.tercero-bandera-img{
+    width:34px;
+    height:24px;
+    object-fit:cover;
+    border-radius:4px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+}
+
+.tercero-nombre-equipo{
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+    color:#222;
+
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+@media (max-width:1150px){
+
+    .terceros-grid{
+        grid-template-columns:repeat(4, 1fr);
+    }
+
+}
+
+@media (max-width:560px){
+
+    .terceros-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:8px;
+    }
+
+    .tercero-card{
+        padding:10px 8px;
+        min-height:95px;
+        border-radius:12px;
+    }
+
+    .grupo-badge{
+        font-size:9px;
+        padding:3px 6px;
+    }
+
+    .tercero-imagenes{
+        margin-top:12px;
+    }
+
+    .tercero-escudo-img{
+        width:24px;
+        height:24px;
+    }
+
+    .tercero-bandera-img{
+        width:28px;
+        height:20px;
+    }
+
+    .tercero-nombre-equipo{
+        font-size:11px;
+    }
+
+}
+
+.mi-bracket-scroll{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding-bottom:14px;
+    -webkit-overflow-scrolling:touch;
+}
+
+.mi-bracket{
+    min-width:980px;
+    display:grid;
+    grid-template-columns:repeat(9, 1fr);
+    gap:10px;
+    align-items:stretch;
+}
+
+.mi-round{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.mi-round-title{
+    text-align:center;
+    font-weight:800;
+    font-size:12px;
+    background:#222;
+    color:white;
+    padding:7px;
+    border-radius:10px;
+    margin-bottom:8px;
+}
+
+.mi-round-matches{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-around;
+    gap:18px;
+}
+
+.mi-match{
+    background:white;
+    border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+    min-height:70px;
+    position:relative;
+    border:2px solid transparent;
+    overflow:hidden;
+}
+
+.mi-match::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    right:-10px;
+    width:10px;
+    height:2px;
+    background:#cfd8e3;
+}
+
+.mi-round.right .mi-match::after{
+    right:auto;
+    left:-10px;
+}
+
+.mi-round.final .mi-match::after{
+    display:none;
+}
+
+.mi-match-label{
+    font-size:10px;
+    font-weight:800;
+    color:#777;
+    padding:6px 8px 0;
+}
+
+.mi-team{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:6px 8px;
+    font-weight:700;
+    font-size:11px;
+}
+
+.mi-team.empty{
+    color:#aaa;
+    font-weight:500;
+}
+
+.mi-team.selected{
+    background:#3897f0;
+    color:white;
+}
+
+.mi-team img{
+    width:17px;
+    height:17px;
+    object-fit:contain;
+    flex-shrink:0;
+}
+
+.mi-team span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.mi-campeon-box{
+    background:white;
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:18px;
+    text-align:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+    border:2px solid #f3c13a;
+    background:linear-gradient(135deg,#fff8d8,#ffffff);
+}
+
+.mi-campeon-titulo{
+    font-size:20px;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.mi-campeon-card{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.mi-campeon-escudo,
+.mi-campeon-bandera{
+    width:34px;
+    height:34px;
+    object-fit:contain;
+}
+
+.mi-campeon-nombre{
+    font-size:22px;
+    font-weight:900;
+    color:#222;
+}
+
+.mi-tercer-puesto-wrapper{
+    max-width:260px;
+    margin:18px auto 0;
+}
+
+.mi-tercer-puesto-wrapper .mi-match::after{
+    display:none;
+}
+
+.scroll-hint{
+    display:none;
+}
+
+@media(max-width:768px){
+
+    .scroll-hint{
+        display:block;
+        text-align:center;
+        font-size:12px;
+        color:#777;
+        margin:-4px 0 10px;
+        font-weight:700;
+    }
+
+    .mi-bracket{
+        min-width:880px;
+        gap:8px;
+    }
+
+    .mi-round-title{
+        font-size:11px;
+        padding:6px;
+    }
+
+    .mi-match{
+        min-height:62px;
+        border-radius:10px;
+    }
+
+    .mi-team{
+        font-size:10px;
+        padding:5px 6px;
+    }
+
+    .mi-team img{
+        width:15px;
+        height:15px;
+    }
+
+    .mi-campeon-box{
+        padding:12px;
+        margin-bottom:14px;
+    }
+
+    .mi-campeon-titulo{
+        font-size:17px;
+    }
+
+    .mi-campeon-nombre{
+        font-size:18px;
+    }
+
+    .mi-campeon-escudo,
+    .mi-campeon-bandera{
+        width:28px;
+        height:28px;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .mi-bracket{
+        min-width:820px;
+    }
+
+    .mi-team span{
+        max-width:58px;
+    }
+
+    .mi-tercer-puesto-wrapper{
+        max-width:220px;
+    }
+
+}
+
+@keyframes floatIcon {
+
+    0%{
+        transform: translateY(0px);
+    }
+
+    50%{
+        transform: translateY(-6px);
+    }
+
+    100%{
+        transform: translateY(0px);
+    }
+
+}
+
+@media (max-width: 768px){
+
+    .mensaje-vacio{
+        padding: 30px 20px;
+    }
+
+    .mensaje-vacio-icono{
+        font-size: 48px;
+    }
+
+    .mensaje-vacio h3{
+        font-size: 22px;
+    }
+
+}
+
+.leyenda-puntos{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:22px;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+
+    border:1px solid rgba(0,0,0,0.05);
+}
+
+.leyenda-puntos{
+    width:100%;
+    max-width:900px;
+    margin-top:18px;
+}
+
+.leyenda-puntos-header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:16px;
+}
+
+.leyenda-icono{
+    width:46px;
+    height:46px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:14px;
+
+    background:#eff6ff;
+
+    font-size:24px;
+}
+
+.leyenda-puntos-header h3{
+    margin:0 0 4px;
+    color:#111827;
+    font-size:20px;
+}
+
+.leyenda-puntos-header p{
+    margin:0;
+    color:#6b7280;
+    font-size:14px;
+    line-height:1.4;
+}
+
+.leyenda-puntos-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:12px;
+}
+
+.leyenda-punto-card{
+    border-radius:14px;
+    padding:14px 12px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+
+    text-align:center;
+
+    border:2px solid transparent;
+}
+
+.leyenda-punto-card strong{
+    font-size:28px;
+    font-weight:900;
+}
+
+.leyenda-punto-card span{
+    font-size:13px;
+    font-weight:700;
+    color:#333;
+}
+
+.leyenda-punto-card.exacta{
+    background:#e8f7e8;
+    border-color:#6cc070;
+}
+
+.leyenda-punto-card.exacta strong{
+    color:#15803d;
+}
+
+.leyenda-punto-card.cerca{
+    background:#eef6ff;
+    border-color:#93c5fd;
+}
+
+.leyenda-punto-card.cerca strong{
+    color:#2563eb;
+}
+
+.leyenda-punto-card.media{
+    background:#fff8dd;
+    border-color:#e8d36f;
+}
+
+.leyenda-punto-card.media strong{
+    color:#b45309;
+}
+
+.leyenda-punto-card.lejos{
+    background:#ffe9e9;
+    border-color:#e08b8b;
+}
+
+.leyenda-punto-card.lejos strong{
+    color:#b91c1c;
+}
+
+@media(max-width:768px){
+
+    .leyenda-puntos{
+        padding:15px;
+        margin-bottom:16px;
+    }
+
+    .leyenda-puntos-header{
+        align-items:flex-start;
+    }
+
+    .leyenda-icono{
+        width:40px;
+        height:40px;
+        font-size:21px;
+        flex-shrink:0;
+    }
+
+    .leyenda-puntos-header h3{
+        font-size:17px;
+    }
+
+    .leyenda-puntos-header p{
+        font-size:13px;
+    }
+
+    .leyenda-puntos-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:8px;
+    }
+
+    .leyenda-punto-card{
+        padding:11px 8px;
+    }
+
+    .leyenda-punto-card strong{
+        font-size:23px;
+    }
+
+    .leyenda-punto-card span{
+        font-size:11px;
+    }
+
+}
+
+.contenedor-instrucciones{
+    margin-bottom:24px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.btn-instrucciones{
+    border:none;
+    background:linear-gradient(135deg,#3897f0,#2176c7);
+    color:white;
+
+    padding:14px 22px;
+    border-radius:14px;
+
+    font-size:15px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:0 6px 18px rgba(56,151,240,.25);
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-instrucciones:hover{
+    transform:translateY(-2px);
+}
+
+.oculto{
+    display:none;
+}
+
+.leyenda-puntos{
+    margin-top:18px;
+}

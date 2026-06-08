@@ -404,10 +404,6 @@ input[type="file"]{
 
 }
 
-.password-section{
-    margin-top:30px;
-}
-
 .form-cambiar-contrasena{
     display:flex;
     flex-direction:column;
@@ -490,7 +486,6 @@ input[type="file"]{
 }
 
 .admin-password-section{
-    margin-top:30px;
     border:2px solid #ffd8a8;
     background:#fff8f0;
 }
@@ -547,4 +542,76 @@ input[type="file"]{
 .boton-admin-contrasena:disabled:hover{
     background:#bfc8d2;
     transform:none;
+}
+
+.admin-puntuacion-section{
+    border:2px solid #b7e4c7;
+    background:linear-gradient(135deg, #f0fff4, #e8fff0);
+
+    position:relative;
+}
+
+.admin-puntuacion-section::before{
+    content:"ADMIN";
+    position:absolute;
+    top:-12px;
+    right:18px;
+
+    background:#16a34a;
+    color:white;
+
+    font-size:11px;
+    font-weight:800;
+
+    padding:5px 10px;
+    border-radius:999px;
+
+    letter-spacing:1px;
+}
+
+.boton-admin-puntuacion{
+    background:linear-gradient(135deg, #22c55e, #16a34a);
+    color:white;
+
+    border:none;
+    padding:16px;
+
+    border-radius:14px;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    width:100%;
+
+    transition:0.25s;
+
+    box-shadow:0 8px 18px rgba(34,197,94,0.25);
+}
+
+.boton-admin-puntuacion:hover{
+    transform:translateY(-2px);
+    background:linear-gradient(135deg, #16a34a, #15803d);
+
+    box-shadow:0 12px 24px rgba(34,197,94,0.35);
+}
+
+.boton-admin-puntuacion:disabled{
+    background:#bfc8d2;
+    cursor:not-allowed;
+    opacity:0.7;
+    transform:none;
+    box-shadow:none;
+}
+
+.settings-card{
+    background:white;
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+
+    display:flex;
+    flex-direction:column;
+    gap:30px;
 }

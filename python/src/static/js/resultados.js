@@ -122,3 +122,21 @@ function renderMiCampeon(){
         </div>
     `;
 }
+
+const botonInstrucciones=document.getElementById("btnInstruccionesPuntos");
+const panelInstrucciones=document.getElementById("panelInstruccionesPuntos");
+
+if(botonInstrucciones){
+
+    botonInstrucciones.addEventListener("click", () => {
+
+        panelInstrucciones.classList.toggle("oculto");
+
+        botonInstrucciones.textContent=
+            panelInstrucciones.classList.contains("oculto")
+            ? "🧮 Ver sistema de puntuación"
+            : "❌ Ocultar sistema de puntuación";
+
+    });
+
+}

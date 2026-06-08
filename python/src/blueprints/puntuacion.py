@@ -34,13 +34,13 @@ def pagina_calcular_puntuaciones():
 
 	grupos_real=con.obtenerGruposRealPuntuacion()
 
-	for usuario, nombre, correo, codigo_liga in usuarios_porra_completada:
+	for usuario_porra, nombre, correo, codigo_liga in usuarios_porra_completada:
 
-		grupos_porra=con.obtenerGruposPorraUsuarioPuntuacion(usuario)
+		grupos_porra=con.obtenerGruposPorraUsuarioPuntuacion(usuario_porra)
 
 		puntos_grupos=calcularPuntosTotalesGrupos(grupos_real, grupos_porra)
 
-		con.actualizarPuntuacionUsuario(usuario, puntos_grupos, 0, 0)
+		con.actualizarPuntuacionUsuario(usuario_porra, puntos_grupos, 0, 0)
 
 	con.cerrarConexion()
 
