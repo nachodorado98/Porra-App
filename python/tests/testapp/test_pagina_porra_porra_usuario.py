@@ -12,6 +12,20 @@ def test_pagina_porra_porra_usuario_sin_login(cliente, conexion):
 	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
+def test_pagina_porra_porra_usuario_usuario_no_existe(cliente, conexion_usuario):
+
+	with cliente as cliente_abierto:
+
+		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
+
+		respuesta=cliente_abierto.get("/porra/no_existo")
+
+		contenido=respuesta.data.decode()
+
+		assert respuesta.status_code==302
+		assert respuesta.location=="/porra"
+		assert "<h1>Redirecting...</h1>" in contenido
+
 def test_pagina_porra_porra_usuario_usuario_no_admin(cliente, conexion_usuario):
 
 	with cliente as cliente_abierto:

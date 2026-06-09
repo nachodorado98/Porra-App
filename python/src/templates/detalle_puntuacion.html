@@ -1,0 +1,90 @@
+{% extends "porra.html" %}
+
+{% block link %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detalle_puntuacion.css') }}">
+{% endblock link %}
+
+{% block principal %}
+
+<div class="detalle-wrapper">
+
+    <div class="info-clasificacion">
+        <h1 class="titulo-pagina">Detalle de puntuación 🧮</h1>
+        <p class="descripcion-grupos">Aquí puedes ver cómo se han calculado los puntos de {{ usuario_porra }}.</p>
+    </div>
+
+    <section class="detalle-section">
+
+        <div class="detalle-section-header">
+
+            <div>
+                <h2>Fase de grupos</h2>
+                <p class="detalle-subtitulo">Desglose de los puntos obtenidos en cada posición</p>
+            </div>
+
+            <div class="detalle-total-destacado">
+                <span>Total grupos</span>
+                <strong>{{ puntos_grupos }}</strong>
+                <small>puntos</small>
+            </div>
+
+        </div>
+
+            {% for grupo, datos in detalle_grupos.items() %}
+
+                <div class="detalle-grupo">
+
+                    <h3>Grupo {{ grupo }}<span class="grupo-puntos">{{ datos.puntos }} pts</span></h3>
+
+                    {% for fila in datos.filas %}
+
+                        <div class="detalle-fila puntos-{{ fila.puntos }}">
+
+                            <div class="detalle-principal">
+
+                                <div class="detalle-posicion">{{ fila.posicion }}º</div>
+
+                                <div class="detalle-columna detalle-porra">
+                                    <span class="detalle-label">Porra</span>
+
+                                    <div class="detalle-equipo">
+                                        {% if fila.equipo_porra_id %}
+                                            <img src="{{ url_for('static', filename='imagenes/escudos/' ~ fila.equipo_porra_escudo ~ '.png') }}">
+                                            <img src="{{ url_for('static', filename='imagenes/banderas/' ~ fila.equipo_porra_bandera ~ '.png') }}">
+                                            <span>{{ fila.equipo_porra_nombre }}</span>
+                                        {% else %}
+                                            <span>Sin porra</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="detalle-columna detalle-real">
+                                    <span class="detalle-label">Real</span>
+
+                                    <div class="detalle-equipo">
+                                        <img src="{{ url_for('static', filename='imagenes/escudos/' ~ fila.equipo_real_escudo ~ '.png') }}">
+                                        <img src="{{ url_for('static', filename='imagenes/banderas/' ~ fila.equipo_real_bandera ~ '.png') }}">
+                                        <span>{{ fila.equipo_real_nombre }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detalle-puntos puntos-{{ fila.puntos }}">+{{ fila.puntos }}</div>
+
+                                <div class="detalle-motivo motivo-{{ fila.puntos }}">{{ fila.motivo }}</div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endfor %}
+
+    </section>
+
+</div>
+
+{% endblock principal %}

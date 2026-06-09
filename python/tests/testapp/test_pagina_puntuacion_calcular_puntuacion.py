@@ -2,7 +2,7 @@ import pytest
 
 def test_pagina_calcular_puntuaciones_sin_login(cliente, conexion):
 
-	respuesta=cliente.put("/calcular_puntuacion", follow_redirects=True)
+	respuesta=cliente.put("/puntuacion/calcular_puntuacion", follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
@@ -15,7 +15,7 @@ def test_pagina_calcular_puntuaciones_no_admin(cliente, conexion_usuario):
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -33,7 +33,7 @@ def test_pagina_calcular_puntuaciones_sin_porra_completada(cliente, conexion_usu
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -64,7 +64,7 @@ def test_pagina_calcular_puntuaciones_sin_grupo_real_un_grupo_porra(cliente, con
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -98,7 +98,7 @@ def test_pagina_calcular_puntuaciones_un_grupo_real_un_grupo_porra(cliente, cone
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -134,7 +134,7 @@ def test_pagina_calcular_puntuaciones_un_grupo_real_dos_grupos_porra(cliente, co
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -171,7 +171,7 @@ def test_pagina_calcular_puntuaciones_dos_grupos_real_dos_grupos_porra(cliente, 
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -218,7 +218,7 @@ def test_pagina_calcular_puntuaciones_grupos_todos_real_dos_grupos_porra(cliente
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 
@@ -263,7 +263,7 @@ def test_pagina_calcular_puntuaciones_grupos_todos(cliente, conexion_usuario, po
 
 		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
 
-		respuesta=cliente_abierto.put("/calcular_puntuacion")
+		respuesta=cliente_abierto.put("/puntuacion/calcular_puntuacion")
 
 		contenido=respuesta.data.decode()
 

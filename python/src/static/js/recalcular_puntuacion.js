@@ -9,7 +9,7 @@ if(botonCalcularPuntuacion){
 
         try{
 
-            const response = await fetch("/calcular_puntuacion", {
+            const response = await fetch("/puntuacion/calcular_puntuacion", {
                 method: "PUT"
             });
 

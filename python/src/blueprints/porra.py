@@ -504,6 +504,12 @@ def pagina_porra_usuario(usuario_porra:str):
 
 	con=Conexion()
 
+	if not con.existe_usuario(usuario_porra):
+
+		con.cerrarConexion()
+
+		return redirect("/porra")
+
 	porra_abierta=con.porraAbierta()
 
 	if not current_user.admin and porra_abierta:

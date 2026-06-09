@@ -848,8 +848,8 @@ class Conexion:
 											grupo_real["bandera"],
 											grupo_real["posicion"]), grupos_real))
 
-	# Metodo para actualizar la puntuacion de un usuario
-	def actualizarPuntuacionUsuario(self, usuario:str, puntos_grupos:int, puntos_mejores_terceros:int, puntos_eliminatorias:int)->None:
+	# Metodo para actualizar la puntuacion de un usuario sin commit
+	def actualizarPuntuacionUsuarioSinCommit(self, usuario:str, puntos_grupos:int, puntos_mejores_terceros:int, puntos_eliminatorias:int)->None:
 
 		puntos_total=puntos_grupos+puntos_mejores_terceros+puntos_eliminatorias
 
@@ -858,5 +858,10 @@ class Conexion:
 							Puntos_Eliminatorias=%s, Puntos_Total=%s
 							WHERE Usuario=%s""",
 							(puntos_grupos, puntos_mejores_terceros, puntos_eliminatorias, puntos_total, usuario))
+
+	# Metodo para actualizar la puntuacion de un usuario
+	def actualizarPuntuacionUsuario(self, usuario:str, puntos_grupos:int, puntos_mejores_terceros:int, puntos_eliminatorias:int)->None:
+
+		self.actualizarPuntuacionUsuarioSinCommit(usuario, puntos_grupos, puntos_mejores_terceros, puntos_eliminatorias)
 
 		self.confirmar()
