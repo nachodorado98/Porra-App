@@ -68,3 +68,15 @@ def test_obtener_grupos_real_grupos_puntuacion_varios(conexion):
 
 		assert equipo[0]=="A"
 		assert equipo[-1] in (1, 2, 3, 4)
+
+def test_evento_iniciado_no_iniciado(conexion):
+
+	assert not conexion.eventoIniciado()
+
+def test_evento_iniciado_iniciado(conexion):
+
+	conexion.c.execute("""INSERT INTO grupo_equipos_real VALUES ('A', 'seleccion-mexico', 1)""")
+
+	conexion.confirmar()
+
+	assert conexion.eventoIniciado()

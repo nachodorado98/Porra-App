@@ -6,6 +6,7 @@ from src.database.conexion import Conexion
 from src.config import URL_DATALAKE_PERFIL
 
 from src.utilidades.utils import calcularPuntosTotalesGrupos, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
+from src.utilidades.utils import limpiarDataFrameDetalleGrupos
 
 
 bp_puntuacion=Blueprint("puntuacion", __name__)
@@ -82,17 +83,15 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 		return redirect("/porra")
 
-	porra_abierta=con.porraAbierta()
-
-	if porra_abierta:
+	if usuario_porra!=usuario:
 
 		con.cerrarConexion()
 
 		return redirect("/porra")
 
-	puede_ver_porra=con.puedeVisualizarPorra(usuario_porra)
+	puede_ver_resultados=con.puedeVerResultados(usuario)
 
-	if not puede_ver_porra:
+	if not puede_ver_resultados:
 
 		con.cerrarConexion()
 
@@ -100,35 +99,17 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	grupos_real=con.obtenerGruposRealPuntuacion()
 
-	if not grupos_real:
-
-		con.cerrarConexion()
-
-		return redirect("/porra")
-
 	grupos_porra=con.obtenerGruposPorraUsuarioPuntuacion(usuario_porra)
+
+	imagen_perfil_usuario_porra=con.obtenerImagenPerfilUsuario(usuario_porra)
 
 	con.cerrarConexion()
 
 	df_detalle_grupos=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
 
-	detalle_grupos={}
-
-	for fila in df_detalle_grupos.to_dict("records"):
-
-	    grupo=fila["grupo"]
-
-	    if grupo not in detalle_grupos:
-
-	        detalle_grupos[grupo]={
-	            "puntos":0,
-	            "filas":[]
-	        }
-
-	    detalle_grupos[grupo]["filas"].append(fila)
-	    detalle_grupos[grupo]["puntos"]+=fila["puntos"]
-
 	puntos_grupos=calcularPuntosTotalesGrupos(grupos_real, grupos_porra)
+
+	detalle_grupos_limpio=limpiarDataFrameDetalleGrupos(df_detalle_grupos)
 
 	return render_template("detalle_puntuacion.html",
 							usuario=usuario,
@@ -136,7 +117,8 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							usuario_porra=usuario_porra,
-							detalle_grupos=detalle_grupos,
+							imagen_perfil_usuario_porra=imagen_perfil_usuario_porra,
+							detalle_grupos_limpio=detalle_grupos_limpio,
 							puntos_grupos=puntos_grupos,
 							paso_porra=paso_porra,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

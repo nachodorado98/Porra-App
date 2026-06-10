@@ -14,17 +14,17 @@ URL_AZURE_FUNCTION=f"https://{AZURE_FUNCTION}.azurewebsites.net/api/{ENDPOINT_AZ
 
 con=Conexion()
 
-datos_usuarios_porra_pendiente=con.obtenerDatosUsuariosPorraPendiente()
+datos_usuarios=con.obtenerDatosUsuarios()
 
 con.cerrarConexion()
 
 print("-"*50)
-print("CORREO PORRA PENDIENTE")
+print("CORREO INICIO MUNDIAL")
 print("-"*50)
 
-for usuario, nombre, correo, codigo_liga in datos_usuarios_porra_pendiente:
+for usuario, nombre, correo, codigo_liga in datos_usuarios:
 
-    payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_liga, "tipo":"recordatorio_porra_pendiente"}
+    payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_liga, "tipo":"inicio_mundial"}
 
     print(f"Enviando correo a la direccion {correo}...")
 

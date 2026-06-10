@@ -29,6 +29,32 @@
     font-weight:900;
 }
 
+.titulo-pagina{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+
+    text-align:center;
+
+    font-size:34px;
+    font-weight:800;
+
+    color:#1f2937;
+
+    margin-bottom:10px;
+}
+
+.perfil-icon{
+    width:52px;
+    height:52px;
+
+    border-radius:50%;
+    object-fit:cover;
+
+    box-shadow:0 4px 14px rgba(56,151,240,.20);
+}
+
 .descripcion-grupos{
     color:#6b7280;
     font-size:15px;
@@ -438,6 +464,20 @@
 
     .detalle-motivo{
         font-size:10.5px;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .titulo-pagina{
+        font-size:28px;
+        gap:10px;
+    }
+
+    .perfil-icon{
+        width:44px;
+        height:44px;
     }
 
 }

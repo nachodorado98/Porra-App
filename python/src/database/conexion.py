@@ -865,3 +865,23 @@ class Conexion:
 		self.actualizarPuntuacionUsuarioSinCommit(usuario, puntos_grupos, puntos_mejores_terceros, puntos_eliminatorias)
 
 		self.confirmar()
+
+	# Metodo para saber si el evento ha iniciado
+	def eventoIniciado(self)->bool:
+
+		self.c.execute("""SELECT * FROM grupo_equipos_real""")
+
+		datos=self.c.fetchone()
+
+		return False if datos is None else True
+
+	# Metodo para saber si un usuario puede ver resultados
+	def puedeVerResultados(self, usuario:str)->bool:
+
+		porra_abierta=self.porraAbierta()
+
+		evento_iniciado=self.eventoIniciado()
+
+		puede_ver_porra=self.puedeVisualizarPorra(usuario)
+
+		return True if evento_iniciado and puede_ver_porra and not porra_abierta else False

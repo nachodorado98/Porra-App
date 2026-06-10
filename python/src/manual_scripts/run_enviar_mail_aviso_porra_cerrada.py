@@ -18,6 +18,10 @@ datos_usuarios=con.obtenerDatosUsuarios()
 
 con.cerrarConexion()
 
+print("-"*50)
+print("CORREO PORRA CERRADA")
+print("-"*50)
+
 for usuario, nombre, correo, codigo_liga in datos_usuarios:
 
     payload={"correo_destino":correo, "nombre":nombre, "usuario":usuario, "codigo":codigo_liga, "tipo":"cierre_porra"}

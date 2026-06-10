@@ -682,3 +682,20 @@ def calcularPuntosTotalesGrupos(grupos_real:List[Optional[tuple]], grupos_porra:
 
     return int(df_detalle["puntos"].sum())
 
+def limpiarDataFrameDetalleGrupos(df_detalle_grupos:pd.DataFrame)->Dict:
+
+    detalle_grupos={}
+
+    for fila in df_detalle_grupos.to_dict("records"):
+
+        grupo=fila["grupo"]
+
+        if grupo not in detalle_grupos:
+
+            detalle_grupos[grupo]={"puntos":0, "filas":[]}
+
+        detalle_grupos[grupo]["filas"].append(fila)
+        
+        detalle_grupos[grupo]["puntos"]+=fila["puntos"]
+
+    return detalle_grupos

@@ -12,6 +12,13 @@
     <div class="info-clasificacion">
         <h1 class="titulo-pagina">Resultados Oficiales 🌍</h1>
         <p class="descripcion-grupos">Aquí puedes ver la clasificación real del torneo conforme se vaya actualizando.</p>
+
+        {% if puede_ver_resultados %}
+
+            <a href="/puntuacion/detalle/{{ usuario }}" class="btn-mis-resultados">📊 Ver mis resultados</a>
+
+        {% endif %}
+
     </div>
 
     <div class="contenedor-instrucciones">

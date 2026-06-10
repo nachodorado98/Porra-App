@@ -39,5 +39,8 @@ def recalcularPuntuacionUsuarios()->None:
 
 	    raise e
 
+print("-"*50)
+print("EJECUTAR CALCULAR PUNTOS PORRA")
+print("-"*50)
 
 recalcularPuntuacionUsuarios()

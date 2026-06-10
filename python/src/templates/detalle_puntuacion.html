@@ -10,8 +10,17 @@
 <div class="detalle-wrapper">
 
     <div class="info-clasificacion">
-        <h1 class="titulo-pagina">Detalle de puntuación 🧮</h1>
-        <p class="descripcion-grupos">Aquí puedes ver cómo se han calculado los puntos de {{ usuario_porra }}.</p>
+        
+        <h1 class="titulo-pagina">
+
+            {% if imagen_perfil_usuario_porra == '-1' %}
+                <img src="{{ url_for('static', filename='iconos/usuario.png') }}" alt="Perfil" class="perfil-icon">
+            {% else %}
+                <img src="{{ url_imagen_usuario_perfil }}{{ usuario_porra }}/{{ imagen_perfil_usuario_porra }}" alt="Perfil" class="perfil-icon">
+            {% endif %}
+
+            Puntuación de {{ usuario_porra }} 📊
+        </h1>
     </div>
 
     <section class="detalle-section">
@@ -31,7 +40,7 @@
 
         </div>
 
-            {% for grupo, datos in detalle_grupos.items() %}
+            {% for grupo, datos in detalle_grupos_limpio.items() %}
 
                 <div class="detalle-grupo">
 

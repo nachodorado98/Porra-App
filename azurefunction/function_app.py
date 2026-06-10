@@ -9,6 +9,7 @@ from config import EMAIL_ACCOUNT, CONTRASENA_LOGIN, SERVIDOR_CORREO, PUERTO_CORR
 from config import ASUNTO_CORREO_LANZAMIENTO, HTML_CORREO_LANZAMIENTO, URL_APP
 from config import ASUNTO_CORREO_RECORDATORIO_PORRA, HTML_CORREO_RECORDATORIO_PORRA
 from config import ASUNTO_CORREO_CIERRE_PORRA, HTML_CORREO_CIERRE_PORRA
+from config import ASUNTO_CORREO_INICIO_MUNDIAL, HTML_CORREO_INICIO_MUNDIAL
 
 app = func.FunctionApp()
 
@@ -42,7 +43,9 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
                         "recordatorio_porra_pendiente":{"ASUNTO":ASUNTO_CORREO_RECORDATORIO_PORRA,
                                                         "FORMATO_HTML":HTML_CORREO_RECORDATORIO_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)},
                         "cierre_porra":{"ASUNTO":ASUNTO_CORREO_CIERRE_PORRA,
-                                                        "FORMATO_HTML":HTML_CORREO_CIERRE_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)}}
+                                                        "FORMATO_HTML":HTML_CORREO_CIERRE_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)},
+                        "inicio_mundial":{"ASUNTO":ASUNTO_CORREO_INICIO_MUNDIAL,
+                                                        "FORMATO_HTML":HTML_CORREO_INICIO_MUNDIAL.format(nombre=nombre_usuario, url_app=URL_APP)}}
 
         if tipo_correo not in MAPEO_CORREO.keys():
 
@@ -54,7 +57,7 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
         enviarCorreoBase(correo_destino, MAPEO_CORREO[tipo_correo]["ASUNTO"], MAPEO_CORREO[tipo_correo]["FORMATO_HTML"], EMAIL_ACCOUNT, CONTRASENA_LOGIN, SERVIDOR_CORREO, PUERTO_CORREO)
 
         return func.HttpResponse(json.dumps({"ok": True}),
-                                status_code=500,
+                                status_code=200,
                                 mimetype="application/json")
 
     except Exception as e:
