@@ -50,7 +50,6 @@ def test_pagina_resultados_sin_empezar(cliente, conexion_usuario):
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_solo_grupos_un_grupo_un_equipo(cliente, conexion_usuario):
 
@@ -95,7 +94,6 @@ def test_pagina_resultados_solo_grupos_un_grupo_un_equipo(cliente, conexion_usua
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_solo_grupos_un_grupo(cliente, conexion_usuario):
 
@@ -141,7 +139,6 @@ def test_pagina_resultados_solo_grupos_un_grupo(cliente, conexion_usuario):
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_solo_grupos_varios_grupos(cliente, conexion_usuario):
 
@@ -188,7 +185,6 @@ def test_pagina_resultados_solo_grupos_varios_grupos(cliente, conexion_usuario):
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_grupos_mejores_terceros_un_mejor_tercero(cliente, conexion_usuario):
 
@@ -247,7 +243,6 @@ def test_pagina_resultados_grupos_mejores_terceros_un_mejor_tercero(cliente, con
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_grupos_mejores_terceros_varios_mejor_terceros(cliente, conexion_usuario):
 
@@ -306,7 +301,6 @@ def test_pagina_resultados_grupos_mejores_terceros_varios_mejor_terceros(cliente
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" in contenido
 		assert '<div class="mensaje-vacio">' in contenido
 		assert '<div class="mensaje-vacio-icono">' in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_una_eliminatoria_sin_ganador(cliente, conexion_usuario):
 
@@ -374,7 +368,6 @@ def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_una_eliminatori
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" not in contenido
 		assert '<div class="mensaje-vacio">' not in contenido
 		assert '<div class="mensaje-vacio-icono">' not in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_una_eliminatoria_con_ganador(cliente, conexion_usuario):
 
@@ -442,7 +435,6 @@ def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_una_eliminatori
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" not in contenido
 		assert '<div class="mensaje-vacio">' not in contenido
 		assert '<div class="mensaje-vacio-icono">' not in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
 
 def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_varias_eliminatorias(cliente, conexion_usuario):
 
@@ -512,108 +504,3 @@ def test_pagina_resultados_grupos_mejores_terceros_eliminatorias_varias_eliminat
 		assert "<h3>La fase eliminatoria aún no ha comenzado</h3>" not in contenido
 		assert '<div class="mensaje-vacio">' not in contenido
 		assert '<div class="mensaje-vacio-icono">' not in contenido
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
-
-def test_pagina_resultados_sin_porra_completada(cliente, conexion_usuario):
-
-	conexion_usuario.c.execute("""INSERT INTO grupo_equipos_real
-								VALUES ('A', 'seleccion-republica-corea', 1), ('A', 'seleccion-mexico', 2), ('A', 'republica-checa', 3), ('A', 'seleccion-sudafrica', 4)""")
-
-	conexion_usuario.confirmar()
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		respuesta=cliente_abierto.get("/resultados")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==200
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
-
-def test_pagina_resultados_con_porra_completada(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket):
-
-	conexion_usuario.c.execute("""INSERT INTO grupo_equipos_real
-								VALUES ('A', 'seleccion-republica-corea', 1), ('A', 'seleccion-mexico', 2), ('A', 'republica-checa', 3), ('A', 'seleccion-sudafrica', 4)""")
-
-	conexion_usuario.confirmar()
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
-
-		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
-		
-		cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
-
-		respuesta=cliente_abierto.get("/resultados")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==200
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
-
-@pytest.mark.parametrize(["dias"],
-	[(2,),(22,),(5,),(13,),(25,),(1,)]
-)
-def test_pagina_resultados_porra_abierta(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket, dias):
-
-	conexion_usuario.c.execute("""INSERT INTO grupo_equipos_real
-								VALUES ('A', 'seleccion-republica-corea', 1), ('A', 'seleccion-mexico', 2), ('A', 'republica-checa', 3), ('A', 'seleccion-sudafrica', 4)""")
-
-	conexion_usuario.confirmar()
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
-
-		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
-		
-		cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
-
-		fecha_posterior=(datetime.now()+timedelta(days=dias)).strftime("%Y-%m-%d")
-
-		conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_posterior)
-
-		respuesta=cliente_abierto.get("/resultados")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==200
-		assert '<a href="/puntuacion/detalle/nacho98' not in contenido
-
-@pytest.mark.parametrize(["dias"],
-	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
-)
-def test_pagina_resultados_porra_cerrada(cliente, conexion_usuario, porra_grupos, porra_mejores_terceros, partidos_bracket, dias):
-
-	conexion_usuario.c.execute("""INSERT INTO grupo_equipos_real
-								VALUES ('A', 'seleccion-republica-corea', 1), ('A', 'seleccion-mexico', 2), ('A', 'republica-checa', 3), ('A', 'seleccion-sudafrica', 4)""")
-
-	conexion_usuario.confirmar()
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		cliente_abierto.post("/porra/grupos/guardar", json={"grupos":porra_grupos})
-
-		cliente_abierto.post("/porra/mejores_terceros/guardar", json={"equipos":porra_mejores_terceros})
-		
-		cliente_abierto.post("/porra/eliminatorias/guardar", data={"elecciones_eliminatorias":json.dumps(partidos_bracket)})
-
-		fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
-
-		conexion_usuario.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
-
-		respuesta=cliente_abierto.get("/resultados")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==200
-		assert '<a href="/puntuacion/detalle/nacho98' in contenido

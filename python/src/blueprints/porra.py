@@ -29,6 +29,10 @@ def pagina_porra():
 
 	porra_abierta=con.porraAbierta()
 
+	puede_ver_resultados=con.puedeVerResultados(usuario)
+
+	evento_iniciado=con.eventoIniciado()
+
 	con.cerrarConexion()
 
 	return render_template("porra.html",
@@ -38,6 +42,8 @@ def pagina_porra():
 							imagen_perfil=imagen_perfil,
 							paso_porra=paso_porra,
 							porra_abierta=porra_abierta,
+							puede_ver_resultados=puede_ver_resultados,
+							evento_iniciado=evento_iniciado,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_porra.route("/porra/grupos")

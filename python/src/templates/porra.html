@@ -34,8 +34,11 @@
         {% endif %}
 
         <ul class="dropdown" id="dropdownMenu">
-          {% if paso_porra==4 %}
+          {% if paso_porra==4 or puede_ver_resultados %}
             <li><a href="/porra/mi_porra">Mi Porra</a></li>
+          {% endif %}
+          {% if  puede_ver_resultados %}
+            <li><a href="/puntuacion/detalle/{{ usuario }}">Mis Resultados</a></li>
           {% endif %}
           <li><a href="/settings">Ajustes</a></li>
           <li><a href="/logout" data-loading="true">Cerrar Sesión</a></li>
@@ -53,36 +56,54 @@
       <span class="badge-mundial">⚽ Mundial USA 2026</span>
       <h1>Tu porra del Mundial</h1>
 
-      {% if porra_abierta %}
+      {% if not puede_ver_resultados %}
 
-        {% if paso_porra<3 %}
-          <p class="descripcion-pregunta">Ordena las selecciones de cada grupo según cómo crees que terminará la fase inicial.</p>
-          <p class="descripcion-pregunta secundaria">Después podrás elegir los mejores terceros y completar todo el cuadro eliminatorio hasta la final.</p>
-        {% else %}
-          <p class="descripcion-pregunta">¡Gracias por completar la porra del Mundial!</p>
-          <p class="descripcion-pregunta secundaria">Puedes rehacer la porra definitiva hasta el dia previo al comienzo del evento (10/06/2026).</p>
-        {% endif %}
+        {% if porra_abierta %}
 
-        {% if paso_porra==0 %}
-          <a href="/porra/grupos" class="btn-empezar" data-loading="true">Empezar porra →</a>
-        {% elif paso_porra==1 %}
-          <a href="/porra/mejores_terceros" class="btn-empezar" data-loading="true">Continuar porra →</a>
-          <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>
-        {% elif paso_porra==2 %}
-          <a href="/porra/eliminatorias" class="btn-empezar" data-loading="true">Continuar porra →</a>
-          <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>
+          {% if paso_porra<3 %}
+            <p class="descripcion-pregunta">Ordena las selecciones de cada grupo según cómo crees que terminará la fase inicial.</p>
+            <p class="descripcion-pregunta secundaria">Después podrás elegir los mejores terceros y completar todo el cuadro eliminatorio hasta la final.</p>
+          {% else %}
+            <p class="descripcion-pregunta">¡Gracias por completar la porra del Mundial!</p>
+            <p class="descripcion-pregunta secundaria">Puedes rehacer la porra definitiva hasta el dia previo al comienzo del evento (10/06/2026).</p>
+          {% endif %}
+
+          {% if paso_porra==0 %}
+            <a href="/porra/grupos" class="btn-empezar" data-loading="true">Empezar porra →</a>
+          {% elif paso_porra==1 %}
+            <a href="/porra/mejores_terceros" class="btn-empezar" data-loading="true">Continuar porra →</a>
+            <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>
+          {% elif paso_porra==2 %}
+            <a href="/porra/eliminatorias" class="btn-empezar" data-loading="true">Continuar porra →</a>
+            <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Reiniciar porra ⟳</a>
+          {% else %}
+            <a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>
+            <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Rehacer porra desde el inicio ⟳</a>
+          {% endif %}
+
         {% else %}
-          <a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>
-          <a href="/porra/reiniciar" class="btn-reiniciar" data-loading="true">Rehacer porra desde el inicio ⟳</a>
+
+            {% if evento_iniciado %}
+
+              <p class="descripcion-pregunta">El evento ya ha empezado pero no puedes seguir tus resultados en directo ya que no has completado la porra. Lo sentimos</p>
+
+            {% else %}
+
+              <p class="descripcion-pregunta">La porra esta actualmente cerrada y no se permite crear ni modificar ninguna porra existente.</p>
+              
+                {% if paso_porra>=3 %}
+                  <a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>
+                {% endif %}
+
+            {% endif %}
+
         {% endif %}
 
       {% else %}
 
-          <p class="descripcion-pregunta">La porra esta actualmente cerrada y no se permite crear ni modificar ninguna porra existente.</p>
-          
-          {% if paso_porra>=3 %}
-            <a href="/porra/mi_porra" class="btn-empezar" data-loading="true">Ver mi porra</a>
-          {% endif %}
+        <p class="descripcion-pregunta">¡El evento ya ha empezado! Puedes seguir tus resultados en directo.</p>
+        <p class="descripcion-pregunta">¡Mucha suerte! 🍀</p>
+        <a href="/puntuacion/detalle/{{ usuario }}" class="btn-empezar" data-loading="true">Ver mis resultados</a>
 
       {% endif %}
 

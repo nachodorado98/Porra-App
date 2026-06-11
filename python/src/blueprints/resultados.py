@@ -30,8 +30,6 @@ def pagina_resultados():
 
 	eliminatorias_resultados_real=con.obtenerEliminatoriasReal()
 
-	puede_ver_resultados=con.puedeVerResultados(usuario)
-
 	con.cerrarConexion()
 
 	grupos_resultados_real_limpios=obtenerGruposEquiposLimpios(grupos_resultados_real)
@@ -48,6 +46,5 @@ def pagina_resultados():
 							grupos=grupos_resultados_real_limpios,
 							mejores_terceros=mejores_terceros_resultados_real_limpios,
 							eliminatorias=eliminatorias_resultados_real_limpias,
-							puede_ver_resultados=puede_ver_resultados,
 							paso_porra=paso_porra,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

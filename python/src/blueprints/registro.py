@@ -89,6 +89,12 @@ def singup():
 
     con=Conexion()
 
+    if not con.porraAbierta():
+
+        con.cerrarConexion()
+
+        return redirect("/registro")
+
     if con.existe_usuario(usuario):
 
         con.cerrarConexion()

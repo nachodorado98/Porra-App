@@ -1,6 +1,7 @@
 import pytest
 import json
 from unittest.mock import patch
+from datetime import datetime, timedelta
 
 def test_pagina_registro(cliente, conexion):
 
@@ -146,6 +147,27 @@ def test_pagina_singup_datos_correctos_codigo_valido_accion_erronea(cliente, con
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
 											"codigo_final":"3YYZKP", "accion_liga":accion})
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==302
+	assert respuesta.location=="/registro"
+	assert "<h1>Redirecting...</h1>" in contenido
+
+@pytest.mark.parametrize(["dias"],
+	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
+)
+def test_pagina_singup_porra_cerrada(cliente, conexion, dias):
+
+	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
+
+	conexion.insertarClaveValorMaestro("fecha_cierre_porra", fecha_anterior)
+
+	conexion.insertarCodigoLiga("3YYZKP")
+
+	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
 
 	contenido=respuesta.data.decode()
 
