@@ -6,7 +6,7 @@ from src.database.conexion import Conexion
 from src.config import URL_DATALAKE_PERFIL
 
 from src.utilidades.utils import calcularPuntosTotalesGrupos, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
-from src.utilidades.utils import limpiarDataFrameDetalleGrupos, calcularPuntosTotalesMejoresTerceros
+from src.utilidades.utils import limpiarDataFrameDetalleGrupos, compararMejoresTercerosDataFrameDetalle, calcularPuntosTotalesMejoresTerceros
 
 
 bp_puntuacion=Blueprint("puntuacion", __name__)
@@ -111,6 +111,10 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	imagen_perfil_usuario_porra=con.obtenerImagenPerfilUsuario(usuario_porra)
 
+	mejores_terceros_real=con.obtenerMejoresTercerosReal()
+
+	mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario_porra)
+
 	puede_ver_resultados=con.puedeVerResultados(usuario)
 
 	con.cerrarConexion()
@@ -121,6 +125,14 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	detalle_grupos_limpio=limpiarDataFrameDetalleGrupos(df_detalle_grupos)
 
+	df_detalle_mejores_terceros=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+	detalle_mejores_terceros=df_detalle_mejores_terceros.to_dict("records")
+
+	puntos_mejores_terceros=calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)
+
+	puntos_total=puntos_grupos+puntos_mejores_terceros
+
 	return render_template("detalle_puntuacion.html",
 							usuario=usuario,
 							nombre=current_user.nombre,
@@ -130,6 +142,9 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 							imagen_perfil_usuario_porra=imagen_perfil_usuario_porra,
 							detalle_grupos_limpio=detalle_grupos_limpio,
 							puntos_grupos=puntos_grupos,
+							detalle_mejores_terceros=detalle_mejores_terceros,
+							puntos_mejores_terceros=puntos_mejores_terceros,
+							puntos_total=puntos_total,
 							paso_porra=paso_porra,
 							puede_ver_resultados=puede_ver_resultados,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

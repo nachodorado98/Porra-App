@@ -23,6 +23,28 @@
         </h1>
     </div>
 
+    <div class="resumen-total-puntuacion">
+
+        <div class="resumen-total-card principal">
+            <span>Total actual</span>
+            <strong>{{ puntos_total }}</strong>
+            <small>puntos</small>
+        </div>
+
+        <div class="resumen-total-card">
+            <span>Grupos</span>
+            <strong>{{ puntos_grupos }}</strong>
+            <small>puntos</small>
+        </div>
+
+        <div class="resumen-total-card">
+            <span>Mejores terceros</span>
+            <strong>{{ puntos_mejores_terceros }}</strong>
+            <small>puntos</small>
+        </div>
+
+    </div>
+
     <section class="detalle-section">
 
         <div class="detalle-section-header">
@@ -33,7 +55,7 @@
             </div>
 
             <div class="detalle-total-destacado">
-                <span>Total grupos</span>
+                <span>Grupos</span>
                 <strong>{{ puntos_grupos }}</strong>
                 <small>puntos</small>
             </div>
@@ -91,6 +113,77 @@
                 </div>
 
             {% endfor %}
+
+    </section>
+
+    <section class="detalle-section">
+
+        <div class="detalle-section-header">
+
+            <div>
+                <h2>Mejores terceros</h2>
+                <p class="detalle-subtitulo">Aciertos entre los mejores terceros oficiales</p>
+            </div>
+
+            <div class="detalle-total-destacado">
+                <span>Total terceros</span>
+                <strong>{{ puntos_mejores_terceros }}</strong>
+                <small>puntos</small>
+            </div>
+
+        </div>
+
+        {% if detalle_mejores_terceros %}
+
+            <div class="detalle-terceros-grid">
+
+                {% for fila in detalle_mejores_terceros %}
+
+                    <div class="detalle-tercero-card puntos-{{ fila.puntos }}">
+
+                        <div class="detalle-tercero-grupo">Grupo {{ fila.grupo }}</div>
+
+                        <div class="detalle-tercero-header">
+
+                            <div class="detalle-tercero-equipo">
+
+                                {% if fila.equipo_porra_id %}
+
+                                    <img src="{{ url_for('static', filename='imagenes/escudos/' ~ fila.equipo_porra_escudo ~ '.png') }}">
+
+                                    <img src="{{ url_for('static', filename='imagenes/banderas/' ~ fila.equipo_porra_bandera ~ '.png') }}">
+
+                                    <span>{{ fila.equipo_porra_nombre }}</span>
+
+                                {% else %}
+
+                                    <span>Sin predicción</span>
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="detalle-puntos puntos-{{ fila.puntos }}">+{{ fila.puntos }}</div>
+
+                        </div>
+
+                        <div class="detalle-motivo motivo-{{ fila.puntos }}">{{ fila.motivo }}</div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="mensaje-vacio">
+                <div class="mensaje-vacio-icono">🥉</div>
+                <h3>Aún no hay mejores terceros oficiales</h3>
+                <p>Cuando se publiquen, aparecerá aquí el detalle de la puntuación.</p>
+            </div>
+
+        {% endif %}
 
     </section>
 

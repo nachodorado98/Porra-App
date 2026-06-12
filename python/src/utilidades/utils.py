@@ -724,7 +724,7 @@ def compararMejoresTercerosDataFrameDetalle(mejores_terceros_real:List[Optional[
 
     df_porra=pd.DataFrame(mejores_terceros_porra, columns=columnas)
 
-    columnas_salida=["posicion", "equipo_real_id", "equipo_real_nombre", "equipo_real_escudo", "equipo_real_bandera", "equipo_porra_id",
+    columnas_salida=["grupo", "posicion", "equipo_real_id", "equipo_real_nombre", "equipo_real_escudo", "equipo_real_bandera", "equipo_porra_id",
                     "equipo_porra_nombre", "equipo_porra_escudo", "equipo_porra_bandera", "puntos", "motivo"]
 
     if df_real.empty:
