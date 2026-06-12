@@ -42,6 +42,8 @@ def pagina_clasificacion(codigo:str):
 
 	porra_abierta=con.porraAbierta()
 
+	puede_ver_resultados=con.puedeVerResultados(usuario)
+
 	con.cerrarConexion()
 
 	puede_pinchar=False if not current_user.admin and porra_abierta else True
@@ -54,4 +56,5 @@ def pagina_clasificacion(codigo:str):
 							usuarios_codigo=usuarios_codigo_puntos,
 							puede_pinchar=puede_pinchar,
 							paso_porra=paso_porra,
+							puede_ver_resultados=puede_ver_resultados,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")

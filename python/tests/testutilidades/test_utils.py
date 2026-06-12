@@ -14,7 +14,8 @@ from src.utilidades.utils import crearCarpeta, borrarCarpeta, vaciarCarpeta, ext
 from src.utilidades.utils import crearCarpetaDataLakePerfil, crearCarpetaDataLakePerfilUsuario, listarImagenesCarpetaDatalake
 from src.utilidades.utils import existe_imagen_datalake, eliminarImagenDatalake, subirImagenPerfilUsuarioDataLake
 from src.utilidades.utils import calcularPuntos, calcularMotivo, compararGrupoDataFrameDetalle, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
-from src.utilidades.utils import limpiarDataFrameDetalleGrupos
+from src.utilidades.utils import limpiarDataFrameDetalleGrupos, calcularPuntosMejoresTerceros, calcularMotivoMejoresTerceros, compararMejoresTercerosDataFrameDetalle
+from src.utilidades.utils import calcularPuntosTotalesMejoresTerceros
 
 
 @pytest.mark.parametrize(["codigo"],
@@ -2263,3 +2264,202 @@ def test_limpiar_dataframe_detalle_grupos_todos():
     for grupo in list(diccionario_detalle_grupos.keys()):
 
         assert len(diccionario_detalle_grupos[grupo]["filas"])==4
+
+@pytest.mark.parametrize(["real", "puntos"],
+    [   
+        ({'seleccion-escocia', 'seleccion-paraguay', 'seleccion-ghana', 'rd-congo', 'seleccion-republica-corea', 'seleccion-bosnia-herzegovina', 'seleccion-arabia-saudi', 'seleccion-iran'}, 0),
+        ({'seleccion-escocia', 'seleccion-paraguay', 'seleccion-ghana', 'seleccion-espanola', 'seleccion-republica-corea', 'seleccion-bosnia-herzegovina', 'seleccion-arabia-saudi', 'seleccion-iran'}, 4)
+    ]
+)
+def test_calcular_puntos_mejores_terceros(real, puntos):
+
+    fila=pd.Series({"grupo": "A", "equipo_porra_id": "seleccion-espanola", "equipo_porra_nombre": "España", "equipo_porra_escudo": 3850, "equipo_porra_bandera": "ESP", "posicion": 1})
+
+    assert calcularPuntosMejoresTerceros(fila, real)==puntos
+
+@pytest.mark.parametrize(["real", "motivo"],
+    [   
+        ({'seleccion-escocia', 'seleccion-paraguay', 'seleccion-ghana', 'rd-congo', 'seleccion-republica-corea', 'seleccion-bosnia-herzegovina', 'seleccion-arabia-saudi', 'seleccion-iran'}, "No fue mejor tercero"),
+        ({'seleccion-escocia', 'seleccion-paraguay', 'seleccion-ghana', 'seleccion-espanola', 'seleccion-republica-corea', 'seleccion-bosnia-herzegovina', 'seleccion-arabia-saudi', 'seleccion-iran'}, "Mejor tercero acertado")
+    ]
+)
+def test_calcular_motivo_mejores_terceros(real, motivo):
+
+    fila=pd.Series({"grupo": "A", "equipo_porra_id": "seleccion-espanola", "equipo_porra_nombre": "España", "equipo_porra_escudo": 3850, "equipo_porra_bandera": "ESP", "posicion": 1})
+
+    assert calcularMotivoMejoresTerceros(fila, real)==motivo
+
+def test_comparar_mejores_terceros_dataframe_detalle_mejores_terceros_real_sin_datos():
+
+    mejores_terceros_real=[]
+
+    mejores_terceros_porra=[('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+                            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 3)]
+
+    df=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+    assert df.empty
+
+def test_comparar_mejores_terceros_dataframe_detalle_mejores_terceros_porra_sin_datos():
+
+    mejores_terceros_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                            ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                            ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    mejores_terceros_porra=[]
+
+    df=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+    assert not df.empty
+    assert len(df)==8
+    assert df["equipo_porra_id"].isnull().all()
+    assert df["equipo_porra_nombre"].isnull().all()
+    assert (df["puntos"]==0).all()
+    assert (df["motivo"]=="Usuario sin mejores terceros").all()
+
+def test_comparar_mejores_terceros_dataframe_detalle_mejores_terceros_porra_menos_8_registros():
+
+    mejores_terceros_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                            ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                            ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    mejores_terceros_porra=[('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+                            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3)]
+
+    with pytest.raises(Exception):
+
+        compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+def test_comparar_mejores_terceros_dataframe_detalle_mejores_terceros_real_menos_8_registros():
+
+    mejores_terceros_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                            ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    mejores_terceros_porra=[('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+                            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 3)]
+
+    with pytest.raises(Exception):
+
+        compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+@pytest.mark.parametrize(["mejores_terceros_porra", "puntos_totales"],
+    [   
+        ([('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+            ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 3)], 8),
+        ([('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+            ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 3)], 12),
+        ([('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)], 16)
+    ]
+)
+def test_comparar_mejores_terceros_dataframe_detalle(mejores_terceros_porra, puntos_totales):
+
+    mejores_terceros_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                            ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                            ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    df=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+    assert not df.empty
+    assert len(df)==8
+    assert df["puntos"].sum()==puntos_totales
+
+def test_calcular_puntos_totales_mejores_terceros_sin_mejores_terceros_real_sin_mejores_terceros_porra():
+
+    mejores_terceros_real=[]
+
+    mejores_terceros_porra=[]
+
+    assert calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)==0
+
+def test_calcular_puntos_totales_mejores_terceros_sin_mejores_terceros_real():
+
+    mejores_terceros_real=[]
+
+    mejores_terceros_porra=[('A', 'republica-checa', 'República Checa', 6188, 'CZE', 3),
+                            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+                            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 3)]
+
+    assert calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)==0
+
+def test_calcular_puntos_totales_mejores_terceros():
+
+    mejores_terceros_real=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('B', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 3),
+                            ('C', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 3),
+                            ('D', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    mejores_terceros_porra=[('A', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 3),
+                            ('F', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 3),
+                            ('G', 'seleccion-iran', 'Irán', 3806, 'IRN', 3),
+                            ('H', 'seleccion-espanola', 'España', 3850, 'ESP', 3),
+                            ('I', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 3),
+                            ('J', 'seleccion-austria', 'Austria', 3767, 'AUT', 3),
+                            ('K', 'rd-congo', 'RD Congo', 11591, 'COD', 3),
+                            ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
+
+    assert calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)==16

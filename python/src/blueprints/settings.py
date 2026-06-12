@@ -31,6 +31,8 @@ def pagina_settings():
 
 	puede_cambio_contrasena=con.puedeCambiarContrasena(usuario)
 
+	puede_ver_resultados=con.puedeVerResultados(usuario)
+
 	con.cerrarConexion()
 
 	return render_template("settings.html",
@@ -41,6 +43,7 @@ def pagina_settings():
 							puede_cambio_contrasena=puede_cambio_contrasena,
 							es_admin=current_user.admin,
 							paso_porra=paso_porra,
+							puede_ver_resultados=puede_ver_resultados,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
 
 @bp_settings.route("/settings/eliminar_cuenta")

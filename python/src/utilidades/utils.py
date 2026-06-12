@@ -699,3 +699,91 @@ def limpiarDataFrameDetalleGrupos(df_detalle_grupos:pd.DataFrame)->Dict:
         detalle_grupos[grupo]["puntos"]+=fila["puntos"]
 
     return detalle_grupos
+
+def calcularPuntosMejoresTerceros(fila:Dict, equipos_reales:set)->int:
+
+    if fila["equipo_porra_id"] in equipos_reales:
+
+        return 4
+
+    return 0
+
+def calcularMotivoMejoresTerceros(fila:Dict, equipos_reales:set)->str:
+
+    if fila["equipo_porra_id"] in equipos_reales:
+
+        return "Mejor tercero acertado"
+
+    return "No fue mejor tercero"
+
+def compararMejoresTercerosDataFrameDetalle(mejores_terceros_real:List[Optional[tuple]], mejores_terceros_porra:List[Optional[tuple]])->pd.DataFrame:
+
+    columnas=["grupo", "equipo_id", "nombre", "escudo", "bandera", "posicion"]
+
+    df_real=pd.DataFrame(mejores_terceros_real, columns=columnas)
+
+    df_porra=pd.DataFrame(mejores_terceros_porra, columns=columnas)
+
+    columnas_salida=["posicion", "equipo_real_id", "equipo_real_nombre", "equipo_real_escudo", "equipo_real_bandera", "equipo_porra_id",
+                    "equipo_porra_nombre", "equipo_porra_escudo", "equipo_porra_bandera", "puntos", "motivo"]
+
+    if df_real.empty:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    if df_porra.empty:
+
+        df_real=df_real.rename(columns={"equipo_id":"equipo_real_id",
+                                        "nombre":"equipo_real_nombre",
+                                        "escudo":"equipo_real_escudo",
+                                        "bandera":"equipo_real_bandera"})
+
+        df_real["equipo_porra_id"]=None
+        df_real["equipo_porra_nombre"]=None
+        df_real["equipo_porra_escudo"]=None
+        df_real["equipo_porra_bandera"]=None
+        df_real["puntos"]=0
+        df_real["motivo"]="Usuario sin mejores terceros"
+
+        return df_real[columnas_salida]
+
+    if len(df_real)!=8:
+
+        raise Exception(f"Mejores terceros reales incompletos: tiene {len(df_real)} equipos")
+
+    if len(df_porra)!=8:
+
+        raise Exception(f"Mejores terceros porra incompletos: tiene {len(df_porra)} equipos")
+
+    df_comparacion=df_porra.rename(columns={"equipo_id":"equipo_porra_id",
+                                            "nombre":"equipo_porra_nombre",
+                                            "escudo":"equipo_porra_escudo",
+                                            "bandera":"equipo_porra_bandera"})
+
+    equipos_reales=set(df_real["equipo_id"])
+
+    df_comparacion["puntos"]=df_comparacion.apply(calcularPuntosMejoresTerceros, axis=1, args=(equipos_reales,))
+
+    df_comparacion["motivo"]=df_comparacion.apply(calcularMotivoMejoresTerceros, axis=1, args=(equipos_reales,))
+
+    df_real_limpio=df_real.rename(columns={"equipo_id":"equipo_real_id",
+                                            "nombre":"equipo_real_nombre",
+                                            "escudo":"equipo_real_escudo",
+                                            "bandera":"equipo_real_bandera"})
+
+    df_comparacion["equipo_real_id"]=None
+    df_comparacion["equipo_real_nombre"]=None
+    df_comparacion["equipo_real_escudo"]=None
+    df_comparacion["equipo_real_bandera"]=None
+
+    return df_comparacion[columnas_salida]
+
+def calcularPuntosTotalesMejoresTerceros(mejores_terceros_real:List[Optional[tuple]],  mejores_terceros_porra:List[Optional[tuple]])->int:
+
+    df_detalle=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
+
+    if df_detalle.empty:
+
+        return 0
+
+    return int(df_detalle["puntos"].sum())

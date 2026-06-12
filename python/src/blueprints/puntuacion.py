@@ -6,7 +6,7 @@ from src.database.conexion import Conexion
 from src.config import URL_DATALAKE_PERFIL
 
 from src.utilidades.utils import calcularPuntosTotalesGrupos, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
-from src.utilidades.utils import limpiarDataFrameDetalleGrupos
+from src.utilidades.utils import limpiarDataFrameDetalleGrupos, calcularPuntosTotalesMejoresTerceros
 
 
 bp_puntuacion=Blueprint("puntuacion", __name__)
@@ -37,6 +37,8 @@ def pagina_puntuacion_calcular_puntuacion():
 
 		grupos_real=con.obtenerGruposRealPuntuacion()
 
+		mejores_terceros_real=con.obtenerMejoresTercerosReal()
+
 		for usuario_porra, nombre, correo, codigo_liga in usuarios_porra_completada:
 
 			print(f"Calculando usuario: {usuario_porra}", flush=True)
@@ -45,9 +47,15 @@ def pagina_puntuacion_calcular_puntuacion():
 
 			puntos_grupos=calcularPuntosTotalesGrupos(grupos_real, grupos_porra)
 
-			con.actualizarPuntuacionUsuarioSinCommit(usuario_porra, puntos_grupos, 0, 0)
+			mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario_porra)
 
-			print(f"{usuario_porra}: {puntos_grupos} puntos", flush=True)
+			puntos_mejores_terceros=calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)
+
+			con.actualizarPuntuacionUsuarioSinCommit(usuario_porra, puntos_grupos, puntos_mejores_terceros, 0)
+
+			print(f"Grupos: {puntos_grupos} pts | "
+					f"Mejores terceros: {puntos_mejores_terceros} pts",
+					flush=True)
 
 		con.confirmar()
 
@@ -103,6 +111,8 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	imagen_perfil_usuario_porra=con.obtenerImagenPerfilUsuario(usuario_porra)
 
+	puede_ver_resultados=con.puedeVerResultados(usuario)
+
 	con.cerrarConexion()
 
 	df_detalle_grupos=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
@@ -121,4 +131,5 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 							detalle_grupos_limpio=detalle_grupos_limpio,
 							puntos_grupos=puntos_grupos,
 							paso_porra=paso_porra,
+							puede_ver_resultados=puede_ver_resultados,
 							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
