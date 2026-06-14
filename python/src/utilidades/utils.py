@@ -5,7 +5,8 @@ from typing import List, Dict, Optional
 import os
 import pandas as pd
 
-from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO
+from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO, ORDEN_RONDAS_ELIMINATORIAS, PUNTOS_ELIMINATORIAS
+from .configutils import NOMBRE_RONDA, PUNTOS_BONUS_CAMPEON, PUNTOS_BONUS_FINAL_EXACTA
 
 from src.datalake.conexion_data_lake import ConexionDataLake
 
@@ -680,7 +681,7 @@ def calcularPuntosTotalesGrupos(grupos_real:List[Optional[tuple]], grupos_porra:
 
     df_detalle=compararGruposDisponiblesDataFrameDetalle(grupos_real, grupos_porra)
 
-    return int(df_detalle["puntos"].sum())
+    return int(df_detalle["puntos"].sum()) if not df_detalle.empty else 0
 
 def limpiarDataFrameDetalleGrupos(df_detalle_grupos:pd.DataFrame)->Dict:
 
@@ -782,8 +783,166 @@ def calcularPuntosTotalesMejoresTerceros(mejores_terceros_real:List[Optional[tup
 
     df_detalle=compararMejoresTercerosDataFrameDetalle(mejores_terceros_real, mejores_terceros_porra)
 
-    if df_detalle.empty:
+    return int(df_detalle["puntos"].sum()) if not df_detalle.empty else 0
+
+def obtenerEquiposRondaEliminatoria(eliminatorias_ronda:List[Optional[tuple]])->List[tuple]:
+
+    equipos=[]
+
+    for fila in eliminatorias_ronda:
+
+        ronda=fila[0]
+        partido=fila[1]
+
+        equipos.append((ronda, partido, fila[2], fila[3], fila[4], fila[5]))
+        equipos.append((ronda, partido, fila[6], fila[7], fila[8], fila[9]))
+
+    return equipos
+
+def calcularPuntosPresenciaEliminatoria(fila:Dict, equipos_reales:set, puntos_ronda:int)->int:
+
+    if fila["equipo_porra_id"] in equipos_reales:
+
+        return puntos_ronda
+
+    return 0
+
+def calcularMotivoPresenciaEliminatoria(fila:Dict, equipos_reales:set)->str:
+
+    if fila["equipo_porra_id"] in equipos_reales:
+
+        return f"Clasificado para {NOMBRE_RONDA[fila['ronda']]}"
+
+    return f"No llegó a {NOMBRE_RONDA[fila['ronda']]}"
+
+def compararRondaEliminatoriaDataFrameDetalle(eliminatorias_real:List[Optional[tuple]], eliminatorias_porra:List[Optional[tuple]])->pd.DataFrame:
+
+    columnas_equipos=["ronda", "partido", "equipo_id", "nombre", "escudo", "bandera"]
+
+    columnas_salida=["ronda", "partido_porra", "partido_real", "equipo_porra_id", "equipo_porra_nombre",
+                    "equipo_porra_escudo", "equipo_porra_bandera", "presente_en_real", "puntos", "motivo"]
+
+    if not eliminatorias_real:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    if not eliminatorias_porra:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    ronda=eliminatorias_real[0][0]
+
+    eliminatorias_real_ronda=list(filter(lambda fila: fila[0]==ronda, eliminatorias_real))
+
+    eliminatorias_porra_ronda=list(filter(lambda fila: fila[0]==ronda, eliminatorias_porra))
+
+    if not eliminatorias_porra_ronda:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    puntos_ronda=PUNTOS_ELIMINATORIAS.get(ronda, 0)
+
+    equipos_real=obtenerEquiposRondaEliminatoria(eliminatorias_real_ronda)
+
+    equipos_porra=obtenerEquiposRondaEliminatoria(eliminatorias_porra_ronda)
+
+    df_real=pd.DataFrame(equipos_real, columns=columnas_equipos)
+
+    df_porra=pd.DataFrame(equipos_porra, columns=columnas_equipos)
+
+    equipos_reales=set(df_real["equipo_id"])
+
+    partidos_reales=dict(zip(df_real["equipo_id"], df_real["partido"]))
+
+    df_detalle=df_porra.rename(columns={"partido":"partido_porra",
+                                        "equipo_id":"equipo_porra_id",
+                                        "nombre":"equipo_porra_nombre",
+                                        "escudo":"equipo_porra_escudo",
+                                        "bandera":"equipo_porra_bandera"})
+
+    df_detalle["presente_en_real"]=df_detalle["equipo_porra_id"].apply(lambda equipo_id: equipo_id in equipos_reales)
+
+    df_detalle["puntos"]=df_detalle.apply(calcularPuntosPresenciaEliminatoria, axis=1, args=(equipos_reales, puntos_ronda))
+
+    df_detalle["motivo"]=df_detalle.apply(calcularMotivoPresenciaEliminatoria, axis=1, args=(equipos_reales,))
+
+    df_detalle["partido_real"]=df_detalle["equipo_porra_id"].apply(lambda equipo_id: partidos_reales.get(equipo_id))
+
+    return df_detalle[columnas_salida]
+
+def compararEliminatoriasDisponiblesDataFrameDetalle(eliminatorias_real:List[Optional[tuple]],  eliminatorias_porra:List[Optional[tuple]])->pd.DataFrame:
+
+    columnas_salida=["ronda", "partido_porra", "partido_real", "equipo_porra_id", "equipo_porra_nombre",
+                    "equipo_porra_escudo", "equipo_porra_bandera", "presente_en_real", "puntos", "motivo"]
+
+    if not eliminatorias_real:
+
+        return pd.DataFrame(columns=columnas_salida)
+
+    rondas_disponibles_real=sorted(list(set([eliminatoria[0] for eliminatoria in eliminatorias_real])), key=lambda ronda: ORDEN_RONDAS_ELIMINATORIAS.get(ronda, 99))
+
+    dfs_detalle=[]
+
+    for ronda_disponible_real in rondas_disponibles_real:
+
+        eliminatoria_real_ronda=list(filter(lambda eliminatoria_real: eliminatoria_real[0]==ronda_disponible_real, eliminatorias_real))
+
+        eliminatoria_porra_ronda=list(filter(lambda eliminatoria_porra: eliminatoria_porra[0]==ronda_disponible_real, eliminatorias_porra))
+
+        df_detalle=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real_ronda, eliminatoria_porra_ronda)
+
+        dfs_detalle.append(df_detalle)
+
+    return pd.concat(dfs_detalle, ignore_index=True) if dfs_detalle else pd.DataFrame(columns=columnas_salida)
+
+def calcularPuntosTotalesEliminatorias(eliminatorias_real:List[Optional[tuple]], eliminatorias_porra:List[Optional[tuple]])->int:
+
+    df_detalle=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatorias_real, eliminatorias_porra)
+
+    return int(df_detalle["puntos"].sum()) if not df_detalle.empty else 0
+
+def obtenerFinalEliminatoria(eliminatorias:List[Optional[tuple]])->Optional[tuple]:
+
+    finales=list(filter(lambda fila: fila[1]=="M104", eliminatorias))
+
+    return None if not finales else finales[0]
+
+def calcularBonusCampeonEliminatorias(eliminatorias_real:List[Optional[tuple]], eliminatorias_porra:List[Optional[tuple]])->int:
+
+    final_real=obtenerFinalEliminatoria(eliminatorias_real)
+
+    final_porra=obtenerFinalEliminatoria(eliminatorias_porra)
+
+    if final_real is None or final_porra is None:
 
         return 0
 
-    return int(df_detalle["puntos"].sum())
+    campeon_real=final_real[10]
+
+    campeon_porra=final_porra[10]
+
+    if campeon_real==campeon_porra:
+
+        return PUNTOS_BONUS_CAMPEON
+
+    return 0
+
+def calcularBonusFinalExactaEliminatorias(eliminatorias_real:List[Optional[tuple]], eliminatorias_porra:List[Optional[tuple]])->int:
+
+    final_real=obtenerFinalEliminatoria(eliminatorias_real)
+
+    final_porra=obtenerFinalEliminatoria(eliminatorias_porra)
+
+    if final_real is None or final_porra is None:
+
+        return 0
+
+    equipos_final_real={final_real[2], final_real[6]}
+
+    equipos_final_porra={final_porra[2], final_porra[6]}
+
+    if equipos_final_real==equipos_final_porra:
+
+        return PUNTOS_BONUS_FINAL_EXACTA
+
+    return 0

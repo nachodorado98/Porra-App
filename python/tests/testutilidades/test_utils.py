@@ -15,7 +15,9 @@ from src.utilidades.utils import crearCarpetaDataLakePerfil, crearCarpetaDataLak
 from src.utilidades.utils import existe_imagen_datalake, eliminarImagenDatalake, subirImagenPerfilUsuarioDataLake
 from src.utilidades.utils import calcularPuntos, calcularMotivo, compararGrupoDataFrameDetalle, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
 from src.utilidades.utils import limpiarDataFrameDetalleGrupos, calcularPuntosMejoresTerceros, calcularMotivoMejoresTerceros, compararMejoresTercerosDataFrameDetalle
-from src.utilidades.utils import calcularPuntosTotalesMejoresTerceros
+from src.utilidades.utils import calcularPuntosTotalesMejoresTerceros, obtenerEquiposRondaEliminatoria, calcularPuntosPresenciaEliminatoria, calcularMotivoPresenciaEliminatoria
+from src.utilidades.utils import compararRondaEliminatoriaDataFrameDetalle, compararEliminatoriasDisponiblesDataFrameDetalle, calcularPuntosTotalesEliminatorias
+from src.utilidades.utils import obtenerFinalEliminatoria, calcularBonusCampeonEliminatorias, calcularBonusFinalExactaEliminatorias
 
 
 @pytest.mark.parametrize(["codigo"],
@@ -2463,3 +2465,1593 @@ def test_calcular_puntos_totales_mejores_terceros():
                             ('L', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 3)]
 
     assert calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)==16
+
+def test_obtener_equipo_ronda_eliminatoria_sin_equipos():
+
+    equipos_ronda_eliminatoria=obtenerEquiposRondaEliminatoria([])
+
+@pytest.mark.parametrize(["eliminatorias_ronda"],
+    [   
+        ([('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP')],),
+        ([('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')],),
+        ([('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG')],)
+    ]
+)
+def test_obtener_equipo_ronda_eliminatoria(eliminatorias_ronda):
+
+    equipos_ronda_eliminatoria=obtenerEquiposRondaEliminatoria(eliminatorias_ronda)
+
+    assert len(equipos_ronda_eliminatoria)==len(eliminatorias_ronda)*2
+
+@pytest.mark.parametrize(["real", "puntos_ronda", "puntos_totales"],
+    [   
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-holanda"}, 10, 0),
+        ({"seleccion-francia", "seleccion-arabia-saudi", "seleccion-belgica", "seleccion-holanda"}, 10, 10),
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-holanda"}, 20, 0),
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-arabia-saudi"}, 20, 20),
+    ]
+)
+def test_calcular_puntos_presencia_eliminatoria(real, puntos_ronda, puntos_totales):
+
+    fila={"ronda":"semifinales", "equipo_porra_id":"seleccion-arabia-saudi"}
+
+    assert calcularPuntosPresenciaEliminatoria(fila, real, puntos_ronda)==puntos_totales
+
+@pytest.mark.parametrize(["real", "motivo"],
+    [   
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-holanda"}, "No llegó a Semifinales"),
+        ({"seleccion-francia", "seleccion-arabia-saudi", "seleccion-belgica", "seleccion-holanda"}, "Clasificado para Semifinales"),
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-holanda"}, "No llegó a Semifinales"),
+        ({"seleccion-francia", "seleccion-espanola", "seleccion-belgica", "seleccion-arabia-saudi"}, "Clasificado para Semifinales"),
+    ]
+)
+def test_calcular_motivo_presencia_eliminatoria(real, motivo):
+
+    fila={"ronda":"semifinales", "equipo_porra_id":"seleccion-arabia-saudi"}
+
+    assert calcularMotivoPresenciaEliminatoria(fila, real)==motivo
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_real_sin_datos():
+
+    eliminatoria_real=[]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert df.empty
+
+def test_ronda_comparar_eliminatoria_dataframe_detalle_eliminatoria_porra_sin_datos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert df.empty
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_porra_ronda_real_distinta_ronda_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert df.empty
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_porra_un_partido_eliminatoria_real():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert df["puntos"].sum()==8
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_porra_dos_partidos_eliminatoria_real():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert df["puntos"].sum()==12
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_porra_tres_partidos_eliminatoria_real():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert df["puntos"].sum()==16
+
+def test_comparar_ronda_eliminatoria_dataframe_detalle_eliminatoria_porra_todos_eliminatoria():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararRondaEliminatoriaDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert df["puntos"].sum()==92
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_real_sin_datos():
+
+    eliminatoria_real=[]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert df.empty
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_sin_datos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert df.empty
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_un_partido_ronda_real_una_ronda_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert sorted(df["ronda"].unique().tolist())==["dieciseisavos"]
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_una_ronda_real_una_ronda_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert sorted(df["ronda"].unique().tolist())==["dieciseisavos"]
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_una_ronda_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==32
+    assert sorted(df["ronda"].unique().tolist())==["dieciseisavos"]
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_un_partido_dos_rondas_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==48
+    assert sorted(df["ronda"].unique().tolist())==["dieciseisavos", "octavos"]
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_dos_rondas_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==48
+    assert sorted(df["ronda"].unique().tolist())==["dieciseisavos", "octavos"]
+
+def test_comparar_eliminatorias_dataframe_detalle_eliminatoria_porra_todos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    df=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatoria_real, eliminatoria_porra)
+
+    assert not df.empty
+    assert len(df)==64
+    assert sorted(df["ronda"].unique().tolist())==["cuartos", "dieciseisavos", "final", "octavos", "semifinales", "tercer_puesto"]
+
+def test_calcular_puntos_totales_eliminatorias_eliminatoria_real_sin_datos():
+
+    eliminatoria_real=[]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_puntos_totales_eliminatorias_eliminatoria_porra_sin_datos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_puntos_totales_eliminatorias_porra_un_partido_ronda_real_una_ronda_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==8
+
+def test_calcular_puntos_totales_eliminatorias_porra_una_ronda_real_una_ronda_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==92
+
+def test_calcular_puntos_totales_eliminatorias_porra_una_ronda_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==92
+
+def test_calcular_puntos_totales_eliminatorias_porra_un_partido_dos_rondas_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==104
+
+def test_calcular_puntos_totales_eliminatorias_porra_dos_rondas_real_dos_rondas_porra():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==134
+
+def test_calcular_puntos_totales_eliminatorias_porra_todos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularPuntosTotalesEliminatorias(eliminatoria_real, eliminatoria_porra)==144
+
+def test_obtener_final_eliminatoria_sin_datos():
+
+    eliminatoria=[]
+   
+    assert not obtenerFinalEliminatoria(eliminatoria)
+
+def test_obtener_final_eliminatoria_sin_final():
+
+    eliminatoria=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG')]
+   
+    assert not obtenerFinalEliminatoria(eliminatoria)
+
+def test_obtener_final_eliminatoria():
+
+    eliminatoria=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    assert obtenerFinalEliminatoria(eliminatoria)
+
+def test_calcular_bonus_campeon_eliminatorias_real_sin_datos():
+
+    eliminatoria_real=[]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularBonusCampeonEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_campeon_eliminatorias_porra_sin_datos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[]
+
+    assert calcularBonusCampeonEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_campeon_eliminatorias_reaL_sin_final():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularBonusCampeonEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_campeon_eliminatorias_campeon_erroneo():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularBonusCampeonEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_campeon_eliminatorias_campeon_acertado():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    assert calcularBonusCampeonEliminatorias(eliminatoria_real, eliminatoria_porra)==35
+
+def test_calcular_bonus_final_exacta_eliminatorias_real_sin_datos():
+
+    eliminatoria_real=[]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularBonusFinalExactaEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_final_exacta_eliminatorias_porra_sin_datos():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[]
+
+    assert calcularBonusFinalExactaEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_final_exacta_eliminatorias_reaL_sin_final():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU')]
+
+    assert calcularBonusFinalExactaEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+@pytest.mark.parametrize(["final_porra"],
+    [   
+        (('final', 'M104', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),),
+        (('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-espanola', 'España', 3850, 'ESP'),),
+        (('final', 'M104', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),)
+    ]
+)
+def test_calcular_bonus_final_exacta_eliminatorias_final_erronea(final_porra):
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        final_porra]
+
+    assert calcularBonusFinalExactaEliminatorias(eliminatoria_real, eliminatoria_porra)==0
+
+def test_calcular_bonus_final_exacta_eliminatorias_final_exacta():
+
+    eliminatoria_real=[('dieciseisavos', 'M73', 'republica-checa', 'República Checa', 6188, 'CZE', 'canada', 'Canadá', 5577, 'CAN', 'republica-checa', 'República Checa', 6188, 'CZE'), 
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-marruecos', 'Marruecos', 3780, 'MAR', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-ecuador', 'Ecuador', 3771, 'ECU', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-noruega', 'Noruega', 3759, 'NOR'),
+                        ('dieciseisavos', 'M79', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M80', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'senegal', 'Senegal', 5658, 'SEN', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('dieciseisavos', 'M81', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-turquia', 'Turquía', 3737, 'TUR'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-colombia', 'Colombia', 3774, 'COL'),
+                        ('dieciseisavos', 'M84', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-austria', 'Austria', 3767, 'AUT', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('dieciseisavos', 'M85', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-suiza', 'Suiza', 3723, 'CHE'),
+                        ('dieciseisavos', 'M86', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-uruguay', 'Uruguay', 3768, 'URY', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('dieciseisavos', 'M87', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-noruega', 'Noruega', 3759, 'NOR', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('octavos', 'M92', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG'),
+                        ('octavos', 'M93', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('octavos', 'M94', 'seleccion-turquia', 'Turquía', 3737, 'TUR', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('octavos', 'M96', 'seleccion-suiza', 'Suiza', 3723, 'CHE', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('cuartos', 'M97', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('cuartos', 'M98', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('cuartos', 'M99', 'seleccion-inglaterra', 'Inglaterra', 3745, 'ENG', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('cuartos', 'M100', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('semifinales', 'M101', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-espanola', 'España', 3850, 'ESP'),
+                        ('semifinales', 'M102', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-argentina', 'Argentina', 3770, 'ARG'),
+                        ('tercer_puesto', 'M103', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    eliminatoria_porra=[('dieciseisavos', 'M73', 'seleccion-mexico', 'México', 3811, 'MEX', 'canada', 'Canadá', 5577, 'CAN', 'seleccion-mexico', 'México', 3811, 'MEX'),
+                        ('dieciseisavos', 'M74', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'haiti', 'Haití', 5582, 'HTI', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('dieciseisavos', 'M75', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-escocia', 'Escocia', 3758, 'SCO', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('dieciseisavos', 'M76', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-holanda', 'Países Bajos', 3761, 'NLD', 'seleccion-brasil', 'Brasil', 3775, 'BRA'),
+                        ('dieciseisavos', 'M77', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-suecia', 'Suecia', 3074, 'SWE', 'seleccion-francia', 'Francia', 3750, 'FRA'),
+                        ('dieciseisavos', 'M78', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-iraq', 'Iraq', 3816, 'IRQ', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('dieciseisavos', 'M79', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('dieciseisavos', 'M80', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'curazao', 'Curazao', 61757, 'CUR', 'seleccion-croacia', 'Croacia', 3766, 'HRV'),
+                        ('dieciseisavos', 'M81', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-qatar', 'Catar', 3799, 'QAT', 'seleccion-australia', 'Australia', 3801, 'AUS'),
+                        ('dieciseisavos', 'M82', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'republica-checa', 'República Checa', 6188, 'CZE', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('dieciseisavos', 'M83', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-ghana', 'Ghana', 3791, 'GHA', 'seleccion-portugal', 'Portugal', 3762, 'PRT'),
+                        ('dieciseisavos', 'M84', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('dieciseisavos', 'M85', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-iran', 'Irán', 3806, 'IRN', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH'),
+                        ('dieciseisavos', 'M86', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'cabo-verde', 'Cabo Verde', 9158, 'CPV', 'seleccion-argelia', 'Argelia', 3787, 'DZA'),
+                        ('dieciseisavos', 'M87', 'seleccion-colombia', 'Colombia', 3774, 'COL', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('dieciseisavos', 'M88', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-egipto', 'Egipto', 3788, 'EGY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M89', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-francia', 'Francia', 3750, 'FRA', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('octavos', 'M90', 'seleccion-mexico', 'México', 3811, 'MEX', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-japon', 'Japón', 3798, 'JPN'),
+                        ('octavos', 'M91', 'seleccion-brasil', 'Brasil', 3775, 'BRA', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV'),
+                        ('octavos', 'M92', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-croacia', 'Croacia', 3766, 'HRV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('octavos', 'M93', 'seleccion-portugal', 'Portugal', 3762, 'PRT', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('octavos', 'M94', 'seleccion-australia', 'Australia', 3801, 'AUS', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-belgica', 'Bélgica', 3738, 'BEL'),
+                        ('octavos', 'M95', 'seleccion-argelia', 'Argelia', 3787, 'DZA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('octavos', 'M96', 'seleccion-bosnia-herzegovina', 'Bosnia-Herzegovina', 3741, 'BIH', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY'),
+                        ('cuartos', 'M97', 'seleccion-japon', 'Japón', 3798, 'JPN', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('cuartos', 'M98', 'seleccion-belgica', 'Bélgica', 3738, 'BEL', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('cuartos', 'M99', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-costa-marfil', 'Costa de Marfil', 3795, 'CIV', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR'),
+                        ('cuartos', 'M100', 'seleccion-paraguay', 'Paraguay', 3773, 'PRY', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('semifinales', 'M101', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU', 'seleccion-arabia-saudi', 'Arabia Saudí', 3803, 'SAU'),
+                        ('semifinales', 'M102', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA', 'seleccion-estados-unidos', 'Estados Unidos', 3810, 'USA'),
+                        ('tercer_puesto', 'M103', 'seleccion-alemania', 'Alemania', 3734, 'DEU', 'seleccion-republica-corea', 'Corea del Sur', 3804, 'KOR', 'seleccion-alemania', 'Alemania', 3734, 'DEU'),
+                        ('final', 'M104', 'seleccion-espanola', 'España', 3850, 'ESP', 'seleccion-argentina', 'Argentina', 3770, 'ARG', 'seleccion-espanola', 'España', 3850, 'ESP')]
+
+    assert calcularBonusFinalExactaEliminatorias(eliminatoria_real, eliminatoria_porra)==15
