@@ -43,6 +43,18 @@
             <small>puntos</small>
         </div>
 
+        <div class="resumen-total-card">
+            <span>Eliminatorias</span>
+            <strong>{{ puntos_eliminatorias }}</strong>
+            <small>puntos</small>
+        </div>
+
+        <div class="resumen-total-card bonus">
+            <span>Bonus</span>
+            <strong>{{ bonus_campeon + bonus_final }}</strong>
+            <small>puntos</small>
+        </div>
+
     </div>
 
     <section class="detalle-section">
@@ -181,6 +193,132 @@
                 <div class="mensaje-vacio-icono">🥉</div>
                 <h3>Aún no hay mejores terceros oficiales</h3>
                 <p>Cuando se publiquen, aparecerá aquí el detalle de la puntuación.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+     <section class="detalle-section">
+
+        <div class="detalle-section-header">
+
+            <div>
+                <h2>Eliminatorias</h2>
+                <p class="detalle-subtitulo">Puntos por presencia en cada ronda</p>
+            </div>
+
+            <div class="detalle-total-destacado">
+                <span>Eliminatorias</span>
+                <strong>{{ puntos_eliminatorias }}</strong>
+                <small>puntos</small>
+            </div>
+
+        </div>
+
+        {% if detalle_eliminatorias_limpio %}
+
+            {% for ronda, datos in detalle_eliminatorias_limpio.items() %}
+
+                <div class="detalle-ronda">
+
+                    <div class="detalle-ronda-header">
+
+                        <div>
+                            <h3>{{ ronda|replace("_", " ")|capitalize }}</h3>
+                            <p>+{{ datos.puntos_ronda }} por selección acertada</p>
+                        </div>
+
+                        <span class="ronda-puntos">{{ datos.puntos }} pts</span>
+
+                    </div>
+
+                    <div class="detalle-eliminatorias-grid">
+
+                        {% for fila in datos.filas %}
+
+                            <div class="detalle-eliminatoria-card {{ fila.estado_visual }}">
+
+                                <div class="detalle-eliminatoria-meta">
+
+                                    <span>Tu partido {{ fila.partido_porra }}</span>
+
+                                    {% if fila.partido_real %}
+                                        <span>Real {{ fila.partido_real }}</span>
+                                    {% else %}
+                                        <span>Sin confirmar</span>
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="detalle-eliminatoria-main">
+
+                                    <div class="detalle-eliminatoria-equipo">
+                                        <img src="{{ url_for('static', filename='imagenes/escudos/' ~ fila.equipo_porra_escudo ~ '.png') }}">
+                                        <img src="{{ url_for('static', filename='imagenes/banderas/' ~ fila.equipo_porra_bandera ~ '.png') }}">
+                                        <span>{{ fila.equipo_porra_nombre }}</span>
+                                    </div>
+
+                                    <div class="detalle-puntos puntos-{{ fila.estado_visual }}">
+                                        +{{ fila.puntos }}
+                                    </div>
+
+                                </div>
+
+                                <div class="detalle-motivo motivo-{{ fila.estado_visual }}">
+                                    {{ fila.motivo }}
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="mensaje-vacio">
+                <div class="mensaje-vacio-icono">🏆</div>
+                <h3>Aún no hay eliminatorias oficiales</h3>
+                <p>Cuando se publiquen los cruces oficiales, aparecerá aquí el detalle de la puntuación.</p>
+            </div>
+
+        {% endif %}
+
+        {% if bonus_campeon or bonus_final %}
+
+            <div class="bonus-eliminatorias">
+
+                {% if bonus_campeon %}
+
+                    <div class="bonus-card bonus-campeon">
+                        <div class="bonus-icono">🏆</div>
+
+                        <div>
+                            <strong>Campeón acertado</strong>
+                            <span>+{{ bonus_campeon }} puntos extra</span>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+                {% if bonus_final %}
+
+                    <div class="bonus-card bonus-final">
+                        <div class="bonus-icono">⭐</div>
+
+                        <div>
+                            <strong>Final exacta</strong>
+                            <span>+{{ bonus_final }} puntos extra</span>
+                        </div>
+                    </div>
+
+                {% endif %}
+
             </div>
 
         {% endif %}

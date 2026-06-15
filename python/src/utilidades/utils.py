@@ -946,3 +946,47 @@ def calcularBonusFinalExactaEliminatorias(eliminatorias_real:List[Optional[tuple
         return PUNTOS_BONUS_FINAL_EXACTA
 
     return 0
+
+def limpiarDataFrameDetalleEliminatorias(df_detalle_eliminatorias:pd.DataFrame)->Dict:
+
+    detalle_eliminatorias_limpio={}
+
+    rondas_disponibles=sorted(list(set([fila["ronda"] for fila in df_detalle_eliminatorias.to_dict("records")])),key=lambda ronda: ORDEN_RONDAS_ELIMINATORIAS.get(ronda, 99))
+
+    ultima_ronda_disponible=rondas_disponibles[-1] if rondas_disponibles else None
+
+    torneo_finalizado = ultima_ronda_disponible == "final"
+
+    for fila in df_detalle_eliminatorias.to_dict("records"):
+
+        ronda=fila["ronda"]
+
+        if torneo_finalizado:
+
+            ronda_cerrada=True
+
+        else:
+
+            ronda_cerrada=(ronda != ultima_ronda_disponible)
+
+        if fila["presente_en_real"]:
+
+            fila["estado_visual"]="acertada"
+
+        elif ronda_cerrada:
+
+            fila["estado_visual"]="fallada"
+
+        else:
+
+            fila["estado_visual"]="pendiente"
+
+        if ronda not in detalle_eliminatorias_limpio:
+
+            detalle_eliminatorias_limpio[ronda]={"puntos":0, "puntos_ronda":PUNTOS_ELIMINATORIAS.get(ronda, 0),  "cerrada":ronda_cerrada, "filas":[]}
+
+        detalle_eliminatorias_limpio[ronda]["filas"].append(fila)
+
+        detalle_eliminatorias_limpio[ronda]["puntos"]+=fila["puntos"]
+
+    return detalle_eliminatorias_limpio

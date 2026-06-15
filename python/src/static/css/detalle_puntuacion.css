@@ -571,9 +571,18 @@
 
 .resumen-total-puntuacion{
     display:grid;
-    grid-template-columns:1.3fr 1fr 1fr;
-    gap:16px;
+    grid-template-columns:1.4fr repeat(4, 1fr);
+    gap:14px;
     margin-bottom:30px;
+}
+
+.resumen-total-card.bonus{
+    background:#fff8dd;
+    border:2px solid #e8d36f;
+}
+
+.resumen-total-card.bonus strong{
+    color:#b45309;
 }
 
 .resumen-total-card{
@@ -650,4 +659,307 @@
     font-weight:800;
     color:#6b7280;
     margin-bottom:6px;
+}
+
+
+@media(max-width:900px){
+
+    .resumen-total-puntuacion{
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+    .resumen-total-card.principal{
+        grid-column:1 / -1;
+    }
+
+}
+
+@media(max-width:520px){
+
+    .resumen-total-puntuacion{
+        grid-template-columns:1fr;
+    }
+
+}
+
+.detalle-ronda{
+    background:white;
+    border-radius:22px;
+    padding:18px;
+    margin-bottom:20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.07);
+    border:1px solid rgba(0,0,0,.05);
+}
+
+.detalle-ronda-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:16px;
+}
+
+.detalle-ronda-header h3{
+    font-size:22px;
+    font-weight:900;
+    color:#111827;
+    margin-bottom:3px;
+    text-transform:capitalize;
+}
+
+.detalle-ronda-header p{
+    color:#6b7280;
+    font-size:13px;
+    font-weight:700;
+}
+
+.ronda-puntos{
+    background:linear-gradient(135deg,#3897f0,#2176c7);
+    color:white;
+    padding:8px 13px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.detalle-eliminatorias-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:12px;
+}
+
+.detalle-eliminatoria-card{
+    border-radius:18px;
+    padding:13px;
+    background:#f9fafb;
+    border:1px solid #eef2f7;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+
+.detalle-eliminatoria-card.acertada{
+    background:linear-gradient(135deg,#f0fff4,#ffffff);
+    border:2px solid #6cc070;
+}
+
+.detalle-eliminatoria-card.pendiente{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+}
+
+.detalle-eliminatoria-meta{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    color:#6b7280;
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+}
+
+.detalle-eliminatoria-main{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.detalle-eliminatoria-equipo{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+}
+
+.detalle-eliminatoria-equipo img{
+    width:21px;
+    height:21px;
+    object-fit:contain;
+    flex-shrink:0;
+}
+
+.detalle-eliminatoria-equipo span{
+    font-size:13px;
+    font-weight:800;
+    color:#111827;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.puntos-pendiente{
+    background:#f3f4f6;
+    color:#6b7280;
+}
+
+.motivo-pendiente{
+    background:#f3f4f6;
+    color:#6b7280;
+}
+
+@media(max-width:1050px){
+
+    .detalle-eliminatorias-grid{
+        grid-template-columns:repeat(3, 1fr);
+    }
+
+}
+
+@media(max-width:768px){
+
+    .detalle-ronda-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .ronda-puntos{
+        align-self:flex-start;
+    }
+
+    .detalle-eliminatorias-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+}
+
+@media(max-width:520px){
+
+    .detalle-eliminatorias-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+.detalle-eliminatoria-card.acertada{
+    background:linear-gradient(135deg,#f0fff4,#ffffff);
+    border:2px solid #6cc070;
+}
+
+.detalle-eliminatoria-card.fallada{
+    background:linear-gradient(135deg,#fff1f1,#ffffff);
+    border:2px solid #e08b8b;
+}
+
+.detalle-eliminatoria-card.pendiente{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+}
+
+.puntos-acertada{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.puntos-fallada{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.puntos-pendiente{
+    background:#f3f4f6;
+    color:#6b7280;
+}
+
+.motivo-acertada{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.motivo-fallada{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.motivo-pendiente{
+    background:#f3f4f6;
+    color:#6b7280;
+}
+
+.bonus-eliminatorias{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.bonus-card{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:16px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.07);
+
+    border:2px solid transparent;
+}
+
+.bonus-card.bonus-campeon{
+    background:linear-gradient(135deg,#fff8dd,#ffffff);
+    border-color:#e8d36f;
+}
+
+.bonus-card.bonus-final{
+    background:linear-gradient(135deg,#eef6ff,#ffffff);
+    border-color:#93c5fd;
+}
+
+.bonus-icono{
+    width:44px;
+    height:44px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:14px;
+
+    background:white;
+
+    font-size:24px;
+
+    flex-shrink:0;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+}
+
+.bonus-card strong{
+    display:block;
+    font-size:15px;
+    font-weight:900;
+    color:#111827;
+    margin-bottom:3px;
+}
+
+.bonus-card span{
+    display:block;
+    font-size:13px;
+    font-weight:800;
+    color:#6b7280;
+}
+
+.bonus-campeon span{
+    color:#b45309;
+}
+
+.bonus-final span{
+    color:#2563eb;
+}
+
+@media(max-width:768px){
+
+    .bonus-eliminatorias{
+        grid-template-columns:1fr;
+    }
+
+    .bonus-card{
+        padding:14px;
+    }
+
 }

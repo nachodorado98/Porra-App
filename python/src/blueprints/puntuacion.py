@@ -8,6 +8,7 @@ from src.config import URL_DATALAKE_PERFIL
 from src.utilidades.utils import calcularPuntosTotalesGrupos, compararGruposDisponiblesDataFrameDetalle, calcularPuntosTotalesGrupos
 from src.utilidades.utils import limpiarDataFrameDetalleGrupos, compararMejoresTercerosDataFrameDetalle, calcularPuntosTotalesMejoresTerceros
 from src.utilidades.utils import calcularPuntosTotalesEliminatorias, calcularBonusCampeonEliminatorias, calcularBonusFinalExactaEliminatorias
+from src.utilidades.utils import compararEliminatoriasDisponiblesDataFrameDetalle, limpiarDataFrameDetalleEliminatorias
 
 
 bp_puntuacion=Blueprint("puntuacion", __name__)
@@ -129,6 +130,10 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	mejores_terceros_porra=con.obtenerMejoresTercerosUsuario(usuario_porra)
 
+	eliminatorias_real=con.obtenerEliminatoriasReal()
+
+	eliminatorias_porra=con.obtenerEliminatoriasPorraUsuario(usuario_porra)
+
 	puede_ver_resultados=con.puedeVerResultados(usuario)
 
 	con.cerrarConexion()
@@ -145,7 +150,17 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 
 	puntos_mejores_terceros=calcularPuntosTotalesMejoresTerceros(mejores_terceros_real, mejores_terceros_porra)
 
-	puntos_total=puntos_grupos+puntos_mejores_terceros
+	df_detalle_eliminatorias=compararEliminatoriasDisponiblesDataFrameDetalle(eliminatorias_real, eliminatorias_porra)
+
+	detalle_eliminatorias_limpio=limpiarDataFrameDetalleEliminatorias(df_detalle_eliminatorias)	
+
+	puntos_eliminatorias=calcularPuntosTotalesEliminatorias(eliminatorias_real, eliminatorias_porra)
+
+	bonus_campeon=calcularBonusCampeonEliminatorias(eliminatorias_real, eliminatorias_porra)
+
+	bonus_final=calcularBonusFinalExactaEliminatorias(eliminatorias_real, eliminatorias_porra)
+
+	puntos_total=puntos_grupos+puntos_mejores_terceros+puntos_eliminatorias+bonus_campeon+bonus_final
 
 	return render_template("detalle_puntuacion.html",
 							usuario=usuario,
@@ -158,6 +173,10 @@ def pagina_puntuacion_detalle_usuario(usuario_porra:str):
 							puntos_grupos=puntos_grupos,
 							detalle_mejores_terceros=detalle_mejores_terceros,
 							puntos_mejores_terceros=puntos_mejores_terceros,
+							detalle_eliminatorias_limpio=detalle_eliminatorias_limpio,
+							puntos_eliminatorias=puntos_eliminatorias,
+							bonus_final=bonus_final,
+							bonus_campeon=bonus_campeon,
 							puntos_total=puntos_total,
 							paso_porra=paso_porra,
 							puede_ver_resultados=puede_ver_resultados,
