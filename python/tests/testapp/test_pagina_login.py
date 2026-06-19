@@ -15,26 +15,26 @@ def test_pagina_inicio_sin_login(cliente, conexion):
 )
 def test_pagina_inicio_con_login_usuario_no_existe(cliente, conexion, usuario):
 
-	respuesta=cliente.post("/login", data={"usuario": "nacho", "contrasena": "Ab!CdEfGhIJK3LMN"})
+	respuesta=cliente.post("/login", data={"usuario": usuario, "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/"
+	assert '<div class="mensaje error">Usuario o contraseña incorrectos</div>' in contenido
 
 @pytest.mark.parametrize(["contrasena"],
 	[("213214hhj&&ff",),("354354vff",),("2223321",), ("fdfgh&&55fjfkAfh",)]
 )
 def test_pagina_inicio_con_login_usuario_existe_contrasena_error(cliente, conexion_usuario, contrasena):
 
-	respuesta=cliente.post("/login", data={"usuario": "nacho98", "contrasena": contrasena})
+	respuesta=cliente.post("/login", data={"usuario": "nacho98", "contrasena": contrasena}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/"
+	assert '<div class="mensaje error">Usuario o contraseña incorrectos</div>' in contenido
 
 @pytest.mark.parametrize(["usuario"],
 	[("nacho98 ",),(" nacho98",),(" nacho98 ",)]

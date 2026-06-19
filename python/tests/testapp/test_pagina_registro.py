@@ -94,29 +94,80 @@ def test_pagina_verificar_codigo_valido_existente(cliente, conexion, codigo):
 
 	assert valido
 
-@pytest.mark.parametrize(["usuario", "nombre", "apellido", "contrasena", "correo", "codigo"],
-	[
-		(None, "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", None, "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", "nacho", None, "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", "nacho", "dorado", None, "correo@correo.es", "3YYZKP"),
-		("carlos-456", "nacho", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", "nacho1", "dorado", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", "nacho", "dorado2", "Ab!CdEfGhIJK3LMN", "correo@correo.es", "3YYZKP"),
-		("golden98", "nachogolden", "dorado", "12345678", "correo@.es", "3YYZKP")
-	]
+@pytest.mark.parametrize(["usuario"],
+	[(None,), ("",), (" ",), ("carlos-456",), ("usuario raro",), ("nacho@98",)]
 )
-def test_pagina_singup_datos_incorrectos(cliente, conexion, usuario, correo, nombre, apellido, contrasena, codigo):
+def test_pagina_singup_usuario_incorrecto(cliente, conexion, usuario):
 
-	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":correo, "nombre":nombre,
-											"apellido":apellido, "contrasena":contrasena,
-											"codigo_final":codigo, "accion_liga":"crear"})
+	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":"correo@correo.es", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El usuario no es válido</div>' in contenido
+
+@pytest.mark.parametrize(["nombre"],
+	[(None,), ("",), (" ",), ("nacho1",), ("nacho_",), ("nacho@",)]
+)
+def test_pagina_singup_nombre_incorrecto(cliente, conexion, nombre):
+
+	respuesta=cliente.post("/singup", data={"usuario":"golden98", "correo":"correo@correo.es", "nombre":nombre,
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El nombre introducido no es válido</div>' in contenido
+
+@pytest.mark.parametrize(["apellido"],
+	[(None,), ("",), (" ",), ("dorado1",), ("dorado_",), ("dorado@",)]
+)
+def test_pagina_singup_apellido_incorrecto(cliente, conexion, apellido):
+
+	respuesta=cliente.post("/singup", data={"usuario":"golden98", "correo":"correo@correo.es", "nombre":"nacho",
+											"apellido":apellido, "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El apellido introducido no es válido</div>' in contenido
+
+@pytest.mark.parametrize(["contrasena"],
+	[(None,), ("",), (" ",), ("1234567",), ("abc defgh",)]
+)
+def test_pagina_singup_contrasena_incorrecta(cliente, conexion, contrasena):
+
+	respuesta=cliente.post("/singup", data={"usuario":"golden98", "correo":"correo@correo.es", "nombre":"nacho",
+											"apellido":"dorado", "contrasena":contrasena,
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">La contraseña debe tener al menos 8 caracteres y no contener espacios</div>' in contenido
+
+@pytest.mark.parametrize(["correo"],
+	[(None,), ("",), (" ",), ("correo",), ("correo@",), ("correo@.es",), ("correo.es",), ("@correo.es",)]
+)
+def test_pagina_singup_correo_incorrecto(cliente, conexion, correo):
+
+	respuesta=cliente.post("/singup", data={"usuario":"golden98", "correo":correo, "nombre":"nacho",
+											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
+
+	contenido=respuesta.data.decode()
+
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El correo electrónico no es válido</div>' in contenido
 
 @pytest.mark.parametrize(["usuario", "nombre", "apellido", "contrasena", "correo", "codigo"],
 	[
@@ -131,13 +182,13 @@ def test_pagina_singup_datos_correctos_codigo_no_valido(cliente, conexion, usuar
 
 	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":correo, "nombre":nombre,
 											"apellido":apellido, "contrasena":contrasena,
-											"codigo_final":codigo, "accion_liga":"crear"})
+											"codigo_final":codigo, "accion_liga":"crear"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El código de liga no es válido</div>' in contenido
 
 @pytest.mark.parametrize(["accion"],
 	[("unir",),("crea",),("join",),("hola",),("jhsjdjdf3432",)]
@@ -146,13 +197,13 @@ def test_pagina_singup_datos_correctos_codigo_valido_accion_erronea(cliente, con
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":accion})
+											"codigo_final":"3YYZKP", "accion_liga":accion}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">Debes seleccionar si quieres crear o unirte a una liga</div>' in contenido
 
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
@@ -167,13 +218,13 @@ def test_pagina_singup_porra_cerrada(cliente, conexion, dias):
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El registro está cerrado actualmente</div>' in contenido
 
 @pytest.mark.parametrize(["usuario"],
 	[("nacho98",),("naCho98",),("nacho",),("amanditaa",),("amanda99",)]
@@ -186,13 +237,13 @@ def test_pagina_singup_usuario_existente(cliente, conexion, usuario):
 
 	respuesta=cliente.post("/singup", data={"usuario":usuario, "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El usuario introducido ya existe</div>' in contenido
 
 @pytest.mark.parametrize(["correo"],
 	[("usuario@gmail.com",),("correo@gmail.com",),("nacho@gmail.com",),("golden@gmail.com",),("hola123@gmail.com",)]
@@ -205,13 +256,13 @@ def test_pagina_singup_correo_existente(cliente, conexion, correo):
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho99", "correo":correo, "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El correo introducido ya está registrado</div>' in contenido
 
 def test_pagina_singup_crear_liga_codigo_existente(cliente, conexion):
 
@@ -219,13 +270,13 @@ def test_pagina_singup_crear_liga_codigo_existente(cliente, conexion):
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"crear"})
+											"codigo_final":"3YYZKP", "accion_liga":"crear"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El código de liga introducido ya existe</div>' in contenido
 
 def test_pagina_singup_crear_liga_codigo_no_existente(cliente, conexion):
 
@@ -264,13 +315,13 @@ def test_pagina_singup_unirse_liga_codigo_no_existente(cliente, conexion):
 
 	respuesta=cliente.post("/singup", data={"usuario":"nacho98", "correo":"usuario@gmail.com", "nombre":"nacho",
 											"apellido":"dorado", "contrasena":"Ab!CdEfGhIJK3LMN",
-											"codigo_final":"3YYZKP", "accion_liga":"unirse"})
+											"codigo_final":"3YYZKP", "accion_liga":"unirse"}, follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
-	assert respuesta.status_code==302
-	assert respuesta.location=="/registro"
-	assert "<h1>Redirecting...</h1>" in contenido
+	assert respuesta.status_code==200
+	assert respuesta.request.path=="/registro"
+	assert '<div class="mensaje error">El código de liga introducido no existe</div>' in contenido
 
 def test_pagina_singup_unirse_liga_codigo_existente(cliente, conexion):
 

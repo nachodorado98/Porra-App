@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect
+from flask import Blueprint, render_template, request, redirect, flash
 from flask import jsonify
 import random
 import string
@@ -8,7 +8,8 @@ import os
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import codigo_valido, datos_correctos, generarHash
+from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
+from src.utilidades.utils import correo_correcto, generarHash
 
 bp_registro=Blueprint("registro", __name__)
 
@@ -75,15 +76,45 @@ def singup():
     accion_liga=request.form.get("accion_liga")
     codigo_final=request.form.get("codigo_final")
 
-    if not datos_correctos(usuario, nombre, apellido, contrasena, correo):
+    if not usuario_correcto(usuario):
+
+        flash("El usuario no es válido", "error")
+
+        return redirect("/registro")
+
+    if not contrasena_correcta(contrasena):
+
+        flash("La contraseña debe tener al menos 8 caracteres y no contener espacios", "error")
+
+        return redirect("/registro")
+
+    if not nombre_correcto(nombre):
+
+        flash("El nombre introducido no es válido", "error")
+
+        return redirect("/registro")
+
+    if not apellido_correcto(apellido):
+
+        flash("El apellido introducido no es válido", "error")
+
+        return redirect("/registro")
+
+    if not correo_correcto(correo):
+
+        flash("El correo electrónico no es válido", "error")
 
         return redirect("/registro")
 
     if not codigo_final or not codigo_valido(codigo_final):
 
+        flash("El código de liga no es válido", "error")
+
         return redirect("/registro")
 
     if accion_liga not in ["crear", "unirse"]:
+
+        flash("Debes seleccionar si quieres crear o unirte a una liga", "error")
     
         return redirect("/registro")
 
@@ -91,17 +122,23 @@ def singup():
 
     if not con.porraAbierta():
 
+        flash("El registro está cerrado actualmente", "error")
+
         con.cerrarConexion()
 
         return redirect("/registro")
 
     if con.existe_usuario(usuario):
 
+        flash("El usuario introducido ya existe", "error")
+
         con.cerrarConexion()
 
         return redirect("/registro")
 
     if con.existe_correo(correo):
+
+        flash("El correo introducido ya está registrado", "error")
 
         con.cerrarConexion()
 
@@ -115,6 +152,8 @@ def singup():
 
         if existe_codigo:
 
+            flash("El código de liga introducido ya existe", "error")
+
             con.cerrarConexion()
 
             return redirect("/registro")
@@ -126,6 +165,8 @@ def singup():
         existe_codigo=con.existe_codigo_liga(codigo_final)
 
         if not existe_codigo:
+
+            flash("El código de liga introducido no existe", "error")
 
             con.cerrarConexion()
 

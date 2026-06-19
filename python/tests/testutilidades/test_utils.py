@@ -49,7 +49,7 @@ def test_usuario_correcto(usuario):
     assert usuario_correcto(usuario)
 
 @pytest.mark.parametrize(["nombre"],
-    [("123",),("Juan-Maria",),(None,),("",),("Nacho1998",)]
+    [("123",),("Juan-Maria",),(None,),("",),("Nacho1998",), (" ",)]
 )
 def test_nombre_incorrecto(nombre):
 
@@ -63,7 +63,7 @@ def test_nombre_correcto(nombre):
     assert nombre_correcto(nombre)
 
 @pytest.mark.parametrize(["apellido"],
-    [("123",),("Aranda.Gonzalez",),(None,),("",),("Dorado1998",)]
+    [("123",),("Aranda.Gonzalez",),(None,),("",),("Dorado1998",), (" ",)]
 )
 def test_apellido_incorrecto(apellido):
 

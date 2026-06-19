@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, render_template
+from flask import Blueprint, request, redirect, render_template, flash
 from flask_login import login_user, login_required, current_user, logout_user
 from typing import Optional
 
@@ -52,6 +52,8 @@ def login():
 
 	if not con.existe_usuario(usuario):
 
+		flash("Usuario o contraseña incorrectos", "error")
+
 		con.cerrarConexion()
 
 		return redirect("/")
@@ -59,6 +61,8 @@ def login():
 	contrasena_hash_usuario=con.obtenerContrasenaUsuario(usuario)
 
 	if not comprobarHash(contrasena, contrasena_hash_usuario):
+
+		flash("Usuario o contraseña incorrectos", "error")
 
 		con.cerrarConexion()
 

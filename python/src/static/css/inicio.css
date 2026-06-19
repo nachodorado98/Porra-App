@@ -32,6 +32,15 @@ h1 {
     font-weight: 700;
 }
 
+.mensaje.error{
+    background:#ffe5e5;
+    color:#b30000;
+    border:1px solid #ffb3b3;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
 form {
     display: flex;
     flex-direction: column;

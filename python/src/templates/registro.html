@@ -11,6 +11,18 @@
 
     <h1>Crear Una Cuenta</h1>
 
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+
+        {% if mensajes %}
+
+            {% for categoria, mensaje in mensajes %}
+                <div class="mensaje {{ categoria }}">{{ mensaje }}</div>
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
     <form id="formulario" method="POST" action="/singup" autocomplete="off">
 
         <label for="username">Usuario:</label>

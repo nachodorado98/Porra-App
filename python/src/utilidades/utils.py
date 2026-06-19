@@ -26,7 +26,7 @@ def usuario_correcto(usuario:str)->bool:
 
 def nombre_correcto(nombre:str)->bool:
 
-    return bool(nombre and re.match(r"^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$", nombre))
+    return bool(nombre and nombre.strip() and re.match(r"^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$", nombre))
 
 def apellido_correcto(apellido:str)->bool:
 
