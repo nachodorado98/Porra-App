@@ -10,32 +10,32 @@
 <main class="clasificacion-container">
 
     <div class="clasificacion-header">
-        <h1>Clasificación Liga</h1>
-        <p>Compite con tus amigos y sube al primer puesto 🏆</p>
+        <h1>Clasificación Global</h1>
+        <p>Compite con todos los usuarios y sube al primer puesto 🏆</p>
     </div>
 
     <section class="podium">
 
-        {% for usuario_codigo in usuarios_codigo[:3] %}
+        {% for usuario_puntos in usuarios_puntos[:3] %}
 
             <div class="podium-card {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% else %}bronze{% endif %}"
-                    {% if puede_pinchar %}onclick="window.location.href='/porra/{{ usuario_codigo[0] }}'" style="cursor: pointer;" data-podium-card-user="{{ usuario_codigo[0] }}"{% endif %}>
+                    {% if puede_pinchar %}onclick="window.location.href='/porra/{{ usuario_puntos[0] }}'" style="cursor: pointer;" data-podium-card-user="{{ usuario_puntos[0] }}"{% endif %}>
                 <div class="podium-position">
                     #{{ loop.index }}
                 </div>
-                {% if usuario_codigo[3]=='-1' %}
+                {% if usuario_puntos[3]=='-1' %}
                    <div class="podium-avatar">
-                        {{ usuario_codigo[0][0] }}
+                        {{ usuario_puntos[0][0] }}
                     </div>
                 {% else %}
-                    <img src="{{ url_imagen_usuario_perfil }}{{ usuario_codigo[0] }}/{{ usuario_codigo[3] }}" alt="Perfil Usuario" class="podium-avatar-img">
+                    <img src="{{ url_imagen_usuario_perfil }}{{ usuario_puntos[0] }}/{{ usuario_puntos[3] }}" alt="Perfil Usuario" class="podium-avatar-img">
                 {% endif %}
-                <h2>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h2>
+                <h2>{{ usuario_puntos[1] }} {{ usuario_puntos[2] }}</h2>
                 <p class="podium-username">
-                    @{{ usuario_codigo[0] }}
+                    @{{ usuario_puntos[0] }}
                 </p>
                 <div class="podium-points">
-                    {{ usuario_codigo[7] }} pts
+                    {{ usuario_puntos[7] }} pts
                 </div>
             </div>
 
@@ -45,9 +45,9 @@
 
     <section class="ranking-list">
 
-        {% for usuario_codigo in usuarios_codigo %}
+        {% for usuario_puntos in usuarios_puntos %}
 
-            <div class="ranking-card {% if usuario_codigo[0]==usuario %}mi-usuario{% endif %} {% if loop.index > 40 %}ranking-oculto{% endif %}">
+            <div class="ranking-card {% if usuario_puntos[0]==usuario %}mi-usuario{% endif %} {% if loop.index > 40 %}ranking-oculto{% endif %}">
 
                 <div class="ranking-main">
 
@@ -56,22 +56,22 @@
                             {{ loop.index }}
                         </div>
 
-                        {% if usuario_codigo[3]=='-1' %}
+                        {% if usuario_puntos[3]=='-1' %}
                             <div class="ranking-avatar">
-                                {{ usuario_codigo[0][0] }}
+                                {{ usuario_puntos[0][0] }}
                             </div>
                         {% else %}
-                            <img src="{{ url_imagen_usuario_perfil }}{{ usuario_codigo[0] }}/{{ usuario_codigo[3] }}" alt="Perfil Usuario" class="ranking-avatar-img">
+                            <img src="{{ url_imagen_usuario_perfil }}{{ usuario_puntos[0] }}/{{ usuario_puntos[3] }}" alt="Perfil Usuario" class="ranking-avatar-img">
                         {% endif %}
 
                         <div class="ranking-user">
-                            <h3>{{ usuario_codigo[1] }} {{ usuario_codigo[2] }}</h3>
-                            <p>@{{ usuario_codigo[0] }}</p>
+                            <h3>{{ usuario_puntos[1] }} {{ usuario_puntos[2] }}</h3>
+                            <p>@{{ usuario_puntos[0] }}</p>
                         </div>
                     </div>
 
                     <div class="ranking-score">
-                        <span>{{ usuario_codigo[7] }}</span>
+                        <span>{{ usuario_puntos[7] }}</span>
                         <small>PTS</small>
                     </div>
 
@@ -81,8 +81,8 @@
 
                     <div class="ranking-actions">
 
-                        {% if puede_pinchar and usuario_codigo[8] %}
-                            <a href="/porra/{{ usuario_codigo[0] }}" class="ranking-btn primary">Ver porra</a>
+                        {% if puede_pinchar and usuario_puntos[8] %}
+                            <a href="/porra/{{ usuario_puntos[0] }}" class="ranking-btn primary">Ver porra</a>
                         {% endif %}
 
                         <button type="button" class="ranking-btn secondary ver-puntos">Ver puntos</button>
@@ -95,22 +95,22 @@
 
                     <div class="detalle-punto">
                         <span>Grupos</span>
-                        <strong>{{ usuario_codigo[4] }}</strong>
+                        <strong>{{ usuario_puntos[4] }}</strong>
                     </div>
 
                     <div class="detalle-punto">
                         <span>Mejores terceros</span>
-                        <strong>{{ usuario_codigo[5] }}</strong>
+                        <strong>{{ usuario_puntos[5] }}</strong>
                     </div>
 
                     <div class="detalle-punto">
                         <span>Eliminatorias</span>
-                        <strong>{{ usuario_codigo[6] }}</strong>
+                        <strong>{{ usuario_puntos[6] }}</strong>
                     </div>
 
                     <div class="detalle-punto total">
                         <span>Total</span>
-                        <strong>{{ usuario_codigo[7] }}</strong>
+                        <strong>{{ usuario_puntos[7] }}</strong>
                     </div>
 
                 </div>
@@ -119,14 +119,14 @@
 
         {% endfor %}
 
-        {% if usuarios_codigo|length > 40 %}
+        {% if usuarios_puntos|length > 40 %}
 
             <div class="cargar-mas-container">
                 <button type="button" id="cargar-mas-ranking" class="cargar-mas-btn">
                     Cargar más
                 </button>
             </div>
-            
+
         {% endif %}
 
     </section>

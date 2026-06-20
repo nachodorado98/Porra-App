@@ -281,27 +281,8 @@ footer {
   }
 }
 
-@media (max-width: 768px) {
-  .porra-home {
-    padding: 45px 25px;
-  }
-
-  .logo-mundial-inicio {
-    width: 140px;
-  }
-
-  .descripcion-pregunta {
-    font-size: 17px;
-  }
-
-  .btn-empezar,
-  .btn-reiniciar {
-    width: 100%;
-    max-width: 320px;
-  }
-}
-
 @media (max-width: 600px) {
+
   .navbar {
     padding: 10px 8px;
   }
@@ -309,12 +290,18 @@ footer {
   .nav-left {
     flex: 1;
     overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-left::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-left a {
     padding: 8px 9px;
     font-size: 13px;
-    margin-right: 0;
+    flex-shrink: 0;
   }
 
   .logo img {
@@ -325,4 +312,24 @@ footer {
     width: 32px;
     height: 32px;
   }
+}
+
+
+/* móviles pequeños */
+@media (max-width: 390px) {
+
+  .nav-left a {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .logo img {
+    width: 24px;
+  }
+
+  .profile-icon {
+    width: 28px;
+    height: 28px;
+  }
+
 }

@@ -8,7 +8,7 @@ from src.database.conexion import Conexion
 
 if len(sys.argv)!=2:
 
-    raise ValueError("Debes indicar el tipo de correo. Ejemplo: python run_send_mail.py inicio_mundial")
+    raise ValueError("Debes indicar el tipo de correo. Ejemplo: python run_enviar_mail_aviso.py inicio_mundial")
 
 TIPO_CORREO=sys.argv[1]
 

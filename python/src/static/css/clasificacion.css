@@ -473,3 +473,30 @@
         font-size: 24px;
     }
 }
+
+.ranking-oculto {
+    display: none;
+}
+
+.cargar-mas-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.cargar-mas-btn {
+    border: none;
+    background: #111827;
+    color: white;
+    padding: 13px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.cargar-mas-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}

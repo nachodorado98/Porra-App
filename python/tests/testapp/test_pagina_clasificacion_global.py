@@ -2,46 +2,16 @@ import os
 import pytest
 from datetime import datetime, timedelta
 
-def test_pagina_clasificacion_sin_login(cliente, conexion):
+def test_pagina_clasificacion_global_sin_login(cliente, conexion):
 
-	respuesta=cliente.get("/clasificacion/123456", follow_redirects=True)
+	respuesta=cliente.get("/clasificacion/global", follow_redirects=True)
 
 	contenido=respuesta.data.decode()
 
 	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
-def test_pagina_clasificacion_no_existe_codigo(cliente, conexion_usuario):
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		respuesta=cliente_abierto.get("/clasificacion/123456")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==302
-		assert respuesta.location=="/porra"
-		assert "<h1>Redirecting...</h1>" in contenido
-
-def test_pagina_clasificacion_no_codigo_usuario(cliente, conexion_usuario):
-
-	conexion_usuario.insertarCodigoLiga("123456")
-
-	with cliente as cliente_abierto:
-
-		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
-
-		respuesta=cliente_abierto.get("/clasificacion/123456")
-
-		contenido=respuesta.data.decode()
-
-		assert respuesta.status_code==302
-		assert respuesta.location=="/porra"
-		assert "<h1>Redirecting...</h1>" in contenido
-
-def test_pagina_clasificacion(cliente, conexion_usuario):
+def test_pagina_clasificacion_global(cliente, conexion_usuario):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -49,7 +19,7 @@ def test_pagina_clasificacion(cliente, conexion_usuario):
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -63,7 +33,7 @@ def test_pagina_clasificacion(cliente, conexion_usuario):
 		assert '<button type="button" class="ranking-btn secondary ver-puntos">Ver puntos</button>' in contenido
 		assert '<div class="detalle-puntos">' in contenido
 
-def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
+def test_pagina_clasificacion_global_con_imagen(cliente, conexion_usuario):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -81,7 +51,7 @@ def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 
 			cliente_abierto.post("/settings/actualizar_imagen_perfil", data=data, buffered=True, content_type="multipart/form-data")
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -95,7 +65,7 @@ def test_pagina_clasificacion_con_imagen(cliente, conexion_usuario):
 		assert '<button type="button" class="ranking-btn secondary ver-puntos">Ver puntos</button>' in contenido
 		assert '<div class="detalle-puntos">' in contenido
 
-def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
+def test_pagina_clasificacion_global_puede_pinchar_no_admin(cliente, conexion_usuario):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -103,7 +73,7 @@ def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -116,7 +86,7 @@ def test_pagina_clasificacion_puede_pinchar_no_admin(cliente, conexion_usuario):
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,)]
 )
-def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usuario, dias):
+def test_pagina_clasificacion_global_puede_pinchar_porra_abierta(cliente, conexion_usuario, dias):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -128,7 +98,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usua
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -138,7 +108,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_abierta(cliente, conexion_usua
 		assert 'style="cursor: pointer;"' not in contenido
 		assert 'class="ranking-btn primary">Ver porra</a>' not in contenido
 
-def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
+def test_pagina_clasificacion_global_puede_pinchar_admin(cliente, conexion_usuario):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -150,7 +120,7 @@ def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -163,7 +133,7 @@ def test_pagina_clasificacion_puede_pinchar_admin(cliente, conexion_usuario):
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
 )
-def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usuario, dias):
+def test_pagina_clasificacion_global_puede_pinchar_porra_cerrada(cliente, conexion_usuario, dias):
 
 	conexion_usuario.actualizarEstadoPorraUsuario("nacho98")
 
@@ -175,7 +145,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usua
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -185,7 +155,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_cerrada(cliente, conexion_usua
 		assert 'style="cursor: pointer;"' in contenido
 		assert 'class="ranking-btn primary">Ver porra</a>' in contenido
 
-def test_pagina_clasificacion_puede_pinchar_admin_porra_no_completada(cliente, conexion_usuario):
+def test_pagina_clasificacion_global_puede_pinchar_admin_porra_no_completada(cliente, conexion_usuario):
 
 	conexion_usuario.c.execute("UPDATE usuarios SET Admin=True")
 
@@ -195,7 +165,7 @@ def test_pagina_clasificacion_puede_pinchar_admin_porra_no_completada(cliente, c
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 
@@ -205,7 +175,7 @@ def test_pagina_clasificacion_puede_pinchar_admin_porra_no_completada(cliente, c
 @pytest.mark.parametrize(["dias"],
 	[(2,),(22,),(5,),(13,),(25,),(1,),(0,)]
 )
-def test_pagina_clasificacion_puede_pinchar_porra_cerrada_porra_no_completada(cliente, conexion_usuario, dias):
+def test_pagina_clasificacion_global_puede_pinchar_porra_cerrada_porra_no_completada(cliente, conexion_usuario, dias):
 
 	fecha_anterior=(datetime.now()-timedelta(days=dias)).strftime("%Y-%m-%d")
 
@@ -215,7 +185,7 @@ def test_pagina_clasificacion_puede_pinchar_porra_cerrada_porra_no_completada(cl
 
 		cliente_abierto.post("/login", data={"usuario": "nacho98", "contrasena": "Ab!CdEfGhIJK3LMN"}, follow_redirects=True)
 
-		respuesta=cliente_abierto.get("/clasificacion/3YYZKP")
+		respuesta=cliente_abierto.get("/clasificacion/global")
 
 		contenido=respuesta.data.decode()
 

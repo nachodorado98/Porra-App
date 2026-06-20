@@ -13,3 +13,23 @@ document.querySelectorAll('.ver-puntos').forEach(boton => {
     });
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const botonCargarMas = document.getElementById("cargar-mas-ranking");
+
+    if (!botonCargarMas) return;
+
+    botonCargarMas.addEventListener("click", function () {
+        const ocultos = document.querySelectorAll(".ranking-card.ranking-oculto");
+
+        for (let i = 0; i < 40 && i < ocultos.length; i++) {
+            ocultos[i].classList.remove("ranking-oculto");
+        }
+
+        const quedanOcultos = document.querySelectorAll(".ranking-card.ranking-oculto");
+
+        if (quedanOcultos.length === 0) {
+            botonCargarMas.style.display = "none";
+        }
+    });
+});

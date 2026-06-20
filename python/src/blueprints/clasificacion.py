@@ -8,9 +8,9 @@ from src.config import URL_DATALAKE_PERFIL
 
 bp_clasificacion=Blueprint("clasificacion", __name__)
 
-@bp_clasificacion.route("/clasificacion/<codigo>")
+@bp_clasificacion.route("/clasificacion/liga/<codigo>")
 @login_required
-def pagina_clasificacion(codigo:str):
+def pagina_clasificacion_liga(codigo:str):
 
 	usuario=current_user.id
 
@@ -54,6 +54,41 @@ def pagina_clasificacion(codigo:str):
 							codigo_liga=codigo_liga,
 							imagen_perfil=imagen_perfil,
 							usuarios_codigo=usuarios_codigo_puntos,
+							puede_pinchar=puede_pinchar,
+							paso_porra=paso_porra,
+							puede_ver_resultados=puede_ver_resultados,
+							url_imagen_usuario_perfil=f"{URL_DATALAKE_PERFIL}")
+
+@bp_clasificacion.route("/clasificacion/global")
+@login_required
+def pagina_clasificacion_global():
+
+	usuario=current_user.id
+
+	codigo_liga=current_user.codigo_liga
+
+	imagen_perfil=current_user.imagen_perfil
+
+	paso_porra=current_user.paso_porra
+
+	con=Conexion()
+
+	usuarios_puntos=con.obtenerPuntuacionesUsuarios()
+
+	porra_abierta=con.porraAbierta()
+
+	puede_ver_resultados=con.puedeVerResultados(usuario)
+
+	con.cerrarConexion()
+
+	puede_pinchar=False if not current_user.admin and porra_abierta else True
+
+	return render_template("clasificacion_global.html",
+							usuario=usuario,
+							nombre=current_user.nombre,
+							codigo_liga=codigo_liga,
+							imagen_perfil=imagen_perfil,
+							usuarios_puntos=usuarios_puntos,
 							puede_pinchar=puede_pinchar,
 							paso_porra=paso_porra,
 							puede_ver_resultados=puede_ver_resultados,

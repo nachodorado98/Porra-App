@@ -885,3 +885,35 @@ class Conexion:
 		puede_ver_porra=self.puedeVisualizarPorra(usuario)
 
 		return True if evento_iniciado and puede_ver_porra and not porra_abierta else False
+
+	# Metodo para obtener los usuarios con sus puntuaciones
+	def obtenerPuntuacionesUsuarios(self)->Optional[List[tuple]]:
+
+		self.c.execute("""SELECT u.usuario, u.nombre, u.apellido,
+								CASE WHEN u.Imagen_Perfil IS NULL
+									THEN '-1'
+									ELSE u.Imagen_Perfil
+								END as Imagen,
+								COALESCE(p.puntos_grupos, 0) AS puntos_grupos,
+								COALESCE(p.puntos_mejores_terceros, 0) AS puntos_mejores_terceros,
+								COALESCE(p.puntos_eliminatorias, 0) AS puntos_eliminatorias,
+								COALESCE(p.puntos_total, 0) AS puntos_total,
+								COALESCE(ep.porra_completada, FALSE) AS porra_completada
+						FROM usuarios u
+						LEFT JOIN puntuaciones p
+            			ON u.usuario=p.usuario
+            			LEFT JOIN estado_porra ep
+						ON u.usuario=ep.usuario
+						ORDER BY puntos_total DESC, u.nombre, u.apellido, u.usuario""")
+
+		usuarios=self.c.fetchall()
+
+		return list(map(lambda usuario: (usuario["usuario"],
+										usuario["nombre"],
+										usuario["apellido"],
+										usuario["imagen"],
+										usuario["puntos_grupos"],
+										usuario["puntos_mejores_terceros"],
+										usuario["puntos_eliminatorias"],
+										usuario["puntos_total"],
+										usuario["porra_completada"]) , usuarios))

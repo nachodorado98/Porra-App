@@ -485,3 +485,41 @@ def test_actualizar_contrasena_usuario(conexion):
 
 	assert datos_cambio_contrasena[0]==1
 	assert datos_cambio_contrasena[1].strftime("%Y-%m-%d")==ultimo_cambio.strftime("%Y-%m-%d")
+
+def test_obtener_puntuaciones_usuarios_no_existen(conexion):
+
+	assert not conexion.obtenerPuntuacionesUsuarios()
+
+def test_obtener_puntuaciones_usuarios_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	conexion.insertarPuntuacionUsuario("nacho98")
+
+	usuarios=conexion.obtenerPuntuacionesUsuarios()
+
+	assert len(usuarios)==1
+
+def test_obtener_puntuaciones_usuarios_existentes(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	for numero in range(1, 6):
+
+		conexion.insertarUsuario(f"nacho98{numero}", f"micorreo{numero}@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+		conexion.insertarPuntuacionUsuario(f"nacho98{numero}")
+
+	conexion.insertarCodigoLiga("FR65JO")
+
+	for numero in range(1, 6):
+
+		conexion.insertarUsuario(f"nacho{numero}", f"micorreo2{numero}@correo.es", "1234", "nacho", "dorado", "FR65JO")
+
+		conexion.insertarPuntuacionUsuario(f"nacho{numero}")
+
+	usuarios=conexion.obtenerPuntuacionesUsuarios()
+
+	assert len(usuarios)==10
