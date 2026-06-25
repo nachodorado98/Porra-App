@@ -14,6 +14,16 @@ CREATE TABLE usuarios (Usuario VARCHAR(255) PRIMARY KEY,
 						Ultimo_Cambio_Contrasena TIMESTAMP DEFAULT NULL,
 						FOREIGN KEY (Codigo_Liga) REFERENCES codigos (Codigo_Liga) ON DELETE CASCADE);
 
+CREATE TABLE password_reset_tokens (Id SERIAL PRIMARY KEY,
+								    Usuario VARCHAR(255) NOT NULL,
+								    Token VARCHAR(255) NOT NULL,
+								    Expires_At TIMESTAMP NOT NULL,
+								    Usado BOOL DEFAULT FALSE,
+								    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+								    FOREIGN KEY (Usuario) REFERENCES usuarios (Usuario) ON DELETE CASCADE);
+
+CREATE INDEX idx_password_reset_token_hash ON password_reset_tokens (Token);
+
 CREATE TABLE equipos (Equipo_Id VARCHAR(255) PRIMARY KEY,
 						Nombre VARCHAR(255),
 						Escudo INTEGER,

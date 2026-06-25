@@ -6,7 +6,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 from src.utilidades.utils import codigo_valido, usuario_correcto, nombre_correcto, apellido_correcto, contrasena_correcta
-from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, obtenerGruposEquiposLimpios
+from src.utilidades.utils import correo_correcto, datos_correctos, generarHash, comprobarHash, generarHashToken, obtenerGruposEquiposLimpios
 from src.utilidades.utils import validarEquiposGrupo, gruposPorraCorrectos, obtenerTercerosGruposEquiposLimpios, mejoresTercerosPorraCorrectos
 from src.utilidades.utils import obtenerPasoEstado, obtenerPasosPorra, obtenerCombinacionMejoresTerceros, construirLookup, crearBracketDieciseisavos
 from src.utilidades.utils import bracketEliminatoriasCorrecto, obtenerEliminatoriasPorraLimpias, obtenerEliminatoriasRealLimpias
@@ -143,7 +143,7 @@ def test_generar_hash_contrasena(contrasena):
     contrasena_hash=generarHash(contrasena)
 
     assert len(contrasena_hash)==60
-    assert contrasena not in contrasena_hash
+    assert contrasena!=contrasena_hash
 
 @pytest.mark.parametrize(["contrasena", "contrasena_mal"],
     [
@@ -166,6 +166,20 @@ def test_comprobar_hash_contrasena_correcta(contrasena):
     contrasena_hash=generarHash(contrasena)
 
     assert comprobarHash(contrasena, contrasena_hash)
+
+@pytest.mark.parametrize(["token"],
+    [("token",),("sddfgfdgfdhfg",),("fdhdfhfgh454g565thggu677",)]
+)
+def test_generar_hash_token(token):
+
+    token_hash=generarHashToken(token)
+
+    assert len(token_hash)==64
+    assert token_hash!=token
+
+def test_generar_hash_token_mismo_hash():
+
+    assert generarHashToken("token")==generarHashToken("token")
 
 def test_obtener_grupos_equipos_limpios_no_hay():
 

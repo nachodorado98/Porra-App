@@ -4,6 +4,7 @@ from passlib.context import CryptContext
 from typing import List, Dict, Optional
 import os
 import pandas as pd
+import hashlib
 
 from .configutils import PARTIDOS_FIJOS, PARTIDOS_VARIABLES_EQUIPO_PRIMERO, ORDEN_RONDAS_ELIMINATORIAS, PUNTOS_ELIMINATORIAS
 from .configutils import NOMBRE_RONDA, PUNTOS_BONUS_CAMPEON, PUNTOS_BONUS_FINAL_EXACTA
@@ -71,6 +72,10 @@ def comprobarHash(contrasena:str, contrasena_hash:str)->bool:
     objeto_hash=CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     return objeto_hash.verify(contrasena, contrasena_hash)
+
+def generarHashToken(token:str)->str:
+    
+    return hashlib.sha256(token.encode()).hexdigest()
 
 def obtenerGruposEquiposLimpios(grupos_equipos:List[tuple])->Dict:
 

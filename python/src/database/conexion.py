@@ -917,3 +917,50 @@ class Conexion:
 										usuario["puntos_eliminatorias"],
 										usuario["puntos_total"],
 										usuario["porra_completada"]) , usuarios))
+
+	# Metodo para obtener el correo de usuario
+	def obtenerCorreo(self, usuario:str)->Optional[str]:
+
+		self.c.execute("""SELECT correo
+						FROM usuarios
+						WHERE usuario=%s""",
+						(usuario,))
+
+		correo=self.c.fetchone()
+
+		return None if correo is None else correo["correo"]
+
+	# Metodo para insertar un token
+	def insertarToken(self, usuario:str, token:str, expiracion:datetime)->None:
+
+		self.c.execute("""INSERT INTO password_reset_tokens (Usuario, Token, Expires_At)
+							VALUES (%s, %s, %s)""",
+							(usuario, token, expiracion))
+
+		self.confirmar()
+
+	# Metodo para obtener un token
+	def obtenerToken(self, token:str)->Optional[str]:
+
+		self.c.execute("""SELECT Id, Usuario, Token, Expires_At, Usado
+				        FROM password_reset_tokens
+				        WHERE Token=%s""",
+						(token,))
+
+		token=self.c.fetchone()
+
+		return None if token is None else (token["id"],
+											token["usado"],
+											token["token"],
+											token["expires_at"],
+											token["usado"])
+
+	# Metodo para acyualizar un token
+	def actualizarToken(self, token:str)->Optional[str]:
+
+		self.c.execute("""UPDATE password_reset_tokens
+					        SET Usado=TRUE
+					        WHERE Token=%s""",
+							(token,))
+
+		self.confirmar()

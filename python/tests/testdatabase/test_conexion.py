@@ -25,6 +25,7 @@ def test_conexion(conexion):
 	assert "eliminatorias_porra" in tablas
 	assert "eliminatorias_real" in tablas
 	assert "maestro" in tablas
+	assert "password_reset_tokens" in tablas
 		
 def test_cerrar_conexion(conexion):
 

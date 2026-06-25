@@ -41,6 +41,10 @@
             <button type="submit">Iniciar Sesión</button>
         </form>
         <p>¿No tienes cuenta? <a href="/registro">Regístrate</a></p>
+
+        <p class="forgot-password">
+            <a href="/forgot_password">¿Has olvidado tu contraseña?</a>
+        </p>
     </div>
 
     {% endblock principal %}
@@ -49,8 +53,6 @@
       <img src="{{ url_for('static', filename='iconos/mundial.png') }}" alt="Cargando" class="loading-img">
       <p>Cargando...</p>
     </div>
-
-    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
 
     <footer>
         <p>&copy; 2026 Porra Mundial App. Todos los derechos reservados. Launched by Nacho Dorado</p>

@@ -523,3 +523,15 @@ def test_obtener_puntuaciones_usuarios_existentes(conexion):
 	usuarios=conexion.obtenerPuntuacionesUsuarios()
 
 	assert len(usuarios)==10
+
+def test_obtener_correo_usuario_no_existe(conexion):
+
+	assert conexion.obtenerCorreo("nacho98") is None
+
+def test_obtener_correo_usuario_existen(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerCorreo("nacho98")=="micorreo@correo.es"
