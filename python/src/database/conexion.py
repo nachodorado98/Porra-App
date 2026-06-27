@@ -956,11 +956,48 @@ class Conexion:
 											token["usado"])
 
 	# Metodo para acyualizar un token
-	def actualizarToken(self, token:str)->Optional[str]:
+	def actualizarToken(self, token:str)->None:
 
 		self.c.execute("""UPDATE password_reset_tokens
 					        SET Usado=TRUE
 					        WHERE Token=%s""",
 							(token,))
+
+		self.confirmar()
+
+	# Metodo para obtener el usuario por su correo
+	def obtenerUsuarioPorCorreo(self, correo:str)->Optional[str]:
+
+		self.c.execute("""SELECT Usuario, Correo, Nombre
+						FROM usuarios
+						WHERE correo=%s""",
+						(correo,))
+
+		datos_usuario=self.c.fetchone()
+
+		return None if datos_usuario is None else (datos_usuario["usuario"],
+													datos_usuario["correo"],
+													datos_usuario["nombre"])
+
+	# Metodo para saber si existe un token reciente de un usuario
+	def existe_token_reciente(self, usuario:str)->bool:
+
+		self.c.execute("""SELECT *
+				        FROM password_reset_tokens
+				        WHERE Usuario=%s
+				        AND Usado=FALSE
+				        AND Created_At>CURRENT_TIMESTAMP-INTERVAL '5 minutes'""",
+						(usuario,))
+
+		return False if not self.c.fetchone() else True
+
+	# Metodo para actualizar tokens de un usuario
+	def actualizarTokensUsuario(self, usuario:str)->None:
+
+		self.c.execute("""UPDATE password_reset_tokens
+					        SET Usado=TRUE
+					        WHERE Usuario=%s
+			        		AND Usado=FALSE""",
+							(usuario,))
 
 		self.confirmar()

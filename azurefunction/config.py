@@ -795,3 +795,77 @@ HTML_CORREO_MITAD_GRUPOS = """
 </body>
 </html>
 """
+
+ASUNTO_CORREO_RESET_PASSWORD = "🔐 Recupera tu contraseña de Porra App"
+HTML_CORREO_RESET_PASSWORD = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="margin:0; padding:0; background-color:#f2f4f7; font-family:Arial, sans-serif;">
+
+    <table width="100%" cellspacing="0" cellpadding="0" style="background-color:#f2f4f7; padding:32px 16px;">
+        <tr>
+            <td align="center">
+
+                <table width="600" cellspacing="0" cellpadding="0" style="background:#ffffff; border-radius:12px; overflow:hidden;">
+                    <tr>
+                        <td align="center" style="background:#0f172a; padding:36px 24px; color:#ffffff;">
+                            <h1 style="margin:0;">⚽ Porra App</h1>
+                            <p style="margin:8px 0 0; color:#cbd5e1;">Recuperación de contraseña</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:40px 48px; color:#0f172a;">
+                            <h2 style="margin-top:0;">Hola, {nombre} 👋</h2>
+
+                            <p style="font-size:16px; line-height:24px; color:#475467;">
+                                Hemos recibido una solicitud para cambiar la contraseña de tu cuenta.
+                            </p>
+
+                            <p style="font-size:16px; line-height:24px; color:#475467;">
+                                Pulsa en el siguiente botón para crear una nueva contraseña:
+                            </p>
+
+                            <p style="text-align:center; margin:32px 0;">
+                                <a href="{reset_link}"
+                                   style="display:inline-block; background-color:#0f172a; color:#ffffff; text-decoration:none; padding:14px 28px; border-radius:8px; font-weight:bold;">
+                                    Cambiar contraseña
+                                </a>
+                            </p>
+
+                            <p style="font-size:14px; line-height:22px; color:#64748b;">
+                                Este enlace caduca en 30 minutos. Si tú no has solicitado este cambio, puedes ignorar este correo.
+                            </p>
+
+                            <p style="font-size:14px; line-height:22px; color:#64748b;">
+                                Si el botón no funciona, copia y pega este enlace en tu navegador:
+                            </p>
+
+                            <p style="font-size:13px; line-height:20px; word-break:break-all; color:#3897f0;">
+                                {reset_link}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding:24px 48px 32px; border-top:1px solid #e4e7ec;">
+                            <p style="margin:0; font-size:12px; color:#98a2b3;">
+                                Este es un correo automático. Por favor, no respondas a este mensaje.
+                            </p>
+                            <p style="margin:8px 0 0; font-size:12px; color:#98a2b3;">
+                                &copy; 2026 Porra App. Todos los derechos reservados.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
+"""

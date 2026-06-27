@@ -4,7 +4,7 @@ def test_pagina_inicio(cliente):
 
 	contenido=respuesta.data.decode()
 
-	respuesta.status_code==200
+	assert respuesta.status_code==200
 	assert "<h1>Iniciar Sesión</h1>" in contenido
 
 def test_pagina_health(cliente):
@@ -13,5 +13,5 @@ def test_pagina_health(cliente):
 
 	contenido=respuesta.data.decode()
 
-	respuesta.status_code==200
+	assert respuesta.status_code==200
 	assert "OK" in contenido

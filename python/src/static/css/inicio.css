@@ -41,6 +41,15 @@ h1 {
     margin-bottom:20px;
 }
 
+.mensaje.correcto{
+    background: #e8f8ec;
+    color: #1f7a3d;
+    border: 1px solid #9dd9ae;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
 form {
     display: flex;
     flex-direction: column;

@@ -9,7 +9,7 @@ def test_pagina_registro(cliente, conexion):
 
 	contenido=respuesta.data.decode()
 
-	respuesta.status_code==200
+	assert respuesta.status_code==200
 	assert "<h1>Crear Una Cuenta</h1>" in contenido
 	assert "<h3>¿Quieres crear o unirte a una liga?</h3>" in contenido
 	assert '<div id="contenedor-codigo-generado" style="display:none;">' in contenido
@@ -39,7 +39,7 @@ def test_pagina_generar_codigo(cliente, conexion):
 
 	contenido=respuesta.data.decode()
 
-	respuesta.status_code==200
+	assert respuesta.status_code==200
 
 	diccionario_contenido=json.loads(contenido)
 
@@ -86,7 +86,7 @@ def test_pagina_verificar_codigo_valido_existente(cliente, conexion, codigo):
 
 	contenido=respuesta.data.decode()
 
-	respuesta.status_code==200
+	assert respuesta.status_code==200
 
 	diccionario_valido=json.loads(contenido)
 

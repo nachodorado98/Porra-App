@@ -528,10 +528,22 @@ def test_obtener_correo_usuario_no_existe(conexion):
 
 	assert conexion.obtenerCorreo("nacho98") is None
 
-def test_obtener_correo_usuario_existen(conexion):
+def test_obtener_correo_usuario_existe(conexion):
 
 	conexion.insertarCodigoLiga("C4N5VT")
 
 	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
 
 	assert conexion.obtenerCorreo("nacho98")=="micorreo@correo.es"
+
+def test_obtener_usuario_por_correo_correo_no_existe(conexion):
+
+	assert conexion.obtenerUsuarioPorCorreo("micorreo@correo.es") is None
+
+def test_obtener_usuario_por_correo_correo_existe(conexion):
+
+	conexion.insertarCodigoLiga("C4N5VT")
+
+	conexion.insertarUsuario("nacho98", "micorreo@correo.es", "1234", "nacho", "dorado", "C4N5VT")
+
+	assert conexion.obtenerUsuarioPorCorreo("micorreo@correo.es")

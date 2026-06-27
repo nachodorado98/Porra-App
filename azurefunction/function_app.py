@@ -11,6 +11,7 @@ from config import ASUNTO_CORREO_RECORDATORIO_PORRA, HTML_CORREO_RECORDATORIO_PO
 from config import ASUNTO_CORREO_CIERRE_PORRA, HTML_CORREO_CIERRE_PORRA
 from config import ASUNTO_CORREO_INICIO_MUNDIAL, HTML_CORREO_INICIO_MUNDIAL
 from config import ASUNTO_CORREO_MITAD_GRUPOS, HTML_CORREO_MITAD_GRUPOS
+from config import ASUNTO_CORREO_RESET_PASSWORD, HTML_CORREO_RESET_PASSWORD
 
 app = func.FunctionApp()
 
@@ -21,11 +22,13 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
     try:
 
         body=req.get_json()
-        nombre=body["nombre"]
-        usuario=body["usuario"]
-        codigo=body["codigo"]
+        nombre=body.get("nombre")
+        usuario=body.get("usuario")
+        codigo=body.get("codigo")
         correo_destino=body["correo_destino"]
         tipo_correo=body["tipo"]
+        token=body.get("token")
+        reset_link=f"{URL_APP}/reset_password/{token}"
 
     except Exception:
 
@@ -44,11 +47,13 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
                         "recordatorio_porra_pendiente":{"ASUNTO":ASUNTO_CORREO_RECORDATORIO_PORRA,
                                                         "FORMATO_HTML":HTML_CORREO_RECORDATORIO_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)},
                         "cierre_porra":{"ASUNTO":ASUNTO_CORREO_CIERRE_PORRA,
-                                                        "FORMATO_HTML":HTML_CORREO_CIERRE_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)},
+                                        "FORMATO_HTML":HTML_CORREO_CIERRE_PORRA.format(nombre=nombre_usuario, url_app=URL_APP)},
                         "inicio_mundial":{"ASUNTO":ASUNTO_CORREO_INICIO_MUNDIAL,
-                                                        "FORMATO_HTML":HTML_CORREO_INICIO_MUNDIAL.format(nombre=nombre_usuario, url_app=URL_APP)},
+                                            "FORMATO_HTML":HTML_CORREO_INICIO_MUNDIAL.format(nombre=nombre_usuario, url_app=URL_APP)},
                         "mitad_grupos":{"ASUNTO":ASUNTO_CORREO_MITAD_GRUPOS,
-                                                        "FORMATO_HTML":HTML_CORREO_MITAD_GRUPOS.format(nombre=nombre_usuario, url_app=URL_APP)}}
+                                        "FORMATO_HTML":HTML_CORREO_MITAD_GRUPOS.format(nombre=nombre_usuario, url_app=URL_APP)},
+                        "reset_password":{"ASUNTO": ASUNTO_CORREO_RESET_PASSWORD,
+                                            "FORMATO_HTML": HTML_CORREO_RESET_PASSWORD.format(nombre=nombre_usuario, reset_link=reset_link)}}
 
         if tipo_correo not in MAPEO_CORREO.keys():
 
