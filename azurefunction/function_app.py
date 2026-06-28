@@ -12,6 +12,7 @@ from config import ASUNTO_CORREO_CIERRE_PORRA, HTML_CORREO_CIERRE_PORRA
 from config import ASUNTO_CORREO_INICIO_MUNDIAL, HTML_CORREO_INICIO_MUNDIAL
 from config import ASUNTO_CORREO_MITAD_GRUPOS, HTML_CORREO_MITAD_GRUPOS
 from config import ASUNTO_CORREO_RESET_PASSWORD, HTML_CORREO_RESET_PASSWORD
+from config import ASUNTO_CORREO_FIN_GRUPOS, HTML_CORREO_FIN_GRUPOS
 
 app = func.FunctionApp()
 
@@ -53,7 +54,9 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
                         "mitad_grupos":{"ASUNTO":ASUNTO_CORREO_MITAD_GRUPOS,
                                         "FORMATO_HTML":HTML_CORREO_MITAD_GRUPOS.format(nombre=nombre_usuario, url_app=URL_APP)},
                         "reset_password":{"ASUNTO": ASUNTO_CORREO_RESET_PASSWORD,
-                                            "FORMATO_HTML": HTML_CORREO_RESET_PASSWORD.format(nombre=nombre_usuario, reset_link=reset_link)}}
+                                            "FORMATO_HTML": HTML_CORREO_RESET_PASSWORD.format(nombre=nombre_usuario, reset_link=reset_link)},
+                        "fin_grupos":{"ASUNTO": ASUNTO_CORREO_FIN_GRUPOS,
+                                        "FORMATO_HTML": HTML_CORREO_FIN_GRUPOS.format(nombre=nombre_usuario, url_app=URL_APP)}}
 
         if tipo_correo not in MAPEO_CORREO.keys():
 

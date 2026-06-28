@@ -16,7 +16,8 @@ tipos={"inicio_mundial":"INICIO MUNDIAL",
         "lanzamiento":"LANZAMIENTO",
         "recordatorio_porra_pendiente":"PORRA PENDIENTE",
         "cierre_porra":"PORRA CERRADA",
-        "mitad_grupos":"MITAD GRUPOS"}
+        "mitad_grupos":"MITAD GRUPOS",
+        "fin_grupos":"FIN GRUPOS"}
 
 if TIPO_CORREO not in list(tipos.keys()):
 
