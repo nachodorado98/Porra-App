@@ -950,7 +950,7 @@ class Conexion:
 		token=self.c.fetchone()
 
 		return None if token is None else (token["id"],
-											token["usado"],
+											token["usuario"],
 											token["token"],
 											token["expires_at"],
 											token["usado"])

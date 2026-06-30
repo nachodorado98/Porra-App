@@ -77,3 +77,44 @@ def forgot_password_solicitar():
 	con.cerrarConexion()
 
 	return redirect("/")
+
+@bp_forgot_password.route("/forgot_password/reset_password/<token>")
+def forgot_password_reset_password(token:str):
+
+    hash_token=generarHashToken(token)
+
+    con=Conexion()
+
+    token_guardado=con.obtenerToken(hash_token)
+
+    con.cerrarConexion()
+
+    if not token_guardado:
+
+        flash("El enlace de recuperación no es válido", "error")
+
+        return redirect("/forgot_password")
+
+    usado=token_guardado[4]
+    expires=token_guardado[3]
+
+    if usado:
+
+        flash("Este enlace ya ha sido utilizado", "error")
+
+        con.cerrarConexion()
+
+        return redirect("/forgot_password")
+
+    if expires<datetime.now():
+
+        flash("Este enlace ha caducado", "error")
+
+        con.cerrarConexion()
+
+        return redirect("/forgot_password")
+
+    con.cerrarConexion()
+
+    return render_template("reset_password.html",
+    						token=token)

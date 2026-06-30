@@ -29,7 +29,7 @@ def enviarCorreo(req: func.HttpRequest) -> func.HttpResponse:
         correo_destino=body["correo_destino"]
         tipo_correo=body["tipo"]
         token=body.get("token")
-        reset_link=f"{URL_APP}/reset_password/{token}"
+        reset_link=f"{URL_APP}/forgot_password/reset_password/{token}"
 
     except Exception:
 
