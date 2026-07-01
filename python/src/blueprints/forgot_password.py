@@ -6,7 +6,7 @@ import os
 
 from src.database.conexion import Conexion
 
-from src.utilidades.utils import generarHashToken
+from src.utilidades.utils import generarHashToken, contrasena_correcta, comprobarHash, generarHash
 
 
 bp_forgot_password=Blueprint("forgot_password", __name__)
@@ -118,3 +118,87 @@ def forgot_password_reset_password(token:str):
 
     return render_template("reset_password.html",
     						token=token)
+
+@bp_forgot_password.route("/forgot_password/change_password/<token>", methods=["POST"])
+def forgot_password_change_password(token:str):
+
+    nueva_contrasena=request.form.get("nueva_contrasena")
+    repetir_contrasena=request.form.get("repetir_contrasena")
+
+    if not nueva_contrasena or not repetir_contrasena:
+
+        flash("Debes rellenar todos los campos", "error")
+
+        return redirect(f"/forgot_password/reset_password/{token}")
+
+    if nueva_contrasena!=repetir_contrasena:
+
+        flash("Las contraseñas no coinciden", "error")
+
+        return redirect(f"/forgot_password/reset_password/{token}")
+
+    if not contrasena_correcta(nueva_contrasena):
+
+        flash("La contraseña debe tener al menos 8 caracteres y no contener espacios", "error")
+
+        return redirect(f"/forgot_password/reset_password/{token}")
+
+    hash_token=generarHashToken(token)
+
+    con=Conexion()
+
+    token_guardado=con.obtenerToken(hash_token)
+
+    if not token_guardado:
+
+        flash("El enlace de recuperación no es válido", "error")
+
+        con.cerrarConexion()
+
+        return redirect("/forgot_password")
+
+    usuario=token_guardado[1]
+    expires_at=token_guardado[3]
+    usado=token_guardado[4]
+
+    if usado:
+
+        flash("Este enlace ya ha sido utilizado", "error")
+
+        con.cerrarConexion()
+
+        return redirect("/forgot_password")
+
+    if expires_at<datetime.now():
+
+        flash("Este enlace ha caducado", "error")
+
+        con.cerrarConexion()
+
+        return redirect("/forgot_password")
+
+    contrasena_hash_usuario=con.obtenerContrasenaUsuario(usuario)
+
+    if comprobarHash(nueva_contrasena, contrasena_hash_usuario):
+
+        flash("La nueva contraseña no puede ser igual a la anterior", "error")
+
+        con.cerrarConexion()
+
+        return redirect(f"/forgot_password/reset_password/{token}")
+
+    nueva_contrasena_hash=generarHash(nueva_contrasena)
+
+    cambios, ultimo_cambio=con.obtenerDatosCambioContrasenaUsuario(usuario)
+
+    ahora=datetime.now()
+
+    con.actualizarContrasenaUsuario(usuario, nueva_contrasena_hash, cambios+1, ahora)
+
+    con.actualizarToken(hash_token)
+
+    con.cerrarConexion()
+
+    flash("La contraseña se ha cambiado correctamente", "correcto")
+
+    return redirect("/")
